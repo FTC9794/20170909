@@ -67,7 +67,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  */
 
 @Autonomous(name="VuMark Detection Test", group ="Test")
-@Disabled
 public class VuMarkDetectionTest extends LinearOpMode {
 
     OpenGLMatrix lastLocation = null;
