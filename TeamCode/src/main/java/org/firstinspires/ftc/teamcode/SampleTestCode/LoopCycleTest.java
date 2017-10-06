@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.DataLogger;
@@ -11,7 +12,7 @@ import java.util.Date;
 /**
  * Created by Sarthak on 9/28/2017.
  */
-
+@TeleOp(name = "Loop Cycle Test", group = "Test")
 public class LoopCycleTest extends LinearOpMode {
     //Declare motors and sensors
     DcMotor rf, rb, lf, lb;
