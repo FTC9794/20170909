@@ -16,7 +16,7 @@ import java.util.Date;
 public class LoopCycleTest extends LinearOpMode {
     //Declare motors and sensors
     DcMotor rf, rb, lf, lb;
-    ModernRoboticsI2cRangeSensor ultrasonic;
+    //ModernRoboticsI2cRangeSensor ultrasonic;
     //Data logging
     DataLogger data;
     Date day = new Date();
@@ -24,17 +24,17 @@ public class LoopCycleTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //Map motors
-        rf = hardwareMap.dcMotor.get("right_front");
-        rb = hardwareMap.dcMotor.get("right_back");
-        lf = hardwareMap.dcMotor.get("left_front");
-        lb = hardwareMap.dcMotor.get("left_back");
+        rf = hardwareMap.dcMotor.get("front_right");
+        rb = hardwareMap.dcMotor.get("back_right");
+        lf = hardwareMap.dcMotor.get("front_left");
+        lb = hardwareMap.dcMotor.get("back_left");
         //Map sensors
-        ultrasonic = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "ultrasonic");
+        //ultrasonic = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "ultrasonic");
         //Set up data logging
         data = new DataLogger(day.toString() + " Loop Cycle Test");
         data.addField("RF Encoder Value"); data.addField("RB Encoder Value");
         data.addField("LF Encoder Value"); data.addField("LB Encoder Value");
-        data.addField("Ultrasonic Value");
+        //data.addField("Ultrasonic Value");
         data.newLine();
         //Wait for start
         waitForStart();
@@ -44,7 +44,7 @@ public class LoopCycleTest extends LinearOpMode {
             data.addField(rf.getCurrentPosition()); data.addField(rb.getCurrentPosition());
             data.addField(rb.getCurrentPosition()); data.addField(lb.getCurrentPosition());
             //Log sensor value
-            data.addField((float) ultrasonic.cmUltrasonic());
+            //data.addField((float) ultrasonic.cmUltrasonic());
             //New line
             data.newLine();
         }
