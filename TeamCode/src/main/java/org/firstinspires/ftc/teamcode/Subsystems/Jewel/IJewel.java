@@ -6,6 +6,5 @@ package org.firstinspires.ftc.teamcode.Subsystems.Jewel;
 
 public interface IJewel {
     String readColor();     //Return the color of jewel(s)
-    void knockOffLeftJewel();     //Knocks off the jewel on left
-    void knockOffRightJewel();     //Knocks off the jewel on right
+    void knockOffJewel(String alliance);
 }

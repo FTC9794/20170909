@@ -57,6 +57,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
             }
         }
         accThread.start();
+        data.addField("Slide or Pivot");
         data.addField("high power");
         data.addField("low power");
         data.addField("move angle");
@@ -111,9 +112,13 @@ public class OmniDirectionalDrive implements IDrivetrain {
                 (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
                 ||needsToPivot){
             needsToPivot = pivotToAngle(endOrientationAngle, highPower, lowPower, timeAfterAngle, pGain);;
+            telemetry.addData("State", "Pivot");
+            telemetry.update();
             return needsToPivot;
         }else if(!endCondition){
             slideAngle(moveAngle, endOrientationAngle, highPower, lowPower, powerChange, powerGain, oGain);
+            telemetry.addData("State", "Slide");
+            telemetry.update();
             return true;
         }else{
             needsToPivot = false;
@@ -136,7 +141,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
      * @param pGain the amount of speed applied per degree the robot is away from the target angle
      * @return true if the pivot is still occurring false when it is complete
      */
-    public boolean pivotToAngle(double angle, double highPower, double lowPower, double timeAfterAngle, double pGain) {
+    private boolean pivotToAngle(double angle, double highPower, double lowPower, double timeAfterAngle, double pGain) {
         //measure the gyro sensor
         //get gyro sensor value
 
@@ -186,6 +191,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
      * @param oGain
      */
     public void slideAngle(double moveAngle, double orientationAngle, double highPower, double lowPower, double powerPercent, double powerGain, double oGain) {
+        data.addField("Slide");
         data.addField((float)highPower);
         data.addField((float)lowPower);
         data.addField((float)moveAngle);
@@ -196,6 +202,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         double currentAngle = imu.getZAngle();
         data.addField((float)currentAngle);
         boolean fixAngle = true;
+
         while(fixAngle){
             if(currentAngle>orientationAngle+180){
                 currentAngle = currentAngle-360;
@@ -207,7 +214,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         }
         data.addField((float)currentAngle);
         telemetry.addData("imu", currentAngle);
-        moveAngle = moveAngle - currentAngle;
+        moveAngle = currentAngle - moveAngle;
         data.addField((float)moveAngle);
         telemetry.addData("move angle", moveAngle);
         double power = powerPercent*powerGain;
@@ -234,8 +241,9 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)vertical);
         double pivotCorrection = (currentAngle-orientationAngle) * oGain;
         data.addField((float)pivotCorrection);
-        data.newLine();
+        //data.newLine();
         rawSlide(horizontal, vertical, pivotCorrection, power);
+        data.newLine();
     }
 
     /**
@@ -254,7 +262,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
 
     private void rawSlide(double horizontal, double vertical, double pivot, double speed){
         //create an array with all the speeds
-        double speeds[] = {vertical+horizontal+pivot, vertical-horizontal+pivot, vertical-horizontal-pivot,vertical+horizontal-pivot};
+        double speeds[] = {vertical-horizontal+pivot, vertical+horizontal+pivot, vertical+horizontal-pivot,vertical-horizontal-pivot};
 
         //Only adjust speeds if the robot is moving
         if(horizontal!=0 || vertical!=0){
@@ -270,14 +278,18 @@ public class OmniDirectionalDrive implements IDrivetrain {
             }
 
             //set the maximum as a variable
-            double maxSpeed = speeds[max];
+            double maxSpeed = Math.abs(speeds[max]);
 
             //divide all of the speeds by the max speed to make sure that
             if(maxSpeed!=0){
                 speeds[0]=speeds[0]/maxSpeed*speed;
-                speeds[1]=speeds[1]/maxSpeed*speed;
-                speeds[2]=speeds[2]/maxSpeed*speed;
+                speeds[1]= (speeds[1]/maxSpeed*speed);
+                speeds[2]= (speeds[2]/maxSpeed*speed);
                 speeds[3]=speeds[3]/maxSpeed*speed;
+                data.addField((float) speeds[0]);
+                data.addField((float) speeds[1]);
+                data.addField((float) speeds[2]);
+                data.addField((float) speeds[3]);
             }
         }
 
