@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
  */
 
 @TeleOp(name = "Tank Drive Teleop Test", group = "Test")
+@Disabled
 public class TankDriveTeleop extends LinearOpMode {
     DcMotor rf, rb, lf, lb;
     IIMU imu;

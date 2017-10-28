@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,6 +14,7 @@ import java.util.Date;
  * Created by Sarthak on 9/28/2017.
  */
 @TeleOp(name = "Loop Cycle Test", group = "Test")
+@Disabled
 public class LoopCycleTest extends LinearOpMode {
     //Declare motors and sensors
     DcMotor rf, rb, lf, lb;
@@ -24,10 +26,10 @@ public class LoopCycleTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         //Map motors
-        rf = hardwareMap.dcMotor.get("front_right");
-        rb = hardwareMap.dcMotor.get("back_right");
-        lf = hardwareMap.dcMotor.get("front_left");
-        lb = hardwareMap.dcMotor.get("back_left");
+        rf = hardwareMap.dcMotor.get("right_front");
+        rb = hardwareMap.dcMotor.get("right_back");
+        lf = hardwareMap.dcMotor.get("left_front");
+        lb = hardwareMap.dcMotor.get("left_back");
         //Map sensors
         //ultrasonic = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "ultrasonic");
         //Set up data logging
