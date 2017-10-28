@@ -112,13 +112,14 @@ public class OmniDirectionalDrive implements IDrivetrain {
                 (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
                 ||needsToPivot){
             needsToPivot = pivotToAngle(endOrientationAngle, highPower, lowPower, timeAfterAngle, pGain);;
+            telemetry.addData("endOrientationAngle", endOrientationAngle);
             telemetry.addData("State", "Pivot");
-            telemetry.update();
+            //telemetry.update();
             return needsToPivot;
         }else if(!endCondition){
             slideAngle(moveAngle, endOrientationAngle, highPower, lowPower, powerChange, powerGain, oGain);
             telemetry.addData("State", "Slide");
-            telemetry.update();
+            //telemetry.update();
             return true;
         }else{
             needsToPivot = false;
@@ -147,7 +148,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
 
         double currentAngle = imu.getZAngle();
 
-        double difference = angle - currentAngle;
+        double difference = (currentAngle - angle)+180;
         if(difference>180){
             difference-=360;
         }else if(difference<-180){
@@ -169,6 +170,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         //send back data about what the robot is doing
         if(currentAngle<angle+END_ANGLE_OFFSET&&currentAngle>angle-END_ANGLE_OFFSET&&!targetReached){
             targetReached = true;
+            telemetry.addData("Pivot", "Timer Reset");
             pivotTime.reset();
         }
         if(targetReached&&pivotTime.milliseconds()>timeAfterAngle){
@@ -176,6 +178,11 @@ public class OmniDirectionalDrive implements IDrivetrain {
             targetReached = false;
             return false;
         }else{
+            telemetry.addData("Angle Difference", difference);
+            telemetry.addData("Current Angle", currentAngle);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Angle Cond 1", angle+END_ANGLE_OFFSET);
+            telemetry.addData("Angle Cond 2", angle-END_ANGLE_OFFSET);
             return true;
         }
     }
@@ -214,7 +221,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         }
         data.addField((float)currentAngle);
         telemetry.addData("imu", currentAngle);
-        moveAngle = currentAngle - moveAngle;
+        moveAngle = moveAngle - orientationAngle;
         data.addField((float)moveAngle);
         telemetry.addData("move angle", moveAngle);
         double power = powerPercent*powerGain;
@@ -239,7 +246,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)horizontal);
         double vertical = Utilities.round2D(calculateY(moveAngle, power));
         data.addField((float)vertical);
-        double pivotCorrection = (currentAngle-orientationAngle) * oGain;
+        double pivotCorrection = -((orientationAngle - currentAngle) * oGain);
         data.addField((float)pivotCorrection);
         //data.newLine();
         rawSlide(horizontal, vertical, pivotCorrection, power);

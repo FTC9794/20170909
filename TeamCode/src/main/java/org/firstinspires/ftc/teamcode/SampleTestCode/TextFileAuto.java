@@ -4,6 +4,7 @@ import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -33,9 +34,9 @@ public class TextFileAuto extends LinearOpMode {
 
     DcMotor rf, rb, lf, lb;
     AHRS navx;
+
     IIMU imu;
     OmniDirectionalDrive drive;
-
     List<DcMotor> motors;
     ElapsedTime timer;
 
@@ -77,17 +78,15 @@ public class TextFileAuto extends LinearOpMode {
         telemetry.addData("Init", "File read, data stored");
         telemetry.update();
 
+        //initialize Right Motors
         rf = hardwareMap.dcMotor.get("right_front");
         rb = hardwareMap.dcMotor.get("right_back");
+
+        //initialize left motors
         lf = hardwareMap.dcMotor.get("left_front");
         lb = hardwareMap.dcMotor.get("left_back");
-
-//        rf = new AcceleratedDcMotor(rf, .1);
-//        rb = new AcceleratedDcMotor(rb, .1);
-//        lf = new AcceleratedDcMotor(lf, .1);
-//        lb = new AcceleratedDcMotor(lb, .1);
-        lf.setDirection(REVERSE);
-        lb.setDirection(REVERSE);
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
         //create array list of motors
         motors = new ArrayList<>();
         motors.add(rf);
@@ -95,24 +94,19 @@ public class TextFileAuto extends LinearOpMode {
         motors.add(lf);
         motors.add(lb);
 
-        for(DcMotor motor:motors){
+        //set motor modes and zero power behavior
+        for (DcMotor motor : motors) {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-        telemetry.addData("Init", "Motors Mapped");
-        telemetry.update();
 
+        //initialize IMU
         navx  = AHRS.getInstance(hardwareMap.deviceInterfaceModule.get("Device Interface Module 1"),
                 0,
                 AHRS.DeviceDataType.kProcessedData);
         imu = new NavxIMU(navx);
-        telemetry.addData("Init", "IMU Created");
-        telemetry.update();
-
         imu.calibrate();
         imu.setAsZero();
-        telemetry.addData("Init", "IMU Calibrated");
-        telemetry.update();
 
         //initialize drivetrain
         drive = new OmniDirectionalDrive(motors, imu, telemetry);
@@ -122,14 +116,12 @@ public class TextFileAuto extends LinearOpMode {
         telemetry.update();
         timer = new ElapsedTime();
         telemetry.addData("Init", "Timer Instantiated");
-        telemetry.addData("First step", lookupTable[0][STATE_NAME]);
-        telemetry.addData("Second step", lookupTable[1][STATE_NAME]);
         telemetry.addData("Drive abbr", (lookupTable[1][STATE_ACTION]).substring(11, (lookupTable[1][STATE_ACTION]).length()-2));
         telemetry.update();
         waitForStart();
         timer.reset();
         while(opModeIsActive()){
-            imuAngle = -imu.getZAngle();
+            imuAngle = imu.getZAngle();
             encoderAverage = drive.averageEncoders();
 
             switch (lookupTable[lookupCount][STATE_NAME].trim()){
@@ -185,9 +177,14 @@ public class TextFileAuto extends LinearOpMode {
 
                     switch (slideCaseNum){
                         case 1: //Encoders
-                            powerChange = (condition * COUNTS_PER_INCH) - encoderAverage;
-                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .025, .0001, orientation,
-                                    condition*COUNTS_PER_INCH - encoderAverage < ENCODER_OFFSET && condition*COUNTS_PER_INCH - encoderAverage > -ENCODER_OFFSET, timeAfterAngle)){
+                            powerChange = (condition * COUNTS_PER_INCH) - drive.averageEncoders();
+                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
+                                    condition*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && condition*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                telemetry.addData("Max Power", maxPower);
+                                telemetry.addData("Min Power", minPower);
+                                telemetry.addData("power change", powerChange);
+                                telemetry.addData("move angle", moveAngle);
+                                telemetry.addData("orientation", orientation);
                                 telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
                                 telemetry.addData("Encoder Count", encoderAverage);
                                 telemetry.addData("Condition", condition);
@@ -212,6 +209,21 @@ public class TextFileAuto extends LinearOpMode {
                                 lookupCount++;
                                 break;
                             }
+                            break;
+
+                        case 3: //Move for time
+                            powerChange = condition - timer.seconds();
+                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .025, .0001, orientation,
+                                    timer.seconds() > condition, timeAfterAngle)){
+                            }else{
+                                telemetry.addData("Slide", "Finished");
+                                timer.reset();
+                                drive.setPowerZero();
+                                drive.resetEncoders();
+                                lookupCount++;
+                                break;
+                            }
+                            break;
                     }
 
                     break;
