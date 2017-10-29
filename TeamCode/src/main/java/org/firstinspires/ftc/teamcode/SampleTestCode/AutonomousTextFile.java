@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.kauailabs.navx.ftc.AHRS;
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -14,11 +16,14 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
+import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.AcceleratedDcMotor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.IDrivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
+import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,14 +34,19 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 /**
  * Created by Sarthak on 10/22/2017.
  */
-@Autonomous(name = "TextFileAutonomous", group = "Test")
-public class TextFileAuto extends LinearOpMode {
+@Autonomous(name = "Autonomous Text File", group = "Test")
+public class AutonomousTextFile extends LinearOpMode {
 
     DcMotor rf, rb, lf, lb;
     AHRS navx;
+    LynxI2cColorRangeSensor lynx;
+
+    Servo pan, tilt;
 
     IIMU imu;
+    IColorSensor color;
     OmniDirectionalDrive drive;
+    TwoPointJewelArm jewel;
     List<DcMotor> motors;
     ElapsedTime timer;
 
@@ -114,6 +124,13 @@ public class TextFileAuto extends LinearOpMode {
 
         telemetry.addData("Init", "IMU and Drivetrain Instantiated");
         telemetry.update();
+
+        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("color");
+        //pan = hardwareMap.servo.get("servoP");
+        tilt = hardwareMap.servo.get("servoT");
+        color = new LynxColorRangeSensor(lynx);
+        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
+
         timer = new ElapsedTime();
         telemetry.addData("Init", "Timer Instantiated");
         telemetry.addData("Drive abbr", (lookupTable[1][STATE_ACTION]).substring(11, (lookupTable[1][STATE_ACTION]).length()-2));
@@ -156,6 +173,26 @@ public class TextFileAuto extends LinearOpMode {
                         timer.reset();
                         lookupCount++;
                         drive.resetEncoders();
+                    }
+                    break;
+
+                case "jewel":
+                    int readingCount = 0, blueCount = 0, redCount = 0;
+                    int numReadings = Integer.parseInt(lookupTable[lookupCount][STATE_CONDITION]);
+                    if(readingCount < numReadings){
+                        String colorRead = jewel.readColor();
+                        if(colorRead.equals("blue")){
+                            blueCount++;
+                        }else if(colorRead.equals("red")){
+                            redCount++;
+                        }
+                    }else{
+                        String jewelColor;
+                        if(redCount > blueCount){
+                            jewelColor = "red";
+                        }else{
+                            jewelColor = "blue";
+                        }
                     }
                     break;
 

@@ -24,19 +24,18 @@ public class TwoPointJewelArmTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("revColor");
-        pan = hardwareMap.servo.get("servoP");
+        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("color");
+        //pan = hardwareMap.servo.get("servoP");
         tilt = hardwareMap.servo.get("servoT");
         colorSensor = new LynxColorRangeSensor(lynx);
-        jewel = new TwoPointJewelArm(pan, tilt, colorSensor);
+        jewel = new TwoPointJewelArm(pan, tilt, colorSensor, telemetry);
 
-        pan.setPosition(0.82);
+        //pan.setPosition(0.82);
         tilt.setPosition(0.5);
 
         waitForStart();
         while (opModeIsActive()){
-            String color = jewel.readColor();
-            telemetry.addData("Color", color);
+            jewel.readColor();
             telemetry.update();
         }
     }

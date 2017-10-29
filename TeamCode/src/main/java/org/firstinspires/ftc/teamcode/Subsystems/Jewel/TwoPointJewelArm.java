@@ -4,6 +4,8 @@ import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.DataLogger;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 
@@ -14,21 +16,29 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
 public class TwoPointJewelArm implements IJewel {
     Servo panServo, tiltServo;
     IColorSensor color;
+    Telemetry telemetry;
 
-    public TwoPointJewelArm(Servo ServoP, Servo ServoT, IColorSensor color){
+    public TwoPointJewelArm(Servo ServoP, Servo ServoT, IColorSensor color, Telemetry telemetry){
         this.panServo = ServoP;
         this.tiltServo = ServoT;
         this.color = color;
+        this.telemetry = telemetry;
     }
 
     @Override
     public String readColor() {
-        int hue = color.getHue();
-        if(hue >= 350  || hue <= 30){
-            return "red";
-        }else if (hue >= 150 && hue <= 255){
+        int red = color.red();
+        int blue = color.blue();
+        telemetry.addData("Blue", blue);
+        telemetry.addData("Red", red);
+        if(blue > red*1.5){
+            telemetry.addData("Color", "blue");
             return "blue";
+        }else if (red > blue*1.5){
+            telemetry.addData("Color", "Red");
+            return "red";
         }else{
+            telemetry.addData("Color", "Unknown");
             return "unknown";
         }
     }
@@ -57,4 +67,9 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     public void pan(double panPosition) { panServo.setPosition(panPosition); }
+
+    public void setPanTiltPos(double panPosition, double tiltPosition){
+        pan(panPosition);
+        tilt(tiltPosition);
+    }
 }
