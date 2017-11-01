@@ -177,40 +177,49 @@ public class AutonomousTextFile extends LinearOpMode {
                     break;
 
                 case "jewel":
-                    int readingCount = 0, blueCount = 0, redCount = 0;
-                    int numReadings = Integer.parseInt(lookupTable[lookupCount][STATE_CONDITION]);
-                    if(readingCount < numReadings){
-                        String colorRead = jewel.readColor();
-                        if(colorRead.equals("blue")){
-                            blueCount++;
-                        }else if(colorRead.equals("red")){
-                            redCount++;
-                        }
-                    }else{
-                        String jewelColor;
-                        if(redCount > blueCount){
-                            jewelColor = "red";
-                        }else{
-                            jewelColor = "blue";
-                        }
+                    String jexlExpJewel = lookupTable[lookupCount][STATE_ACTION];
+                    //Create JEXL Expression
+                    JexlExpression eJewel = jexl.createExpression(jexlExpJewel);
+                    JexlContext contextJewel = new MapContext();
+                    if(jexlExpJewel.indexOf("reading") != -1){
+                        int numReadings = Integer.parseInt(lookupTable[lookupCount][STATE_CONDITION]);
+                        contextJewel.set("jewel", jewel);
+                        contextJewel.set("reading", numReadings);
+                    }else if(jexlExpJewel.indexOf("alliance") != -1){
+                        String allianceBall = lookupTable[lookupCount][STATE_CONDITION];
+                        contextJewel.set("jewel", jewel);
+                        contextJewel.set("alliance", allianceBall);
+                    }else if (jexlExpJewel.indexOf("pan,tilt") != -1){
+                        String[] servoPositions = lookupTable[lookupCount][STATE_CONDITION].split("-");
+                        double panServoPos = Double.parseDouble(servoPositions[0]);
+                        double tiltServoPos = Double.parseDouble(servoPositions[1]);
+                        contextJewel.set("jewel", jewel);
+                        contextJewel.set("pan", panServoPos);
+                        contextJewel.set("tilt", tiltServoPos);
                     }
+                    Object evaluatedExpressionObjJewel = eJewel.evaluate(contextJewel);
+                    Object jewelResult = evaluatedExpressionObjJewel;
+
+                    timer.reset();
+                    lookupCount++;
+                    drive.resetEncoders();
                     break;
 
                 case "move":
                     //Get condition
                     String[] slideCondition = (lookupTable[lookupCount][STATE_CONDITION].split("-"));
-                    int slideCaseNum = Integer.parseInt(slideCondition[0]);
-                    int condition = Integer.parseInt(slideCondition[1]);
+                    int slideCaseNum = Integer.parseInt(slideCondition[0]); //Type of slide
+                    int condition = Integer.parseInt(slideCondition[1]);    //Condition to check
                     //Get move parameters
-                    String abbreviatedAction = lookupTable[lookupCount][STATE_ACTION];
+                    String abbreviatedAction = lookupTable[lookupCount][STATE_ACTION]; //Separate parameters from rest of string
                     abbreviatedAction = abbreviatedAction.substring(11, abbreviatedAction.length()-1);
                     String[] moveParameters = abbreviatedAction.split(",");
-                    double maxPower = Double.parseDouble(moveParameters[0]);
-                    double minPower = Double.parseDouble(moveParameters[1]);
-                    int moveAngle = Integer.parseInt(moveParameters[2]);
-                    int orientation = Integer.parseInt(moveParameters[3]);
-                    double timeAfterAngle = Double.parseDouble(moveParameters[4]);
-                    double powerChange;
+                    double maxPower = Double.parseDouble(moveParameters[0]);        //Get Maz Power
+                    double minPower = Double.parseDouble(moveParameters[1]);        //Get Min Power
+                    int moveAngle = Integer.parseInt(moveParameters[2]);            //Get Move Angle
+                    int orientation = Integer.parseInt(moveParameters[3]);          //Get Orientation
+                    double timeAfterAngle = Double.parseDouble(moveParameters[4]);  //Get time after angle
+                    double powerChange;                                             //Will be calculated within case
 
                     switch (slideCaseNum){
                         case 1: //Encoders

@@ -222,6 +222,9 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)currentAngle);
         telemetry.addData("imu", currentAngle);
         moveAngle = moveAngle - orientationAngle;
+        if(moveAngle <= -180){
+            moveAngle+=360;
+        }
         data.addField((float)moveAngle);
         telemetry.addData("move angle", moveAngle);
         double power = powerPercent*powerGain;
