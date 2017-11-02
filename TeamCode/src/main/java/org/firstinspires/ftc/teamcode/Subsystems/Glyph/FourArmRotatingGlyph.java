@@ -12,8 +12,8 @@ public class FourArmRotatingGlyph implements  IGlyph {
     private Servo right1,right2,left1,left2,spin;
     private DcMotor lift;
 
-    private final double gripOpen1 = 1;
-    private final double gripOpen2 = 1;
+    private final double gripOpen1 = .5;
+    private final double gripOpen2 = .5;
     private final double gripClose1 = 0;
     private final double gripClose2 = 0;
 
@@ -26,8 +26,7 @@ public class FourArmRotatingGlyph implements  IGlyph {
         this.right2 = right2;
         this.left1 = left1;
         this.left2 = left2;
-        this.right1.setDirection(Servo.Direction.REVERSE);
-        this.right2.setDirection(Servo.Direction.REVERSE);
+
         this.spin = spin;
         this.lift = lift;
     }

@@ -24,8 +24,8 @@ public class TheWizardTeleop extends LinearOpMode {
 
     DigitalChannel glyphLimit;
 
-    final double gripOpen1 = 1;
-    final double gripOpen2 = 1;
+    final double gripOpen1 = .5;
+    final double gripOpen2 = .5;
     final double gripClose1 = 0;
     final double gripClose2 = 0;
 
@@ -52,6 +52,7 @@ public class TheWizardTeleop extends LinearOpMode {
         tilt = hardwareMap.servo.get("jewel_tilt");
 
         lift = hardwareMap.dcMotor.get("glyph_lift");
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         right2.setDirection(Servo.Direction.REVERSE);
         left1.setDirection(Servo.Direction.REVERSE);
@@ -70,6 +71,11 @@ public class TheWizardTeleop extends LinearOpMode {
 
         waitForStart();
         while(opModeIsActive()){
+            if(!glyphLimit.getState()){
+                lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                telemetry.addData("Encoder", "Reset");
+            }
             if(gamepad1.a){
                 if(spinAtOrigin) {
                     while(gamepad1.a);
@@ -85,27 +91,28 @@ public class TheWizardTeleop extends LinearOpMode {
             if(gamepad1.y){
                 while (gamepad1.y);
                 if(bothOpened){
-                    right1.setPosition(gripOpen1);
+                    right1.setPosition(gripClose1);
                     left1.setPosition(gripClose1);
                     right2.setPosition(gripClose2);
                     left2.setPosition(gripClose2);
                     bothOpened = false;
                 }else{
-                    right1.setPosition(gripClose1);
+                    right1.setPosition(gripOpen1);
                     left1.setPosition(gripOpen1);
                     right2.setPosition(gripOpen2);
                     left2.setPosition(gripOpen2);
                     bothOpened = true;
                 }
             }
-            glyph.changeHeight(-.75, gamepad1.left_trigger>.5);
-            glyph.changeHeight(.75, gamepad1.right_trigger>.5&&!glyphLimit.getState());
+            if(gamepad1.left_trigger>.5&&glyphLimit.getState()){
+                lift.setPower(-1);
+            }else if(gamepad1.right_trigger>.5){
+                lift.setPower(.75);
+            }else{
+                lift.setPower(0);
+            }
 
-            telemetry.addData("right 1 pos", right1.getPosition());
-            telemetry.addData("left 1 pos", left1.getPosition());
-            telemetry.addData("right 2 pos", right2.getPosition());
-            telemetry.addData("left 2 pos", left2.getPosition());
-            telemetry.addData("spin pos", spin.getPosition());
+            telemetry.addData("Lift Value", lift.getCurrentPosition());
             telemetry.update();
         }
 
