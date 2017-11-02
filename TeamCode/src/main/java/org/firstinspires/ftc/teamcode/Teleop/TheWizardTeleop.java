@@ -27,6 +27,13 @@ public class TheWizardTeleop extends LinearOpMode {
         POSITION
     }
     liftState glyphLiftState;
+    enum rotateState{
+        MANUAL,
+        LIFTING,
+        ROTATING,
+        LOWERING
+    }
+    rotateState glyphRotateState;
     Servo pan, tilt;
 
     double liftIncriment = 0;
@@ -62,6 +69,7 @@ public class TheWizardTeleop extends LinearOpMode {
         spin = hardwareMap.servo.get("spin_grip");
 
         glyphLiftState = liftState.MANUAL;
+        glyphRotateState = rotateState.MANUAL;
         pan = hardwareMap.servo.get("jewel_pan");
         tilt = hardwareMap.servo.get("jewel_tilt");
 
@@ -105,40 +113,18 @@ public class TheWizardTeleop extends LinearOpMode {
             }else{
                 spinPressed = false;
             }
-            if(gamepad1.x){
-                if(!gripPressed2){
-                    if(bothOpened2){
-                        right2.setPosition(gripClose2);
-                        left2.setPosition(gripClose2);
-                        bothOpened2 = false;
-                    }else{
-                        right2.setPosition(gripOpen2);
-                        left2.setPosition(gripOpen2);
-                        bothOpened2 = true;
-                    }
-                }
-                gripPressed2 = true;
-            }else{
-                gripPressed2 = false;
-            }
-            if(gamepad1.y){
-                if(!gripPressed1){
-                    if(bothOpened1){
-                        right1.setPosition(gripClose1);
-                        left1.setPosition(gripClose1);
 
-                        bothOpened1 = false;
-                    }else{
-                        right1.setPosition(gripOpen1);
-                        left1.setPosition(gripOpen1);
-                        bothOpened1 = true;
-                    }
-                }
-                gripPressed1 = true;
-            }else{
-                gripPressed1 = false;
-            }
+            switch(glyphRotateState){
+                case MANUAL:
 
+                    break;
+                case LIFTING:
+                    break;
+                case ROTATING:
+                    break;
+                case LOWERING:
+                    break;
+            }
             switch(glyphLiftState){
                 case MANUAL:
                     if(gamepad1.left_trigger>.5&&glyphLimit.getState()){
