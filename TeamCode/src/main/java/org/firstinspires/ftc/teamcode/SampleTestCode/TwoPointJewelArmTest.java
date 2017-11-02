@@ -35,7 +35,7 @@ public class TwoPointJewelArmTest extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()){
-            jewel.readColor();
+            jewel.readColor(10);
             telemetry.update();
         }
     }
