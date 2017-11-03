@@ -41,9 +41,9 @@ public class TheWizardTeleop extends LinearOpMode {
     double thrust, pitch, horizontal, rfPower, rbPower, lfPower, lbPower;
 
     FourArmRotatingGlyph glyph;
-    //IDrivetrain drive;
-    //IIMU imu;
-    //BNO055IMU boschIMU;
+    OmniDirectionalDrive drive;
+    IIMU imu;
+    BNO055IMU boschIMU;
 
     ArrayList<DcMotor> driveMotors;
 
@@ -129,7 +129,7 @@ public class TheWizardTeleop extends LinearOpMode {
         rf.setDirection(DcMotorSimple.Direction.REVERSE);
         rb.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        /*driveMotors = new ArrayList<>();
+        driveMotors = new ArrayList<>();
         driveMotors.add(rf);
         driveMotors.add(rb);
         driveMotors.add(lf);
@@ -165,7 +165,7 @@ public class TheWizardTeleop extends LinearOpMode {
         drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
         telemetry.addData("Init", "Drive and IMU Created");
         telemetry.update();
-*/
+
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
 
@@ -400,6 +400,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
+
             //drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
             /*thrust = gamepad1.right_stick_y;
             horizontal = gamepad1.left_stick_x;
@@ -428,7 +429,8 @@ public class TheWizardTeleop extends LinearOpMode {
             }else if(lbPower < -1){
                 lbPower = -1;
             }*/
-            rfPower = -gamepad1.right_stick_y;
+            drive.rawSlide(gamepadPlus1.leftStickX(), gamepadPlus1.leftStickY(), gamepadPlus1.rightStickX(), Math.max(gamepadPlus1.getDistanceFromCenterLeft(), gamepadPlus1.getDistanceFromCenterRight()));
+            /*rfPower = -gamepad1.right_stick_y;
             rbPower = -gamepad1.right_stick_y;
             lfPower = -gamepad1.left_stick_y;
             lbPower = -gamepad1.left_stick_y;
@@ -446,7 +448,7 @@ public class TheWizardTeleop extends LinearOpMode {
             rf.setPower(rfPower);
             rb.setPower(rbPower);
             lf.setPower(lfPower);
-            lb.setPower(lbPower);
+            lb.setPower(lbPower);*/
 
 
         }

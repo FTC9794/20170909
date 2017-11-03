@@ -270,7 +270,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         motors.get(3).setPower(lbPower);
     }
 
-    private void rawSlide(double horizontal, double vertical, double pivot, double speed){
+    public void rawSlide(double horizontal, double vertical, double pivot, double speed){
         //create an array with all the speeds
         double speeds[] = {vertical-horizontal+pivot, vertical+horizontal+pivot, vertical+horizontal-pivot,vertical-horizontal-pivot};
 
