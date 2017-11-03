@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -119,6 +121,8 @@ public class TheWizardTeleop extends LinearOpMode {
         rb = hardwareMap.dcMotor.get("right_back");
         lf = hardwareMap.dcMotor.get("left_front");
         lb = hardwareMap.dcMotor.get("left_back");
+        lf.setDirection(DcMotorSimple.Direction.REVERSE);
+        lb.setDirection(DcMotorSimple.Direction.REVERSE);
 
         driveMotors = new ArrayList<>();
         driveMotors.add(rf);
@@ -126,24 +130,34 @@ public class TheWizardTeleop extends LinearOpMode {
         driveMotors.add(lf);
         driveMotors.add(lb);
 
+        for (DcMotor motor : driveMotors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+
         telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
         //Initialize BOSCH IMU
-        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
         boschIMU.initialize(parameters);
         imu = new BoschIMU(boschIMU);
-        imu.setAsZero();
+
+        imu.setOffset(0);
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
 
-        drive = new OmniDirectionalDrive(driveMotors, imu);
+        drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
         telemetry.addData("Init", "Drive and IMU Created");
         telemetry.update();
 
@@ -381,7 +395,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
-            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterRight()*.02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
+            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
 
 
         }
