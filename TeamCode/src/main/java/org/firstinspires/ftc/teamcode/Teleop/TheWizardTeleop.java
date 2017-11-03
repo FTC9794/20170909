@@ -126,6 +126,8 @@ public class TheWizardTeleop extends LinearOpMode {
         driveMotors.add(lf);
         driveMotors.add(lb);
 
+        telemetry.addData("Init", "IMU Calibrating");
+        telemetry.update();
         //Initialize BOSCH IMU
         boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -137,8 +139,13 @@ public class TheWizardTeleop extends LinearOpMode {
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         boschIMU.initialize(parameters);
         imu = new BoschIMU(boschIMU);
+        imu.setAsZero();
+        telemetry.addData("Init", "IMU Instantiated");
+        telemetry.update();
 
         drive = new OmniDirectionalDrive(driveMotors, imu);
+        telemetry.addData("Init", "Drive and IMU Created");
+        telemetry.update();
 
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
@@ -309,6 +316,8 @@ public class TheWizardTeleop extends LinearOpMode {
                                 liftIncriment = 1;
                             }else if(lift.getCurrentPosition()<LIFT_POSITION3+LIFT_GRACE_AREA){
                                 liftIncriment = 2;
+                            }else if(lift.getCurrentPosition()<LIFT_POSITION4+LIFT_GRACE_AREA){
+                                liftIncriment = 3;
                             }
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             glyphLiftState = liftState.POSITION;
@@ -322,6 +331,8 @@ public class TheWizardTeleop extends LinearOpMode {
                                 liftIncriment = 2;
                             }else if(lift.getCurrentPosition()<LIFT_POSITION3-LIFT_GRACE_AREA){
                                 liftIncriment = 3;
+                            }else if(lift.getCurrentPosition()<LIFT_POSITION4-LIFT_GRACE_AREA){
+                                liftIncriment = 4;
                             }
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             glyphLiftState = liftState.POSITION;
@@ -342,7 +353,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else{
                         leftBumperPressed = false;
                     }
-                    if(gamepadPlus2.rightBumper()&&liftIncriment<3){
+                    if(gamepadPlus2.rightBumper()&&liftIncriment<4){
                         if(!rightBumperPressed){
                             liftIncriment++;
                             rightBumperPressed = true;
@@ -370,7 +381,8 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
-            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), gamepadPlus1.rightStickX()*.02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
+            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterRight()*.02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
+
 
         }
 
