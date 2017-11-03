@@ -33,39 +33,12 @@ public class FourArmRotatingGlyph implements  IGlyph {
 
     @Override
     public void secureGlyph() {
-        if(this.spin.getPosition() == 0){
-            this.right1.setPosition(GRIP_CLOSE1);
-            this.left1.setPosition(GRIP_CLOSE1);
-        }else if(spin.getPosition() == 1){
-            this.left2.setPosition(GRIP_CLOSE2);
-            this.right2.setPosition(GRIP_CLOSE2);
-        }
     }
 
     @Override
     public void dispenseGlyph() {
-        if(this.spin.getPosition() == 0){
-            this.left1.setPosition(GRIP_OPEN1);
-            this.right1.setPosition(GRIP_CLOSE1);
-        }else if(spin.getPosition() == 1){
-            this.left2.setPosition(GRIP_OPEN2);
-            this.right2.setPosition(GRIP_OPEN2);
-        }
     }
 
-    public void gripAll(){
-        this.left1.setPosition(GRIP_CLOSE1);
-        this.right1.setPosition(GRIP_CLOSE1);
-        this.left2.setPosition(GRIP_CLOSE2);
-        this.right2.setPosition(GRIP_CLOSE2);
-    }
-
-    public void dispenseAll(){
-        this.left1.setPosition(GRIP_OPEN1);
-        this.right1.setPosition(GRIP_OPEN1);
-        this.left2.setPosition(GRIP_OPEN2);
-        this.right2.setPosition(GRIP_OPEN2);
-    }
 
     public void rotate(){
         if(this.spin.getPosition() == 0){

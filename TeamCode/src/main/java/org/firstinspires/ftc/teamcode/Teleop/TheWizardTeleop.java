@@ -38,11 +38,12 @@ public class TheWizardTeleop extends LinearOpMode {
     DigitalChannel glyphLimit;
     DcMotor lift;
     DcMotor rf, rb, lf, lb;
+    double thrust, pitch, horizontal, rfPower, rbPower, lfPower, lbPower;
 
     FourArmRotatingGlyph glyph;
-    IDrivetrain drive;
-    IIMU imu;
-    BNO055IMU boschIMU;
+    //IDrivetrain drive;
+    //IIMU imu;
+    //BNO055IMU boschIMU;
 
     ArrayList<DcMotor> driveMotors;
 
@@ -121,10 +122,14 @@ public class TheWizardTeleop extends LinearOpMode {
         rb = hardwareMap.dcMotor.get("right_back");
         lf = hardwareMap.dcMotor.get("left_front");
         lb = hardwareMap.dcMotor.get("left_back");
-        lf.setDirection(DcMotorSimple.Direction.REVERSE);
-        lb.setDirection(DcMotorSimple.Direction.REVERSE);
+        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        driveMotors = new ArrayList<>();
+        /*driveMotors = new ArrayList<>();
         driveMotors.add(rf);
         driveMotors.add(rb);
         driveMotors.add(lf);
@@ -160,7 +165,7 @@ public class TheWizardTeleop extends LinearOpMode {
         drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
         telemetry.addData("Init", "Drive and IMU Created");
         telemetry.update();
-
+*/
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
 
@@ -395,12 +400,58 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
-            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
+            //drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
+            /*thrust = gamepad1.right_stick_y;
+            horizontal = gamepad1.left_stick_x;
+            pitch = gamepad1.right_stick_x;
+            rfPower = (-horizontal - thrust - pitch)*1;
+            rbPower = (horizontal + thrust - pitch)*1;
+            lfPower = (-horizontal + thrust - pitch)*1;
+            lbPower = (horizontal - thrust - pitch)*1;
+            if(rfPower > 1){
+                rfPower = 1;
+            }else if(rfPower < -1){
+                rfPower = -1;
+            }
+            if(rbPower > 1){
+                rbPower = 1;
+            }else if(rbPower < -1){
+                rbPower = -1;
+            }
+            if(lfPower > 1){
+                lfPower = 1;
+            }else if(lfPower < -1){
+                lfPower = -1;
+            }
+            if(lbPower > 1){
+                lbPower = 1;
+            }else if(lbPower < -1){
+                lbPower = -1;
+            }*/
+            rfPower = -gamepad1.right_stick_y;
+            rbPower = -gamepad1.right_stick_y;
+            lfPower = -gamepad1.left_stick_y;
+            lbPower = -gamepad1.left_stick_y;
+            telemetry.addData("thrust", thrust);
+            telemetry.addData("rotation", pitch);
+            telemetry.addData("horizontal", horizontal);
+            telemetry.addData("rfPower", rfPower);
+            telemetry.addData("rbPower", rbPower);
+            telemetry.addData("lfPower", lfPower);
+            telemetry.addData("lbPower", lbPower);
+            telemetry.addData("rfEncoder", rf.getCurrentPosition());
+            telemetry.addData("rbEncoder", rb.getCurrentPosition());
+            telemetry.addData("lfEncoder", lf.getCurrentPosition());
+            telemetry.addData("lbEncoder", lb.getCurrentPosition());
+            rf.setPower(rfPower);
+            rb.setPower(rbPower);
+            lf.setPower(lfPower);
+            lb.setPower(lbPower);
 
 
         }
 
-        drive.stop();
+        //drive.stop();
 
     }
 }
