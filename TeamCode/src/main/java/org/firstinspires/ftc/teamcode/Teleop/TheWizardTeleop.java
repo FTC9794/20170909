@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.IDrivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.FourArmRotatingGlyph;
@@ -26,6 +27,9 @@ import java.util.ArrayList;
 @TeleOp(name = "The Wizard Teleop", group = "Teleop")
 public class TheWizardTeleop extends LinearOpMode {
     ElapsedTime rotateTime;
+
+    GamepadPlus gamepadPlus1;
+    GamepadPlus gamepadPlus2;
 
     Servo right1, right2, left1, left2, spin;
     Servo pan, tilt;
@@ -156,13 +160,16 @@ public class TheWizardTeleop extends LinearOpMode {
 
         glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
         rotateTime = new ElapsedTime();
+        gamepadPlus1 = new GamepadPlus(gamepad1);
+        gamepadPlus2 = new GamepadPlus(gamepad2);
+
         waitForStart();
         while(opModeIsActive()){
 
 
             switch(glyphRotateState){
                 case MANUAL:
-                    if(gamepad2.x){
+                    if(gamepadPlus2.x()){
                         if(spinAtOrigin){
                             if(!gripPressed2){
                                 if(bottomGripOpen){
@@ -194,7 +201,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else{
                         gripPressed2 = false;
                     }
-                    if(gamepad2.y){
+                    if(gamepadPlus2.y()){
                         if(spinAtOrigin){
                             if(!gripPressed1){
                                 if(topGripOpen){
@@ -226,7 +233,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else{
                         gripPressed1 = false;
                     }
-                    if(gamepad2.a){
+                    if(gamepadPlus2.a()){
                         if(!spinPressed){
                             if(lift.getCurrentPosition()>LIFT_POSITION1){
                                 glyphRotateState = rotateState.ROTATING;
@@ -250,7 +257,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }
                     break;
                 case LIFTING:
-                    if(gamepad2.left_trigger>ANALOG_PRESSED||gamepad2.right_trigger>ANALOG_PRESSED) {
+                    if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
                         glyphRotateState = rotateState.MANUAL;
                     }else if(!lift.isBusy()){
                         glyphRotateState = rotateState.ROTATING;
@@ -287,11 +294,11 @@ public class TheWizardTeleop extends LinearOpMode {
                         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                         telemetry.addData("Encoder", "Reset");
                     }
-                    if(gamepad2.left_trigger>ANALOG_PRESSED && glyphLimit.getState()){
+                    if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED && glyphLimit.getState()){
                         lift.setPower(LIFT_POWER_DOWN);
-                    }else if(gamepad2.right_trigger>ANALOG_PRESSED && lift.getCurrentPosition()<LIFT_POSITION4){
+                    }else if(gamepadPlus2.rightTrigger()>ANALOG_PRESSED && lift.getCurrentPosition()<LIFT_POSITION4){
                         lift.setPower(LIFT_POWER_UP);
-                    }else if(gamepad2.left_bumper){
+                    }else if(gamepadPlus2.leftBumper()){
                         if(!leftBumperPressed){
                             if(lift.getCurrentPosition()<LIFT_POSITION1+LIFT_GRACE_AREA){
                                 liftIncriment = 0;
@@ -304,7 +311,7 @@ public class TheWizardTeleop extends LinearOpMode {
                             glyphLiftState = liftState.POSITION;
                         }
                         leftBumperPressed = true;
-                    }else if(gamepad2.right_bumper){
+                    }else if(gamepadPlus2.rightBumper()){
                         if(!rightBumperPressed){
                             if(lift.getCurrentPosition()<LIFT_POSITION1-LIFT_GRACE_AREA){
                                 liftIncriment = 1;
@@ -323,7 +330,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
                     break;
                 case POSITION:
-                    if(gamepad2.left_bumper&&liftIncriment>0){
+                    if(gamepadPlus2.leftBumper()&&liftIncriment>0){
                         if(!leftBumperPressed){
                             liftIncriment--;
                             leftBumperPressed = true;
@@ -332,7 +339,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else{
                         leftBumperPressed = false;
                     }
-                    if(gamepad2.right_bumper&&liftIncriment<3){
+                    if(gamepadPlus2.rightBumper()&&liftIncriment<3){
                         if(!rightBumperPressed){
                             liftIncriment++;
                             rightBumperPressed = true;
@@ -350,13 +357,14 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else if(liftIncriment==0){
                         lift.setTargetPosition(0);
                     }
-                    if(!lift.isBusy()||gamepad2.left_trigger>ANALOG_PRESSED||gamepad2.right_trigger>ANALOG_PRESSED){
+                    if(!lift.isBusy()||gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED){
                         glyphLiftState = liftState.MANUAL;
                         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     }
                     lift.setPower(LIFT_POWER_UP);
                     break;
             }
+            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), gamepadPlus1.rightStickX()*.02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
             telemetry.addData("Lift Value", lift.getCurrentPosition());
             telemetry.update();
         }
