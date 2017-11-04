@@ -218,7 +218,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
         while(opModeIsActive()){
 
-
+            //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
                     if(gamepadPlus2.x()){
@@ -340,6 +340,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }
                     break;
             }
+            //Glyph Lift State Machine
             switch(glyphLiftState){
                 case MANUAL:
                     if(!glyphLimit.getState()){
@@ -424,7 +425,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
-
+            //Drivetrain controls
             thrust = -gamepad1.right_stick_y;
             sideways = gamepad1.right_stick_x;
             pivot = gamepad1.left_stick_x;
@@ -446,6 +447,7 @@ public class TheWizardTeleop extends LinearOpMode {
                 lb.setPower(lbPower);
             }
 
+            //Relic Extension Motor Controls with Encoder Limits
             if(gamepad2.dpad_up && relic_extension.getCurrentPosition() < 10000){
                 relic_extension.setPower(RELIC_ARM_EXTENSION_POWER);
             }else if(gamepad2.dpad_down && relic_extension.getCurrentPosition() > 250){
@@ -454,24 +456,28 @@ public class TheWizardTeleop extends LinearOpMode {
                 relic_extension.setPower(0);
             }
 
+            //Claw servo controls
             if(gamepad2.dpad_left){
                 relic_claw.setPosition(RELIC_CLAW_CLOSED);
             }else if(gamepad2.dpad_right){
                 relic_claw.setPosition(RELIC_CLAW_OPENED);
             }
 
+            //Relic Arm Servo Controls
             if(-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS){
                 relic_arm.setPosition(relic_arm.getPosition() + 0.005);
             }else if(-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0){
                 relic_arm.setPosition(relic_arm.getPosition() - 0.005);
             }
 
+            //Relic Tilt Servo Controls
             if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.995){
                 relic_tilt.setPosition(relic_tilt.getPosition() + 0.005);
             }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.005){
                 relic_tilt.setPosition(relic_tilt.getPosition() - 0.005);
             }
 
+            //Telemetry
             telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
             telemetry.update();
 
