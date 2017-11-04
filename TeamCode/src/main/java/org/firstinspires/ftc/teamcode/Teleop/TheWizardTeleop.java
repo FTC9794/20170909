@@ -38,7 +38,7 @@ public class TheWizardTeleop extends LinearOpMode {
     DigitalChannel glyphLimit;
     DcMotor lift;
     DcMotor rf, rb, lf, lb;
-    double thrust, pitch, horizontal, rfPower, rbPower, lfPower, lbPower;
+    double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
     FourArmRotatingGlyph glyph;
     OmniDirectionalDrive drive;
@@ -126,8 +126,8 @@ public class TheWizardTeleop extends LinearOpMode {
         rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rf.setDirection(DcMotorSimple.Direction.REVERSE);
-        rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        lf.setDirection(DcMotorSimple.Direction.REVERSE);
+        lb.setDirection(DcMotorSimple.Direction.REVERSE);
 
         driveMotors = new ArrayList<>();
         driveMotors.add(rf);
@@ -140,7 +140,7 @@ public class TheWizardTeleop extends LinearOpMode {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-        telemetry.addData("Init", "IMU Calibrating");
+        /*telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
         //Initialize BOSCH IMU
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -161,8 +161,8 @@ public class TheWizardTeleop extends LinearOpMode {
         imu.setOffset(0);
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
-
-        drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
+*/
+        drive = new OmniDirectionalDrive(driveMotors, telemetry);
         telemetry.addData("Init", "Drive and IMU Created");
         telemetry.update();
 
@@ -429,26 +429,21 @@ public class TheWizardTeleop extends LinearOpMode {
             }else if(lbPower < -1){
                 lbPower = -1;
             }*/
-            drive.rawSlide(gamepadPlus1.leftStickX(), gamepadPlus1.leftStickY(), gamepadPlus1.rightStickX(), Math.max(gamepadPlus1.getDistanceFromCenterLeft(), gamepadPlus1.getDistanceFromCenterRight()));
-            /*rfPower = -gamepad1.right_stick_y;
-            rbPower = -gamepad1.right_stick_y;
-            lfPower = -gamepad1.left_stick_y;
-            lbPower = -gamepad1.left_stick_y;
-            telemetry.addData("thrust", thrust);
-            telemetry.addData("rotation", pitch);
-            telemetry.addData("horizontal", horizontal);
-            telemetry.addData("rfPower", rfPower);
-            telemetry.addData("rbPower", rbPower);
-            telemetry.addData("lfPower", lfPower);
-            telemetry.addData("lbPower", lbPower);
-            telemetry.addData("rfEncoder", rf.getCurrentPosition());
-            telemetry.addData("rbEncoder", rb.getCurrentPosition());
-            telemetry.addData("lfEncoder", lf.getCurrentPosition());
-            telemetry.addData("lbEncoder", lb.getCurrentPosition());
+         //   drive.rawSlide(gamepadPlus1.leftStickX(), gamepadPlus1.leftStickY(), gamepadPlus1.rightStickX(), Math.max(gamepadPlus1.getDistanceFromCenterLeft(), gamepadPlus1.getDistanceFromCenterRight()));
+
+            thrust = gamepad1.right_stick_y;
+            sideways = gamepad1.left_stick_x;
+            pivot = gamepad1.right_stick_y;
+
+            rfPower = thrust + sideways + pivot;
+            rbPower = thrust - sideways - pivot;
+            lfPower = thrust - sideways + pivot;
+            lbPower = thrust + sideways - pivot;
+
             rf.setPower(rfPower);
             rb.setPower(rbPower);
             lf.setPower(lfPower);
-            lb.setPower(lbPower);*/
+            lb.setPower(lbPower);
 
 
         }

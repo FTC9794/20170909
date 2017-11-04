@@ -45,7 +45,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
     public OmniDirectionalDrive(List<DcMotor> motors, IIMU imu, Telemetry telemetry){
         this.motors = motors;
         this.imu = imu;
-        this.imu.calibrate();
+        //this.imu.calibrate();
         this.telemetry = telemetry;
         data = new DataLogger(new Date().toString()+"Omni Directional");
         pivotTime = new ElapsedTime();
@@ -81,6 +81,20 @@ public class OmniDirectionalDrive implements IDrivetrain {
         this.motors = motors;
         this.imu = imu;
         this.imu.calibrate();
+        pivotTime = new ElapsedTime();
+        accThread = new AccelerationThread();
+        for(DcMotor motor:motors){
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            if(motor.getClass()==AcceleratedDcMotor.class){
+                accThread.addMotor((AcceleratedDcMotor) motor);
+            }
+        }
+        accThread.start();
+    }
+
+    public OmniDirectionalDrive(List<DcMotor> motors, Telemetry telemetry){
+        this.motors = motors;
+        this.telemetry = telemetry;
         pivotTime = new ElapsedTime();
         accThread = new AccelerationThread();
         for(DcMotor motor:motors){
