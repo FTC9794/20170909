@@ -425,36 +425,6 @@ public class TheWizardTeleop extends LinearOpMode {
             }
 
 
-            //drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle()+gamepadPlus1.rightStickX() * 40, false, 0);
-            /*thrust = gamepad1.right_stick_y;
-            horizontal = gamepad1.left_stick_x;
-            pitch = gamepad1.right_stick_x;
-            rfPower = (-horizontal - thrust - pitch)*1;
-            rbPower = (horizontal + thrust - pitch)*1;
-            lfPower = (-horizontal + thrust - pitch)*1;
-            lbPower = (horizontal - thrust - pitch)*1;
-            if(rfPower > 1){
-                rfPower = 1;
-            }else if(rfPower < -1){
-                rfPower = -1;
-            }
-            if(rbPower > 1){
-                rbPower = 1;
-            }else if(rbPower < -1){
-                rbPower = -1;
-            }
-            if(lfPower > 1){
-                lfPower = 1;
-            }else if(lfPower < -1){
-                lfPower = -1;
-            }
-            if(lbPower > 1){
-                lbPower = 1;
-            }else if(lbPower < -1){
-                lbPower = -1;
-            }*/
-         //   drive.rawSlide(gamepadPlus1.leftStickX(), gamepadPlus1.leftStickY(), gamepadPlus1.rightStickX(), Math.max(gamepadPlus1.getDistanceFromCenterLeft(), gamepadPlus1.getDistanceFromCenterRight()));
-
             thrust = -gamepad1.right_stick_y;
             sideways = gamepad1.right_stick_x;
             pivot = gamepad1.left_stick_x;
@@ -497,9 +467,9 @@ public class TheWizardTeleop extends LinearOpMode {
             }
 
             if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.995){
-                relic_tilt.setPosition(relic_arm.getPosition() + 0.005);
+                relic_tilt.setPosition(relic_tilt.getPosition() + 0.005);
             }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.005){
-                relic_tilt.setPosition(relic_arm.getPosition() - 0.005);
+                relic_tilt.setPosition(relic_tilt.getPosition() - 0.005);
             }
 
             telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
