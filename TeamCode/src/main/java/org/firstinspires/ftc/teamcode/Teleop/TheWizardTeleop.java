@@ -35,8 +35,9 @@ public class TheWizardTeleop extends LinearOpMode {
 
     Servo right1, right2, left1, left2, spin;
     Servo pan, tilt;
+    Servo relic_claw, relic_arm, relic_tilt;
     DigitalChannel glyphLimit;
-    DcMotor lift;
+    DcMotor lift, relic_extension;
     DcMotor rf, rb, lf, lb;
     double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
@@ -97,10 +98,18 @@ public class TheWizardTeleop extends LinearOpMode {
     final double JEWEL_PAN_START = .5;
     final double JEWEL_TILT_START = 1;
 
-    final double ROTATION_TIME = 500;
+    final double ROTATION_TIME = 1000;
 
+    final double RELIC_CLAW_CLOSED = 1;
+    final double RELIC_CLAW_OPENED = 0;
 
+    final double RELIC_TILT_ORIGIN = 1;
 
+    final double RELIC_ARM_ORIGIN = 0;
+    final double RELIC_ARM_GRAB_POS = 0.95;
+
+    final double RELIC_ARM_EXTENSION_POWER = 1;
+    final double RELIC_ARM_RETRACTION_POWER = -1;
 
 
     @Override
@@ -139,6 +148,17 @@ public class TheWizardTeleop extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
+
+        relic_extension = hardwareMap.dcMotor.get("relic_extension");
+        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        relic_arm = hardwareMap.servo.get("relic_arm");
+        relic_claw = hardwareMap.servo.get("relic_claw");
+        relic_tilt = hardwareMap.servo.get("relic_tilt");
 
         /*telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
@@ -183,6 +203,10 @@ public class TheWizardTeleop extends LinearOpMode {
 
         pan.setPosition(JEWEL_PAN_START);
         tilt.setPosition(JEWEL_TILT_START);
+
+        relic_claw.setPosition(RELIC_CLAW_CLOSED);
+        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
+        relic_arm.setPosition(RELIC_ARM_ORIGIN);
 
         glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
         rotateTime = new ElapsedTime();
@@ -431,24 +455,57 @@ public class TheWizardTeleop extends LinearOpMode {
             }*/
          //   drive.rawSlide(gamepadPlus1.leftStickX(), gamepadPlus1.leftStickY(), gamepadPlus1.rightStickX(), Math.max(gamepadPlus1.getDistanceFromCenterLeft(), gamepadPlus1.getDistanceFromCenterRight()));
 
-            thrust = gamepad1.right_stick_y;
-            sideways = gamepad1.left_stick_x;
-            pivot = gamepad1.right_stick_y;
+            thrust = -gamepad1.right_stick_y;
+            sideways = gamepad1.right_stick_x;
+            pivot = gamepad1.left_stick_x;
 
             rfPower = thrust + sideways + pivot;
-            rbPower = thrust - sideways - pivot;
-            lfPower = thrust - sideways + pivot;
+            rbPower = thrust - sideways + pivot;
+            lfPower = thrust - sideways - pivot;
             lbPower = thrust + sideways - pivot;
 
-            rf.setPower(rfPower);
-            rb.setPower(rbPower);
-            lf.setPower(lfPower);
-            lb.setPower(lbPower);
+            if(gamepad1.right_bumper){
+                rf.setPower(rfPower/3);
+                rb.setPower(rbPower/3);
+                lf.setPower(lfPower/3);
+                lb.setPower(lbPower/3);
+            }else {
+                rf.setPower(rfPower);
+                rb.setPower(rbPower);
+                lf.setPower(lfPower);
+                lb.setPower(lbPower);
+            }
 
+            if(gamepad2.dpad_up && relic_extension.getCurrentPosition() < 10000){
+                relic_extension.setPower(RELIC_ARM_EXTENSION_POWER);
+            }else if(gamepad2.dpad_down && relic_extension.getCurrentPosition() > 250){
+                relic_extension.setPower(RELIC_ARM_RETRACTION_POWER);
+            }else{
+                relic_extension.setPower(0);
+            }
+
+            if(gamepad2.dpad_left){
+                relic_claw.setPosition(RELIC_CLAW_CLOSED);
+            }else if(gamepad2.dpad_right){
+                relic_claw.setPosition(RELIC_CLAW_OPENED);
+            }
+
+            if(-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS){
+                relic_arm.setPosition(relic_arm.getPosition() + 0.005);
+            }else if(-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0){
+                relic_arm.setPosition(relic_arm.getPosition() - 0.005);
+            }
+
+            if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.995){
+                relic_tilt.setPosition(relic_arm.getPosition() + 0.005);
+            }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.005){
+                relic_tilt.setPosition(relic_arm.getPosition() - 0.005);
+            }
+
+            telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
+            telemetry.update();
 
         }
-
-        //drive.stop();
 
     }
 }
