@@ -45,18 +45,22 @@ public class OmniDirectionalDrive implements IDrivetrain {
     public OmniDirectionalDrive(List<DcMotor> motors, IIMU imu, Telemetry telemetry){
         this.motors = motors;
         this.imu = imu;
-        //this.imu.calibrate();
+        this.imu.initialize();
         this.telemetry = telemetry;
         data = new DataLogger(new Date().toString()+"Omni Directional");
         pivotTime = new ElapsedTime();
         accThread = new AccelerationThread();
+        boolean runThread = false;
         for(DcMotor motor:motors){
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             if(motor.getClass()==AcceleratedDcMotor.class){
+                runThread=true;
                 accThread.addMotor((AcceleratedDcMotor) motor);
             }
         }
-        accThread.start();
+        if(runThread){
+            accThread.start();
+        }
+
         data.addField("Slide or Pivot");
         data.addField("high power");
         data.addField("low power");
@@ -76,7 +80,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.newLine();
 
     }
-
+/*
     public OmniDirectionalDrive(List<DcMotor> motors, IIMU imu){
         this.motors = motors;
         this.imu = imu;
@@ -90,21 +94,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
             }
         }
         accThread.start();
-    }
-
-    public OmniDirectionalDrive(List<DcMotor> motors, Telemetry telemetry){
-        this.motors = motors;
-        this.telemetry = telemetry;
-        pivotTime = new ElapsedTime();
-        accThread = new AccelerationThread();
-        for(DcMotor motor:motors){
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            if(motor.getClass()==AcceleratedDcMotor.class){
-                accThread.addMotor((AcceleratedDcMotor) motor);
-            }
-        }
-        accThread.start();
-    }
+    }*/
 
     /**
      *

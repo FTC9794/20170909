@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.IMU;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -82,9 +83,16 @@ public class BoschIMU implements IIMU {
         String filename = "AdafruitIMUCalibration.json";
         File file = AppUtil.getInstance().getSettingsFile(filename);
         ReadWriteFile.writeFile(file, calibrationData.serialize());
+    }
+    @Override
+    public void initialize(){
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu.initialize(parameters);
     }
 
@@ -95,6 +103,6 @@ public class BoschIMU implements IIMU {
 
     @Override
     public void setAsZero() {
-        offset = imu.getAngularOrientation().thirdAngle;
+        offset = this.getZAngle();
     }
 }

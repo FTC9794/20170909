@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 /**
  * Created by Sarthak on 10/15/2017.
  */
-@Autonomous(name = "TwoPointJewelArmTest", group = "Test")
+//@Autonomous(name = "TwoPointJewelArmTest", group = "Test")
 public class TwoPointJewelArmTest extends LinearOpMode {
 
     LynxI2cColorRangeSensor lynx;

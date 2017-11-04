@@ -17,4 +17,5 @@ public interface IIMU {
     void calibrate();    //Calibrates sensor
     void setOffset(double offset);   //sets offset
     void setAsZero();    //Set the current position as zero
+    void initialize();
 }

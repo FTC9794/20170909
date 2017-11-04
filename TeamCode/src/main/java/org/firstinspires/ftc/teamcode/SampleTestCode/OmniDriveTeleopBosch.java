@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.kauailabs.navx.ftc.AHRS;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 
@@ -17,11 +19,10 @@ import java.util.List;
 /**
  * Created by Sarthak on 10/29/2017.
  */
-//@TeleOp(name = "Omni Drive Teleop", group = "Teleop")
-public class OmniDriveTeleop extends LinearOpMode {
+//@TeleOp(name = "Omni Drive Teleop Malificent", group = "Teleop")
+public class OmniDriveTeleopBosch extends LinearOpMode {
 
     DcMotor rf, rb, lf, lb;
-    AHRS navx;
 
     IIMU imu;
     OmniDirectionalDrive drive;
@@ -52,15 +53,14 @@ public class OmniDriveTeleop extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-
-        //initialize IMU
-        navx = AHRS.getInstance(hardwareMap.deviceInterfaceModule.get("Device Interface Module 1"),
-                0,
-                AHRS.DeviceDataType.kProcessedData);
-        imu = new NavxIMU(navx);
-        imu.calibrate();
+        telemetry.addData("Init", "About to call IMU");
+        telemetry.update();
+        imu = new BoschIMU(hardwareMap.get(BNO055IMU.class, "imu"));
+        telemetry.addData("Init"," About to set Zero");
+        telemetry.update();
         imu.setAsZero();
 
+        telemetry.addData("Init", "About to Init Drivetrain");
         //initialize drivetrain
         drive = new OmniDirectionalDrive(motors, imu, telemetry);
         drive.resetEncoders();
@@ -68,8 +68,8 @@ public class OmniDriveTeleop extends LinearOpMode {
 
         telemetry.addData("Init", "IMU and Drivetrain Instantiated");
         telemetry.update();
+
         waitForStart();
-        imu.setOffset(45);
         while (opModeIsActive()) {
             telemetry.addData("right front", rf.getPower());
             telemetry.addData("right back", rb.getPower());

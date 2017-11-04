@@ -19,7 +19,7 @@ import java.util.List;
  * Created by Sarthak on 10/6/2017.
  */
 
-@Autonomous(name = "Omni Directional Auto Demo", group = "Test")
+//@Autonomous(name = "Omni Directional Auto Demo", group = "Test")
 public class OmniDirectionalAutonomousDemo extends LinearOpMode {
     DcMotor rf, rb, lf, lb;
     AHRS navx;

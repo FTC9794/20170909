@@ -87,4 +87,9 @@ public class NavxIMU implements IIMU {
     public void setAsZero() {
         navX.zeroYaw();
     }
+
+    @Override
+    public void initialize() {
+
+    }
 }

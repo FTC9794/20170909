@@ -83,10 +83,10 @@ public class TheWizardTeleop extends LinearOpMode {
     final double SPIN_START = 0;
     final double SPIN_ROTATED = .95;
 
-    final int LIFT_POSITION1 = 800;
+    final int LIFT_POSITION1 = 1100;
     final int LIFT_POSITION2 = 2500;
     final int LIFT_POSITION3 = 4250;
-    final int LIFT_POSITION4 = 6000;
+    final int LIFT_POSITION4 = 6400;
 
     final double ANALOG_PRESSED = .5;
 
@@ -106,7 +106,7 @@ public class TheWizardTeleop extends LinearOpMode {
     final double RELIC_TILT_ORIGIN = 1;
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = 0.95;
+    final double RELIC_ARM_GRAB_POS = 0.96;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
@@ -135,8 +135,8 @@ public class TheWizardTeleop extends LinearOpMode {
         rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lf.setDirection(DcMotorSimple.Direction.REVERSE);
-        lb.setDirection(DcMotorSimple.Direction.REVERSE);
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
 
         driveMotors = new ArrayList<>();
         driveMotors.add(rf);
@@ -160,29 +160,15 @@ public class TheWizardTeleop extends LinearOpMode {
         relic_claw = hardwareMap.servo.get("relic_claw");
         relic_tilt = hardwareMap.servo.get("relic_tilt");
 
-        /*telemetry.addData("Init", "IMU Calibrating");
+        telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
-        //Initialize BOSCH IMU
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
         boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
-        boschIMU.initialize(parameters);
         imu = new BoschIMU(boschIMU);
-
         imu.setOffset(0);
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
-*/
-        drive = new OmniDirectionalDrive(driveMotors, telemetry);
+
+        drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
         telemetry.addData("Init", "Drive and IMU Created");
         telemetry.update();
 
@@ -214,6 +200,7 @@ public class TheWizardTeleop extends LinearOpMode {
         gamepadPlus2 = new GamepadPlus(gamepad2);
         telemetry.addData("Initialized", "Done");
         telemetry.update();
+        imu.setOffset(180);
         waitForStart();
 
         while(opModeIsActive()){
@@ -221,7 +208,7 @@ public class TheWizardTeleop extends LinearOpMode {
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
-                    if(gamepadPlus2.x()){
+                    if(gamepadPlus2.x() || gamepadPlus1.dpadDown()){
                         if(spinAtOrigin){
                             if(!gripPressed2){
                                 if(bottomGripOpen){
@@ -253,7 +240,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }else{
                         gripPressed2 = false;
                     }
-                    if(gamepadPlus2.b()){
+                    if(gamepadPlus2.b() || gamepadPlus1.dpadUp()){
                         if(spinAtOrigin){
                             if(!gripPressed1){
                                 if(topGripOpen){
@@ -424,7 +411,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     lift.setPower(LIFT_POWER_UP);
                     break;
             }
-
+/*
             //Drivetrain controls
             thrust = -gamepad1.right_stick_y;
             sideways = gamepad1.right_stick_x;
@@ -446,9 +433,10 @@ public class TheWizardTeleop extends LinearOpMode {
                 lf.setPower(lfPower);
                 lb.setPower(lbPower);
             }
+*/
 
             //Relic Extension Motor Controls with Encoder Limits
-            if(gamepad2.dpad_up && relic_extension.getCurrentPosition() < 10000){
+            if(gamepad2.dpad_up && relic_extension.getCurrentPosition() < 10200){
                 relic_extension.setPower(RELIC_ARM_EXTENSION_POWER);
             }else if(gamepad2.dpad_down && relic_extension.getCurrentPosition() > 250){
                 relic_extension.setPower(RELIC_ARM_RETRACTION_POWER);
@@ -465,23 +453,33 @@ public class TheWizardTeleop extends LinearOpMode {
 
             //Relic Arm Servo Controls
             if(-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS){
-                relic_arm.setPosition(relic_arm.getPosition() + 0.005);
-            }else if(-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0){
-                relic_arm.setPosition(relic_arm.getPosition() - 0.005);
+                relic_arm.setPosition(relic_arm.getPosition() + 0.04);
+            }else if(-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0.04){
+                relic_arm.setPosition(relic_arm.getPosition() - 0.04);
             }
 
             //Relic Tilt Servo Controls
-            if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.995){
-                relic_tilt.setPosition(relic_tilt.getPosition() + 0.005);
-            }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.005){
-                relic_tilt.setPosition(relic_tilt.getPosition() - 0.005);
+            if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.96){
+                relic_tilt.setPosition(relic_tilt.getPosition() + 0.04);
+            }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.04){
+                relic_tilt.setPosition(relic_tilt.getPosition() - 0.04);
             }
 
             //Telemetry
             telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
-            telemetry.update();
 
+            if(gamepad1.left_bumper){
+                imu.setAsZero();
+                telemetry.addData("IMU", "reset");
+            }
+            if(gamepad1.right_bumper) {
+                drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), .4, gamepadPlus1.getAngleLeftStick(), .02/3, 0, imu.getZAngle() + gamepadPlus1.rightStickX() * 40, false, 0);
+            }else{
+                drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), 1, gamepadPlus1.getAngleLeftStick(), .02, 0, imu.getZAngle() + gamepadPlus1.rightStickX() * 40, false, 0);
+            }
+            telemetry.update();
         }
+
 
     }
 }

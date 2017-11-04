@@ -35,7 +35,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 /**
  * Created by Sarthak on 10/22/2017.
  */
-@Autonomous(name = "Autonomous Text File", group = "Test")
+//@Autonomous(name = "Autonomous Text File", group = "Test")
 public class AutonomousTextFile extends LinearOpMode {
 
     DcMotor rf, rb, lf, lb;
