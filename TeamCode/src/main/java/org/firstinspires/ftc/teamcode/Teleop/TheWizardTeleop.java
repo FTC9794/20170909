@@ -57,6 +57,7 @@ public class TheWizardTeleop extends LinearOpMode {
     boolean rightBumperPressed = false;
     boolean leftBumperPressed = false;
     boolean lowerLift = false;
+    boolean resetPressed = false;
 
     enum liftState{
         MANUAL,
@@ -468,9 +469,12 @@ public class TheWizardTeleop extends LinearOpMode {
             //Telemetry
             telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
 
-            if(gamepad1.left_bumper){
+            if(gamepad1.left_bumper&&!resetPressed){
                 imu.setAsZero();
+                resetPressed = true;
                 telemetry.addData("IMU", "reset");
+            }else{
+                resetPressed = false;
             }
             if(gamepad1.right_bumper) {
                 drive.move(1, 0, gamepadPlus1.getDistanceFromCenterLeft(), .4, gamepadPlus1.getAngleLeftStick(), .02/3, 0, imu.getZAngle() + gamepadPlus1.rightStickX() * 40, false, 0);

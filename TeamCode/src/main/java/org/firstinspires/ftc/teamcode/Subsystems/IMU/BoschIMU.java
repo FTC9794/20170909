@@ -103,6 +103,6 @@ public class BoschIMU implements IIMU {
 
     @Override
     public void setAsZero() {
-        offset = this.getZAngle();
+        offset = -imu.getAngularOrientation().firstAngle;
     }
 }
