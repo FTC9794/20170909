@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.kauailabs.navx.ftc.AHRS;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -22,9 +23,12 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.AcceleratedDcMotor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.IDrivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.FourArmRotatingGlyph;
+import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
+import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,21 +39,41 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 /**
  * Created by Sarthak on 10/22/2017.
  */
-//@Autonomous(name = "Autonomous Text File", group = "Test")
+@Autonomous(name = "Autonomous Text File", group = "Test")
 public class AutonomousTextFile extends LinearOpMode {
 
     DcMotor rf, rb, lf, lb;
-    AHRS navx;
+    DcMotor lift, relic_extension;
+    BNO055IMU boschIMU;
     LynxI2cColorRangeSensor lynx;
+    FourArmRotatingGlyph glyph;
+    ClawThreePoint relic;
 
     Servo pan, tilt;
-
+    Servo right1, right2, left1, left2, spin;
+    Servo relic_claw, relic_arm, relic_tilt;
     IIMU imu;
-    IColorSensor color;
+    IColorSensor colorSensor;
     OmniDirectionalDrive drive;
     TwoPointJewelArm jewel;
     List<DcMotor> motors;
     ElapsedTime timer;
+
+    final double GRIP_OPEN1 = .5;
+    final double GRIP_OPEN2 = .5;
+    final double GRIP_CLOSE1 = 0;
+    final double GRIP_CLOSE2 = 0;
+
+    final double SPIN_START = 0;
+    final double SPIN_ROTATED = .95;
+
+    final double RELIC_CLAW_CLOSED = 1;
+    final double RELIC_CLAW_OPENED = 0;
+
+    final double RELIC_TILT_ORIGIN = 1;
+
+    final double RELIC_ARM_ORIGIN = 0;
+
 
     JexlEngine jexl = new JexlBuilder().create();
     String autoFileName = "test.txt";
@@ -98,6 +122,60 @@ public class AutonomousTextFile extends LinearOpMode {
         lb = hardwareMap.dcMotor.get("left_back");
         rf.setDirection(DcMotorSimple.Direction.REVERSE);
         rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        lift = hardwareMap.dcMotor.get("glyph_lift");
+
+        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
+        pan = hardwareMap.servo.get("jewel_pan");
+        tilt = hardwareMap.servo.get("jewel_tilt");
+
+        right1 = hardwareMap.servo.get("right_glyph1");
+        right2 = hardwareMap.servo.get("right_glyph2");
+        left1 = hardwareMap.servo.get("left_glyph1");
+        left2 = hardwareMap.servo.get("left_glyph2");
+        spin = hardwareMap.servo.get("spin_grip");
+
+        relic_extension = hardwareMap.dcMotor.get("relic_extension");
+        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        relic_arm = hardwareMap.servo.get("relic_arm");
+        relic_claw = hardwareMap.servo.get("relic_claw");
+        relic_tilt = hardwareMap.servo.get("relic_tilt");
+
+
+        colorSensor = new LynxColorRangeSensor(lynx);
+        jewel = new TwoPointJewelArm(pan, tilt, colorSensor, telemetry);
+        telemetry.addData("Init", "Jewel Hardware Initialized");
+        telemetry.update();
+        jewel.setPanTiltPos(0.5, 1);
+        telemetry.addData("Init", "Jewel Servos Set");
+        telemetry.update();
+
+        right2.setDirection(Servo.Direction.REVERSE);
+        left1.setDirection(Servo.Direction.REVERSE);
+
+        right1.setPosition(GRIP_OPEN1);
+        right2.setPosition(GRIP_OPEN2);
+        left1.setPosition(GRIP_OPEN1);
+        left2.setPosition(GRIP_OPEN2);
+
+        spin.setPosition(SPIN_START);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
+        telemetry.addData("Init", "Initialized Glyph System");
+        telemetry.update();
+
+        relic_claw.setPosition(RELIC_CLAW_CLOSED);
+        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
+        relic_arm.setPosition(RELIC_ARM_ORIGIN);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        telemetry.addData("Init", "Initialized Relic System");
+        telemetry.update();
+
         //create array list of motors
         motors = new ArrayList<>();
         motors.add(rf);
@@ -111,30 +189,23 @@ public class AutonomousTextFile extends LinearOpMode {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-        //initialize IMU
-        navx  = AHRS.getInstance(hardwareMap.deviceInterfaceModule.get("Device Interface Module 1"),
-                0,
-                AHRS.DeviceDataType.kProcessedData);
-        imu = new NavxIMU(navx);
-        imu.calibrate();
-        imu.setAsZero();
+        telemetry.addData("Init", "IMU Calibrating");
+        telemetry.update();
+        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = new BoschIMU(boschIMU);
+        imu.setOffset(0);
+        telemetry.addData("Init", "IMU Instantiated");
+        telemetry.update();
 
         //initialize drivetrain
         drive = new OmniDirectionalDrive(motors, imu, telemetry);
         drive.resetEncoders();
-
-        telemetry.addData("Init", "IMU and Drivetrain Instantiated");
+        telemetry.addData("Init", "Drivetrain and IMU Initialized");
         telemetry.update();
 
-        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("color");
-        //pan = hardwareMap.servo.get("servoP");
-        tilt = hardwareMap.servo.get("servoT");
-        color = new LynxColorRangeSensor(lynx);
-        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
-
         timer = new ElapsedTime();
-        telemetry.addData("Init", "Timer Instantiated");
-        telemetry.addData("Drive abbr", (lookupTable[1][STATE_ACTION]).substring(11, (lookupTable[1][STATE_ACTION]).length()-2));
+        telemetry.addData("Init", "Timer Initialized");
+        telemetry.addData("Init", "Completed");
         telemetry.update();
         waitForStart();
         timer.reset();
@@ -179,13 +250,21 @@ public class AutonomousTextFile extends LinearOpMode {
 
                 case "jewel":
                     String jexlExpJewel = lookupTable[lookupCount][STATE_ACTION];
+                    telemetry.addData("Jewel", "Got Expression");
+                    telemetry.update();
                     //Create JEXL Expression
                     JexlExpression eJewel = jexl.createExpression(jexlExpJewel);
                     JexlContext contextJewel = new MapContext();
+                    telemetry.addData("Jewel", "Made JEXL Expression");
+                    telemetry.update();
                     if(jexlExpJewel.indexOf("reading") != -1){
                         int numReadings = Integer.parseInt(lookupTable[lookupCount][STATE_CONDITION]);
+                        telemetry.addData("Jewel", "Parsed Readings");
+                        telemetry.update();
                         contextJewel.set("jewel", jewel);
                         contextJewel.set("reading", numReadings);
+                        telemetry.addData("Jewel", "Context Set");
+                        telemetry.update();
                     }else if(jexlExpJewel.indexOf("alliance") != -1){
                         String allianceBall = lookupTable[lookupCount][STATE_CONDITION];
                         contextJewel.set("jewel", jewel);
@@ -199,10 +278,15 @@ public class AutonomousTextFile extends LinearOpMode {
                         contextJewel.set("tilt", tiltServoPos);
                     }
                     Object evaluatedExpressionObjJewel = eJewel.evaluate(contextJewel);
+                    telemetry.addData("Jewel", "Evaluated Contex");
+                    telemetry.update();
                     Object jewelResult = evaluatedExpressionObjJewel;
+                    telemetry.addData("Jewel", "Assigned Evaluated Context");
+                    telemetry.addData("jewel result", jewelResult);
+                    telemetry.update();
 
                     timer.reset();
-                    lookupCount++;
+                    //lookupCount++;
                     drive.resetEncoders();
                     break;
 
