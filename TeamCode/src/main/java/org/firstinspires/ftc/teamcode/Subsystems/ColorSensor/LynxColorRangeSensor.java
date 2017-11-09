@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.Subsystems.ColorSensor;
 
+import android.graphics.Color;
+
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 /**
  * Created by Sarthak on 10/15/2017.
@@ -32,6 +35,12 @@ public class LynxColorRangeSensor implements IColorSensor {
     @Override
     public int getHue() {
         return color.argb();
+    }
+
+    public float[] getHSV(){
+        float[] hsv = {0F, 0F, 0F};
+        Color.RGBToHSV(this.red(), this.green(), this.blue(), hsv);
+        return hsv;
     }
 
     @Override

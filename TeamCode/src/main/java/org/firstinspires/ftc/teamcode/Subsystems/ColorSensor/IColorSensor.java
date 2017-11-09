@@ -10,4 +10,5 @@ public interface IColorSensor {
     public int blue();
     public int getHue();
     public int alpha();
+    public float[] getHSV();
 }

@@ -30,31 +30,29 @@ public class TwoPointJewelArm implements IJewel {
     @Override
     public String readColor(int readings) {
         int blueCount = 0, redCount = 0;
-        int red = color.red();
-        int blue = color.blue();
-        telemetry.addData("Blue", blue);
-        telemetry.addData("Red", red);
+        float hsv = color.getHSV()[0];
+        //telemetry.addData("HSV", hsv);
         for(int i = 0; i < readings; i++){
-            if(blue > red*1.5){
-                blueCount++;
-                telemetry.addData("Color", "blue");
-            }else if (red > blue*1.5){
+            if(hsv >= 340 || hsv <= 30){
                 redCount++;
-                telemetry.addData("Color", "Red");
+                //telemetry.addData("Color", "red");
+            }else if (hsv >= 150 || hsv <= 225){
+                blueCount++;
+                //telemetry.addData("Color", "blue");
             }else{
-                telemetry.addData("Color", "Unknown");
+                //telemetry.addData("Color", "Unknown");
             }
         }
         if(blueCount > redCount){
-            telemetry.addData("Color", "blue");
+            //telemetry.addData("Color", "blue");
             this.ballColor = "blue";
             return "blue";
         }else if (redCount > blueCount){
-            telemetry.addData("Color", "Red");
+            //telemetry.addData("Color", "Red");
             this.ballColor = "red";
             return "red";
         }else{
-            telemetry.addData("Color", "Unknown");
+            //telemetry.addData("Color", "Unknown");
             this.ballColor = "unknown";
             return "unknown";
         }
@@ -62,19 +60,18 @@ public class TwoPointJewelArm implements IJewel {
 
     @Override
     public boolean knockOffJewel(String alliance) {
-        panServo.setPosition(0.87);
-        tiltServo.setPosition(0.03);
+        setPanTiltPos(0.56, 0.2);
         if(alliance.equals("blue")){
             if(ballColor.equals("blue")){
-                panServo.setPosition(0.8);
+                //panServo.setPosition(0.8);
             }else{
-                panServo.setPosition(0.98);
+                //panServo.setPosition(0.98);
             }
         }else if(alliance.equals("red")){
             if(ballColor.equals("red")){
-                panServo.setPosition(0.8);
+                //panServo.setPosition(0.8);
             }else{
-                panServo.setPosition(0.98);
+                //panServo.setPosition(0.98);
             }
         }
         return true;

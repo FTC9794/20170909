@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Glyph;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 /**
@@ -9,17 +10,32 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class FourArmRotatingGlyph implements  IGlyph {
 
-    private Servo right1,right2,left1,left2,spin;
+    private Servo right1, right2, left1, left2, spin;
     private DcMotor lift;
+    private DigitalChannel glyphLimit;
 
-    private final double GRIP_OPEN1 = .5;
-    private final double GRIP_OPEN2 = .5;
-    private final double GRIP_CLOSE1 = 0;
-    private final double GRIP_CLOSE2 = 0;
+    private boolean topGripOpen = true;
+    private boolean bottomGripOpen = true;
+    private boolean spinAtOrigin = true;
+    private boolean spinPressed = false;
+    private boolean gripPressed1 = false;
+    private boolean gripPressed2 = false;
+    private boolean rightBumperPressed = false;
+    private boolean leftBumperPressed = false;
+    private boolean lowerLift = false;
+    private boolean resetPressed = false;
 
-
+    final double GRIP_OPEN1 = .5;
+    final double GRIP_OPEN2 = .5;
+    final double GRIP_CLOSE1 = 0;
+    final double GRIP_CLOSE2 = 0;
     final double SPIN_START = 0;
-    final double SPIN_ROTATED = 1;
+    final double SPIN_ROTATED = .95;
+
+    private enum SPIN_STATE{
+        ORIGIN,
+        FLIPPED
+    }
 
     public FourArmRotatingGlyph(Servo right1, Servo right2, Servo left1, Servo left2, Servo spin, DcMotor lift){
         this.right1 = right1;
@@ -31,20 +47,69 @@ public class FourArmRotatingGlyph implements  IGlyph {
         this.lift = lift;
     }
 
+    public void initialize(){
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        right2.setDirection(Servo.Direction.REVERSE);
+        left1.setDirection(Servo.Direction.REVERSE);
+
+        right1.setPosition(GRIP_OPEN1);
+        right2.setPosition(GRIP_OPEN2);
+        left1.setPosition(GRIP_OPEN1);
+        left2.setPosition(GRIP_OPEN2);
+
+        spin.setPosition(SPIN_START);
+    }
+
     @Override
     public void secureGlyph() {
+        if(spinAtOrigin){
+            right2.setPosition(GRIP_CLOSE2);
+            left2.setPosition(GRIP_CLOSE2);
+        }else{
+            right1.setPosition(GRIP_CLOSE1);
+            left1.setPosition(GRIP_CLOSE1);
+        }
+    }
+
+    public void secureTopGlyph() {
+        if (spinAtOrigin) {
+            right1.setPosition(GRIP_CLOSE1);
+            left1.setPosition(GRIP_CLOSE1);
+        } else {
+            right2.setPosition(GRIP_CLOSE2);
+            left2.setPosition(GRIP_CLOSE2);
+        }
     }
 
     @Override
     public void dispenseGlyph() {
+        if(spinAtOrigin){
+            right2.setPosition(GRIP_OPEN2);
+            left2.setPosition(GRIP_OPEN2);
+        }else{
+            right1.setPosition(GRIP_OPEN1);
+            left1.setPosition(GRIP_OPEN1);
+        }
     }
 
+    public void dispenseTopGlyph(){
+        if (spinAtOrigin) {
+            right1.setPosition(GRIP_OPEN1);
+            left1.setPosition(GRIP_OPEN1);
+        } else {
+            right2.setPosition(GRIP_OPEN2);
+            left2.setPosition(GRIP_OPEN2);
+        }
+    }
 
     public void rotate(){
-        if(this.spin.getPosition() == 0){
-            this.spin.setPosition(1);
-        }else if (this.spin.getPosition() == 1){
-            this.spin.setPosition(0);
+        if(spinAtOrigin) {
+            spin.setPosition(SPIN_ROTATED);
+            spinAtOrigin = false;
+        }else{
+            spin.setPosition(SPIN_START);
+            spinAtOrigin = true;
         }
     }
 

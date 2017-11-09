@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.ColorSensor;
 
+import android.graphics.Color;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
 /**
@@ -36,5 +38,12 @@ public class ModernRoboticsColorSensor implements IColorSensor {
     @Override
     public int alpha() {
         return color.alpha();
+    }
+
+    @Override
+    public float[] getHSV() {
+        float[] hsv = {0F, 0F, 0F};
+        Color.RGBToHSV(this.red(), this.green(), this.blue(), hsv);
+        return hsv;
     }
 }

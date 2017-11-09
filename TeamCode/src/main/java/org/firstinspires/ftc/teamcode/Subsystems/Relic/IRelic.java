@@ -13,11 +13,11 @@ public interface IRelic {
     /**
      * @param power power to extend relic at
      */
-    void extend(double power);
+    void extend(double power, boolean condition);
 
     /**
      * retract relic mechanism
      * @param power power to retract mechanism at
      */
-    void retract(double power);
+    void retract(double power, boolean condition);
 }

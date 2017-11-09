@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 /**
  * Created by Sarthak on 10/15/2017.
  */
-//@Autonomous(name = "TwoPointJewelArmTest", group = "Test")
+@Autonomous(name = "TwoPointJewelArmTest", group = "Test")
 public class TwoPointJewelArmTest extends LinearOpMode {
 
     LynxI2cColorRangeSensor lynx;
@@ -24,18 +24,21 @@ public class TwoPointJewelArmTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("color");
-        //pan = hardwareMap.servo.get("servoP");
-        tilt = hardwareMap.servo.get("servoT");
+        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
+        pan = hardwareMap.servo.get("jewel_pan");
+        tilt = hardwareMap.servo.get("jewel_tilt");
         colorSensor = new LynxColorRangeSensor(lynx);
         jewel = new TwoPointJewelArm(pan, tilt, colorSensor, telemetry);
 
-        //pan.setPosition(0.82);
-        tilt.setPosition(0.5);
+        pan.setPosition(0.5);
+        tilt.setPosition(1);
 
         waitForStart();
         while (opModeIsActive()){
+            float[] hsv = colorSensor.getHSV();
+            telemetry.addData("HSV", hsv[0]);
             jewel.readColor(10);
+            jewel.knockOffJewel("blue");
             telemetry.update();
         }
     }

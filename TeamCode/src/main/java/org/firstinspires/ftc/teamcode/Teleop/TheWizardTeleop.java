@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Glyph.FourArmRotatingGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
+import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class TheWizardTeleop extends LinearOpMode {
     FourArmRotatingGlyph glyph;
     OmniDirectionalDrive drive;
     IIMU imu;
+    ClawThreePoint relic;
     BNO055IMU boschIMU;
 
     ArrayList<DcMotor> driveMotors;
@@ -199,6 +201,7 @@ public class TheWizardTeleop extends LinearOpMode {
         rotateTime = new ElapsedTime();
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
         telemetry.addData("Initialized", "Done");
         telemetry.update();
         imu.setOffset(180);
@@ -213,25 +216,20 @@ public class TheWizardTeleop extends LinearOpMode {
                         if(spinAtOrigin){
                             if(!gripPressed2){
                                 if(bottomGripOpen){
-                                    right2.setPosition(GRIP_CLOSE2);
-                                    left2.setPosition(GRIP_CLOSE2);
+                                    glyph.secureGlyph();
                                     bottomGripOpen = false;
                                 }else{
-                                    right2.setPosition(GRIP_OPEN2);
-                                    left2.setPosition(GRIP_OPEN2);
+                                    glyph.dispenseGlyph();
                                     bottomGripOpen = true;
                                 }
                             }
                         }else{
                             if(!gripPressed2){
                                 if(topGripOpen){
-                                    right1.setPosition(GRIP_CLOSE1);
-                                    left1.setPosition(GRIP_CLOSE1);
-
+                                    glyph.secureTopGlyph();
                                     topGripOpen = false;
                                 }else{
-                                    right1.setPosition(GRIP_OPEN1);
-                                    left1.setPosition(GRIP_OPEN1);
+                                    glyph.dispenseTopGlyph();
                                     topGripOpen = true;
                                 }
                             }
@@ -245,25 +243,21 @@ public class TheWizardTeleop extends LinearOpMode {
                         if(spinAtOrigin){
                             if(!gripPressed1){
                                 if(topGripOpen){
-                                    right1.setPosition(GRIP_CLOSE1);
-                                    left1.setPosition(GRIP_CLOSE1);
+                                    glyph.secureTopGlyph();
 
                                     topGripOpen = false;
                                 }else{
-                                    right1.setPosition(GRIP_OPEN1);
-                                    left1.setPosition(GRIP_OPEN1);
+                                    glyph.dispenseTopGlyph();
                                     topGripOpen = true;
                                 }
                             }
                         }else{
                             if(!gripPressed1){
                                 if(bottomGripOpen){
-                                    right2.setPosition(GRIP_CLOSE2);
-                                    left2.setPosition(GRIP_CLOSE2);
+                                    glyph.secureGlyph();
                                     bottomGripOpen = false;
                                 }else{
-                                    right2.setPosition(GRIP_OPEN2);
-                                    left2.setPosition(GRIP_OPEN2);
+                                    glyph.dispenseGlyph();
                                     bottomGripOpen = true;
                                 }
                             }
@@ -305,11 +299,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }
                     break;
                 case ROTATING:
-                    if(spinAtOrigin) {
-                        spin.setPosition(SPIN_ROTATED);
-                    }else{
-                        spin.setPosition(SPIN_START);
-                    }
+                    glyph.rotate();
                     if(rotateTime.milliseconds()>ROTATION_TIME){
                         spinAtOrigin = !spinAtOrigin;
                         if(lowerLift){
@@ -447,24 +437,30 @@ public class TheWizardTeleop extends LinearOpMode {
 
             //Claw servo controls
             if(gamepad2.dpad_left){
-                relic_claw.setPosition(RELIC_CLAW_CLOSED);
+                relic.pickUpRelic();
             }else if(gamepad2.dpad_right){
-                relic_claw.setPosition(RELIC_CLAW_OPENED);
+                relic.releaseRelic();
             }
 
             //Relic Arm Servo Controls
             if(-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS){
-                relic_arm.setPosition(relic_arm.getPosition() + 0.04);
+                relic.adjustArm(true, 0, 1, 0.04);
             }else if(-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0.04){
-                relic_arm.setPosition(relic_arm.getPosition() - 0.04);
+                relic.adjustArm(true, 0, 1, -0.04);
             }
 
             //Relic Tilt Servo Controls
             if(-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.96){
-                relic_tilt.setPosition(relic_tilt.getPosition() + 0.04);
+                relic.tiltRelic(true, 0, 1, 0.04);
             }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.04){
-                relic_tilt.setPosition(relic_tilt.getPosition() - 0.04);
+                relic.tiltRelic(true, 0, 1, -0.04);
             }
+            telemetry.addData("RelicArmAngle", relic.returnArmAngle());
+            telemetry.addData("RelicTiltPos", relic.returnTiltPos());
+            telemetry.addData("ArmPos", relic_arm.getPosition());
+            telemetry.addData("RelicTilt", relic_tilt.getPosition());
+            telemetry.addData("RelicTiltActual", ((180-relic.returnArmAngle()) * (0.005)));
+            telemetry.addData("TestLine", ((180-5) ) * (.005));
 
             //Telemetry
             telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
