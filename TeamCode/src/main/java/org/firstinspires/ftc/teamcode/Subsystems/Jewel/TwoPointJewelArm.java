@@ -60,18 +60,25 @@ public class TwoPointJewelArm implements IJewel {
 
     @Override
     public boolean knockOffJewel(String alliance) {
-        setPanTiltPos(0.56, 0.2);
         if(alliance.equals("blue")){
             if(ballColor.equals("blue")){
-                //panServo.setPosition(0.8);
+                while(this.panServo.getPosition() < 0.67){
+                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.2);
+                }
             }else{
-                //panServo.setPosition(0.98);
+                while(panServo.getPosition() > 0.35) {
+                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.2);
+                }
             }
         }else if(alliance.equals("red")){
             if(ballColor.equals("red")){
-                //panServo.setPosition(0.8);
+                while(this.panServo.getPosition() < 0.67){
+                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.2);
+                }
             }else{
-                //panServo.setPosition(0.98);
+                while(panServo.getPosition() > 0.35) {
+                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.2);
+                }
             }
         }
         return true;

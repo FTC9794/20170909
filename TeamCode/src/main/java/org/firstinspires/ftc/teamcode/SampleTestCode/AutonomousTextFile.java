@@ -17,6 +17,19 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.internal.introspection.EnumerationIterator;
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
@@ -49,6 +62,8 @@ public class AutonomousTextFile extends LinearOpMode {
     FourArmRotatingGlyph glyph;
     ClawThreePoint relic;
 
+    VuforiaLocalizer vuforia;
+
     Servo pan, tilt;
     Servo right1, right2, left1, left2, spin;
     Servo relic_claw, relic_arm, relic_tilt;
@@ -58,6 +73,7 @@ public class AutonomousTextFile extends LinearOpMode {
     TwoPointJewelArm jewel;
     List<DcMotor> motors;
     ElapsedTime timer;
+    String vumarkSeen = "";
 
     final double GRIP_OPEN1 = .5;
     final double GRIP_OPEN2 = .5;
@@ -79,7 +95,7 @@ public class AutonomousTextFile extends LinearOpMode {
     String autoFileName = "test.txt";
     File autoFile = AppUtil.getInstance().getSettingsFile(autoFileName);
     String fileText = "";
-    String[] inputs, parameters;
+    String[] inputs;
     String[][] lookupTable;
     int lookupCount = 0;
     final int STATE_NAME = 0;
@@ -92,6 +108,49 @@ public class AutonomousTextFile extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        telemetry.addData("Init", "Starting Vuforia");
+        telemetry.update();
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        // OR...  Do Not Activate the Camera Monitor View, to save power
+        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        /*
+         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+         * web site at https://developer.vuforia.com/license-manager.
+         *
+         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+         * random data. As an example, here is a example of a fragment of a valid key:
+         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+         * Once you've obtained a license key, copy the string from the Vuforia web site
+         * and paste it in to your code onthe next line, between the double quotes.
+         */
+        parameters.vuforiaLicenseKey = "ATXxmRr/////AAAAGdfeAuU6SEoFkpmhG616inkbnBHHQ/Ti5DMPAVykTBdmQS8ImGtoIBRRuboa+oIyuvQW1nIychXXxROjGLssEzSFF8yOYE36GqhVtRfI6lw8/HAoJpO1XgIF5Gy1vPx4KFPNInK6CJdZomYyWV8rGnb7ceLJ9Z+g0sl+VcVPKl5DAI84K+06pEZnw+Em7sThhzyzj2p4QbPhXh7fEtNGhFCqey9rcg3h9RfNebyWvJW9z7mGkaJljZy1x3lK7viLbFKyFcAaspZZi1+JzUmeuXxV0r+8hrCgFLPsvKQHlnYumazP9FEtm/FjCpRFF23Et77325/vuD2LRSPzve9ef4zqe6MivrLs9s8lUgd7Eo9W";
+
+        /*
+         * We also indicate which camera on the RC that we wish to use.
+         * Here we chose the back (HiRes) camera (for greater range), but
+         * for a competition robot, the front camera might be more convenient.
+         */
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        /**
+         * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
+         * in this data set: all three of the VuMarks in the game were created from this one template,
+         * but differ in their instance id information.
+         * @see VuMarkInstanceId
+         */
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+        telemetry.addData("Init", "Finished Starting Vuforia");
+        telemetry.update();
+
         telemetry.addData("Init", "reading file");
         telemetry.update();
 
@@ -108,7 +167,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
         }
 
-        parameters = inputs[1].split("/");
+        //parameters = inputs[1].split("/");
 
         telemetry.addData("Init", "File read, data stored");
         telemetry.update();
@@ -208,6 +267,7 @@ public class AutonomousTextFile extends LinearOpMode {
         telemetry.addData("Init", "Completed");
         telemetry.update();
         waitForStart();
+        relicTrackables.activate();
         timer.reset();
         while(opModeIsActive()){
             imuAngle = imu.getZAngle();
@@ -286,8 +346,34 @@ public class AutonomousTextFile extends LinearOpMode {
                     telemetry.update();
 
                     timer.reset();
-                    //lookupCount++;
+                    lookupCount++;
                     drive.resetEncoders();
+                    break;
+
+                case "vumark":
+                    RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+                    if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+
+                /* Found an instance of the template. In the actual game, you will probably
+                 * loop until this condition occurs, then move on to act accordingly depending
+                 * on which VuMark was visible. */
+                        telemetry.addData("VuMark", vuMark.toString());
+                        vumarkSeen = vuMark.toString();
+
+                /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
+                 * it is perhaps unlikely that you will actually need to act on this pose information, but
+                 * we illustrate it nevertheless, for completeness. */
+                        OpenGLMatrix pose = ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).getPose();
+
+                /* We further illustrate how to decompose the pose into useful rotational and
+                 * translational components */
+                        if (pose != null) {
+                            /*
+
+                             */
+                        }
+                    }
+
                     break;
 
                 case "move":
