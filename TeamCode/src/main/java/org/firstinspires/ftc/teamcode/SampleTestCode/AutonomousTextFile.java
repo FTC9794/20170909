@@ -74,6 +74,7 @@ public class AutonomousTextFile extends LinearOpMode {
     List<DcMotor> motors;
     ElapsedTime timer;
     String vumarkSeen = "";
+    double vuMarkDistance = 28;
 
     final double GRIP_OPEN1 = .5;
     final double GRIP_OPEN2 = .5;
@@ -181,6 +182,10 @@ public class AutonomousTextFile extends LinearOpMode {
         lb = hardwareMap.dcMotor.get("left_back");
         rf.setDirection(DcMotorSimple.Direction.REVERSE);
         rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift = hardwareMap.dcMotor.get("glyph_lift");
 
         lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
@@ -232,6 +237,9 @@ public class AutonomousTextFile extends LinearOpMode {
         relic_tilt.setPosition(RELIC_TILT_ORIGIN);
         relic_arm.setPosition(RELIC_ARM_ORIGIN);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic_claw.setPosition(RELIC_CLAW_CLOSED);
+        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
+        relic_arm.setPosition(RELIC_ARM_ORIGIN);
         telemetry.addData("Init", "Initialized Relic System");
         telemetry.update();
 
@@ -373,7 +381,38 @@ public class AutonomousTextFile extends LinearOpMode {
                              */
                         }
                     }
+                    if(vumarkSeen.equals("LEFT")){
+                        vuMarkDistance = 52;
+                        timer.reset();
+                        drive.resetEncoders();
+                        lookupCount++;
+                    }else if (vumarkSeen.equals("CENTER")){
+                        vuMarkDistance = 36;
+                        timer.reset();
+                        drive.resetEncoders();
+                        lookupCount++;
+                    }else if (vumarkSeen.equals("RIGHT")){
+                        vuMarkDistance = 28;
+                        timer.reset();
+                        drive.resetEncoders();
+                        lookupCount++;
+                    }else{
+                        vuMarkDistance = 28;
+                        timer.reset();
+                        drive.resetEncoders();
+                        lookupCount++;
+                    }
+                    break;
 
+                case "glyph":
+                    String glyphExpJewel = lookupTable[lookupCount][STATE_ACTION];
+                    telemetry.addData("Glyph", "Got Expression");
+                    telemetry.update();
+                    //Create JEXL Expression
+                    JexlExpression eGlyph = jexl.createExpression(glyphExpJewel);
+                    JexlContext contextGlyph = new MapContext();
+                    telemetry.addData("Glyph", "Made JEXL Expression");
+                    telemetry.update();
                     break;
 
                 case "move":
@@ -441,6 +480,29 @@ public class AutonomousTextFile extends LinearOpMode {
                                 break;
                             }
                             break;
+
+                        case 4: //VuMark
+                            powerChange = (vuMarkDistance * COUNTS_PER_INCH) - drive.averageEncoders();
+                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
+                                    vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                telemetry.addData("Max Power", maxPower);
+                                telemetry.addData("Min Power", minPower);
+                                telemetry.addData("power change", powerChange);
+                                telemetry.addData("move angle", moveAngle);
+                                telemetry.addData("orientation", orientation);
+                                telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
+                                telemetry.addData("Encoder Count", encoderAverage);
+                                telemetry.addData("Condition", condition);
+                            }else{
+                                telemetry.addData("Slide", "Finished");
+                                timer.reset();
+                                drive.setPowerZero();
+                                drive.resetEncoders();
+                                lookupCount++;
+                                break;
+                            }
+                            break;
+
                     }
 
                     break;
@@ -449,9 +511,11 @@ public class AutonomousTextFile extends LinearOpMode {
                     telemetry.addData("State", "Stop");
                     telemetry.addData("IMU Angle", imuAngle);
                     telemetry.addData("Encoder Average", encoderAverage);
+                    telemetry.addData("VuMark Seen", vumarkSeen);
                     break;
             }
             telemetry.update();
         }
+        drive.stop();
     }
 }
