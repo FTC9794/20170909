@@ -192,9 +192,9 @@ public class AutonomousTextFile extends LinearOpMode {
         pan = hardwareMap.servo.get("jewel_pan");
         tilt = hardwareMap.servo.get("jewel_tilt");
 
-        right1 = hardwareMap.servo.get("right_glyph1");
+        //right1 = hardwareMap.servo.get("right_glyph1");
         right2 = hardwareMap.servo.get("right_glyph2");
-        left1 = hardwareMap.servo.get("left_glyph1");
+        //left1 = hardwareMap.servo.get("left_glyph1");
         left2 = hardwareMap.servo.get("left_glyph2");
         spin = hardwareMap.servo.get("spin_grip");
 
@@ -219,17 +219,17 @@ public class AutonomousTextFile extends LinearOpMode {
         telemetry.update();
 
         right2.setDirection(Servo.Direction.REVERSE);
-        left1.setDirection(Servo.Direction.REVERSE);
+        //left1.setDirection(Servo.Direction.REVERSE);
 
-        right1.setPosition(GRIP_OPEN1);
+        //right1.setPosition(GRIP_OPEN1);
         right2.setPosition(GRIP_OPEN2);
-        left1.setPosition(GRIP_OPEN1);
+        //left1.setPosition(GRIP_OPEN1);
         left2.setPosition(GRIP_OPEN2);
 
         spin.setPosition(SPIN_START);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
+        //glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
         telemetry.addData("Init", "Initialized Glyph System");
         telemetry.update();
 
@@ -261,6 +261,7 @@ public class AutonomousTextFile extends LinearOpMode {
         boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
         imu = new BoschIMU(boschIMU);
         imu.setOffset(0);
+        imu.calibrate();
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
 
@@ -516,6 +517,8 @@ public class AutonomousTextFile extends LinearOpMode {
             }
             telemetry.update();
         }
+        relicTrackables.deactivate();
+        jexl.clearCache();
         drive.stop();
     }
 }
