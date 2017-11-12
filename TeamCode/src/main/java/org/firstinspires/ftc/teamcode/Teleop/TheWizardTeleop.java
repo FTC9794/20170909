@@ -35,10 +35,10 @@ public class TheWizardTeleop extends LinearOpMode {
     GamepadPlus gamepadPlus1;
     GamepadPlus gamepadPlus2;
 
-    Servo right1, right2, left1, left2, spin;
+    Servo spin;
     Servo pan, tilt;
     Servo relic_claw, relic_arm, relic_tilt;
-    CRServo rightWheel1, leftWheel1;
+    CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
     DigitalChannel glyphLimit;
     DcMotor lift, relic_extension;
     DcMotor rf, rb, lf, lb;
@@ -83,11 +83,6 @@ public class TheWizardTeleop extends LinearOpMode {
     double liftIncriment = 0;
 
 
-    final double GRIP_OPEN1 = .5;
-    final double GRIP_OPEN2 = .5;
-    final double GRIP_CLOSE1 = 0;
-    final double GRIP_CLOSE2 = 0;
-
     final double SPIN_START = 0;
     final double SPIN_ROTATED = .95;
 
@@ -122,10 +117,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        //right1 = hardwareMap.servo.get("right_glyph1");
-        right2 = hardwareMap.servo.get("right_glyph2");
-        //left1 = hardwareMap.servo.get("left_glyph1");
-        left2 = hardwareMap.servo.get("left_glyph2");
+
         spin = hardwareMap.servo.get("spin_grip");
 
         pan = hardwareMap.servo.get("jewel_pan");
@@ -169,8 +161,11 @@ public class TheWizardTeleop extends LinearOpMode {
         relic_tilt = hardwareMap.servo.get("relic_tilt");
 
         rightWheel1 = hardwareMap.crservo.get("right_glyph1");
-        rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
+        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
+        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+        leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
@@ -189,14 +184,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        right2.setDirection(Servo.Direction.REVERSE);
-        //left1.setDirection(Servo.Direction.REVERSE);
-
-        //right1.setPosition(GRIP_OPEN1);
-        right2.setPosition(GRIP_OPEN2);
-        //left1.setPosition(GRIP_OPEN1);
-        left2.setPosition(GRIP_OPEN2);
-
+        spin.scaleRange(.05, 1);
         spin.setPosition(SPIN_START);
 
         pan.setPosition(JEWEL_PAN_START);
@@ -471,56 +459,80 @@ public class TheWizardTeleop extends LinearOpMode {
                 relic.tiltRelic(true, 0, 1, 0.04);
             }else if(-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.04){
                 relic.tiltRelic(true, 0, 1, -0.04);
-            }
+            }/*
             telemetry.addData("RelicArmAngle", relic.returnArmAngle());
             telemetry.addData("RelicTiltPos", relic.returnTiltPos());
             telemetry.addData("ArmPos", relic_arm.getPosition());
             telemetry.addData("RelicTilt", relic_tilt.getPosition());
             telemetry.addData("RelicExtensionEncoders", relic_extension.getCurrentPosition());
+*/
+            if(gamepadPlus2.b()){
+                rightWheel1.setPower(-1);
+                leftWheel1.setPower(-1);
+                rightWheel2.setPower(-1);
+                leftWheel2.setPower(-1);
 
-            //Duel Wheel Intake
-            /*f(gamepadPlus2.x()) {
-                if (!intakePressed) {
-                    intakePressed = true;
-                    if (intakeDirection) {
-                        rightWheel1.setPower(-1);
-                        leftWheel1.setPower(-1);
-                        intakeDirection = true;
-                    } else {
-                        rightWheel1.setPower(1);
-                        ;
-                        leftWheel1.setPower(1);
-                        intakeDirection = false;
-                    }
+            } else if (!intakePressed && gamepadPlus2.x()) {
+                intakePressed = true;
+                intakeDirection = !intakeDirection;
+                if(intakeDirection){
+                    rightWheel1.setPower(1);
+                    leftWheel1.setPower(1);
+                    rightWheel2.setPower(1);
+                    leftWheel2.setPower(1);
+
+                }else{
+                    rightWheel1.setPower(0);
+                    leftWheel1.setPower(0);
+                    rightWheel2.setPower(0);
+                    leftWheel2.setPower(0);
+
                 }
-            }else{
-                intakePressed=false;
-            }
+            }else if(!gamepadPlus2.x()){
+                if(intakeDirection){
+                    rightWheel1.setPower(1);
+                    leftWheel1.setPower(1);
+                    rightWheel2.setPower(1);
+                    leftWheel2.setPower(1);
 
-            if(gamepadPlus2.y()){
-                rightWheel1.setPower(0);;
-                leftWheel1.setPower(0);
-                intakeDirection = false;
-            }*/
+                }else{
+                    rightWheel1.setPower(0);
+                    leftWheel1.setPower(0);
+                    rightWheel2.setPower(0);
+                    leftWheel2.setPower(0);
+
+                }
+                intakePressed = false;
+            }
+            telemetry.addData("intake direction", intakeDirection);
+            telemetry.addData("intake pressed", intakePressed);
+                    /*
             if(gamepadPlus2.x()){
                 rightWheel1.setPower(-1);
                 leftWheel1.setPower(-1);
+                rightWheel2.setPower(-1);
+                leftWheel2.setPower(-1);
+
             }else if (gamepadPlus2.b()){
                 rightWheel1.setPower(1);
                 leftWheel1.setPower(1);
+                rightWheel2.setPower(1);
+                leftWheel2.setPower(1);
             }else{
                 rightWheel1.setPower(0);
                 leftWheel1.setPower(0);
+                rightWheel2.setPower(0);
+                leftWheel2.setPower(0);
             }
-
+*/
 
             //Telemetry
-            telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
+            //telemetry.addData("relic_extension encoders", relic_extension.getCurrentPosition());
 
             if(gamepad1.left_bumper&&!resetPressed){
                 imu.setAsZero();
                 resetPressed = true;
-                telemetry.addData("IMU", "reset");
+                //telemetry.addData("IMU", "reset");
             }else{
                 resetPressed = false;
             }
