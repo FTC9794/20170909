@@ -44,6 +44,7 @@ public class TheWizardTeleop extends LinearOpMode {
     boolean intakeDirection = false;
     boolean intakePressed = false;
 
+
     enum liftState {
         MANUAL,
         POSITION
@@ -359,7 +360,11 @@ public class TheWizardTeleop extends LinearOpMode {
             } else if (gamepad2.dpad_right) {
                 relic.releaseRelic();
             }
-
+            if(gamepadPlus2.y()){
+                relic_arm.setPosition(.86);
+            }else if(gamepadPlus1.y()){
+                relic_arm.setPosition(0);
+            }
             //Relic Arm Servo Controls
             if (relic_arm.getPosition() < .4) {
                 if (-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS) {
