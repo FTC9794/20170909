@@ -170,6 +170,7 @@ public class TheWizardTeleop extends LinearOpMode {
         telemetry.update();
         waitForStart();
         relic.releaseRelic();
+        relic_tilt.setPosition(0.5);
         while (opModeIsActive()) {
 
             //Glyph rotation state machine

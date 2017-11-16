@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * Created by Sarthak on 10/6/2017.
  */
-@Autonomous(name = "Omni Drive Class Test", group = "Test")
 public class OmniDirectionalDrive implements IDrivetrain {
 
     private List<DcMotor> motors;
