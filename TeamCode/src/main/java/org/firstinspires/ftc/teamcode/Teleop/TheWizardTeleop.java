@@ -154,24 +154,21 @@ public class TheWizardTeleop extends LinearOpMode {
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        rotateTime = new ElapsedTime();
+        gamepadPlus1 = new GamepadPlus(gamepad1);
+        gamepadPlus2 = new GamepadPlus(gamepad2);
+        telemetry.addData("Initialized", "Done");
+        telemetry.update();
+        waitForStart();
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic.releaseRelic();
+        relic_tilt.setPosition(0.5);
         spin.setPosition(SPIN_START);
 
         pan.setPosition(JEWEL_PAN_START);
         tilt.setPosition(JEWEL_TILT_START);
-
-        relic_claw.setPosition(RELIC_CLAW_CLOSED);
-        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
         relic_arm.setPosition(RELIC_ARM_ORIGIN);
 
-        rotateTime = new ElapsedTime();
-        gamepadPlus1 = new GamepadPlus(gamepad1);
-        gamepadPlus2 = new GamepadPlus(gamepad2);
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
-        telemetry.addData("Initialized", "Done");
-        telemetry.update();
-        waitForStart();
-        relic.releaseRelic();
-        relic_tilt.setPosition(0.5);
         while (opModeIsActive()) {
 
             //Glyph rotation state machine
