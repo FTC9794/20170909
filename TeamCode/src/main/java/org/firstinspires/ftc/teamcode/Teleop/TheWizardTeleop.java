@@ -334,10 +334,10 @@ public class TheWizardTeleop extends LinearOpMode {
                 lf.setPower(lfPower / 3);
                 lb.setPower(lbPower / 3);
             } else {
-                rf.setPower(rfPower*.5);
-                rb.setPower(rbPower*.5);
-                lf.setPower(lfPower*.5);
-                lb.setPower(lbPower*.5);
+                rf.setPower(rfPower*.75);
+                rb.setPower(rbPower*.75);
+                lf.setPower(lfPower*.75);
+                lb.setPower(lbPower*.75);
             }
 
 
