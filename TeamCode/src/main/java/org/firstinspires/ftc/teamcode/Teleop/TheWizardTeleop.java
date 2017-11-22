@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.GamepadPlus;
+import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import java.util.ArrayList;
 
@@ -93,6 +94,8 @@ public class TheWizardTeleop extends LinearOpMode {
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
 
+    Handiness hand;
+    boolean selectedHand = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -154,7 +157,22 @@ public class TheWizardTeleop extends LinearOpMode {
         rotateTime = new ElapsedTime();
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
+
+        while(!selectedHand){
+            telemetry.addData("Press dpad left", "Lefty controls");
+            telemetry.addData("Press dpad right", "Righty controls");
+            if(gamepad1.dpad_left){
+                hand = Handiness.LEFT;
+                selectedHand = true;
+            }else if(gamepad1.dpad_right){
+                hand = Handiness.RIGHT;
+                selectedHand = true;
+            }
+            telemetry.update();
+        }
+
         telemetry.addData("Initialized", "Done");
+        telemetry.addData("Hand Selected", hand);
         telemetry.update();
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
@@ -316,9 +334,19 @@ public class TheWizardTeleop extends LinearOpMode {
             }
 
             //Drivetrain controls
-            thrust = -gamepad1.left_stick_y;
-            sideways = gamepad1.left_stick_x;
-            pivot = gamepad1.right_stick_x;
+            switch (hand){
+                case LEFT:
+                    thrust = -gamepad1.left_stick_y;
+                    sideways = gamepad1.left_stick_x;
+                    pivot = gamepad1.right_stick_x;
+                    break;
+                case RIGHT:
+                    thrust = -gamepad1.right_stick_y;
+                    sideways = gamepad1.right_stick_x;
+                    pivot = gamepad1.left_stick_x;
+                    break;
+            }
+
 
             rfPower = thrust - sideways - pivot;
             rbPower = thrust + sideways - pivot;
