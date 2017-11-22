@@ -25,7 +25,6 @@ public class ClawThreePoint implements IRelic {
     private final double RELIC_TILT_ORIGIN = 1;
 
     private final double RELIC_ARM_ORIGIN = 0;
-    private final double RELIC_ARM_GRAB_POS = 0.96;
 
     public ClawThreePoint(DcMotor extension, Servo arm, Servo tilt, Servo claw, Telemetry telemetry){
         this.relic_extension = extension;
@@ -53,7 +52,7 @@ public class ClawThreePoint implements IRelic {
         claw.setPosition(RELIC_CLAW_OPENED);
     }
 
-    public void adjustArm(boolean condition, double minPos, double maxPos, double increment){
+    public void adjustArm(boolean condition, double increment){
         if(condition){
             arm.setPosition(arm.getPosition() + increment);
             if(arm.getPosition() > 0.74) {
@@ -67,15 +66,31 @@ public class ClawThreePoint implements IRelic {
     public double returnArmAngle(){
         return relicArmAngle;
     }
-
+    public double returnArmPos(){
+        return arm.getPosition();
+    }
     public double returnTiltPos(){
-        return relicTiltPos;
+        return tilt.getPosition();
     }
 
-    public void tiltRelic(boolean condition, double minPos, double maxPos, double increment){
+    public void tiltRelic(boolean condition, double increment){
         if(condition){
             tilt.setPosition(tilt.getPosition() + increment);
         }
+    }
+
+    public void setArmPosition(double armPosition){
+        arm.setPosition(armPosition);
+        if(arm.getPosition() > 0.74) {
+            relicArmAngle = (arm.getPosition() - 0.74) / ((0.9 - .74) / 45);
+            relicTiltPos = ((180-relicArmAngle) * (0.005)) + tiltOffset;
+            tilt.setPosition(relicTiltPos);
+        }
+    }
+
+    public void setTiltPosition(double tiltPosition){
+        this.relicTiltPos = tiltPosition;
+        tilt.setPosition(this.relicTiltPos);
     }
 
     @Override

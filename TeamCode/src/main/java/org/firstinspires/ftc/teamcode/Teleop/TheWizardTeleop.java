@@ -343,11 +343,11 @@ public class TheWizardTeleop extends LinearOpMode {
 
             //Relic Extension Motor Controls with Encoder Limits
             if (gamepad2.dpad_up && relic_extension.getCurrentPosition() < 12200) {
-                relic_extension.setPower(RELIC_ARM_EXTENSION_POWER);
+                relic.extend(RELIC_ARM_EXTENSION_POWER, true);
             } else if (gamepad2.dpad_down && relic_extension.getCurrentPosition() > 150) {
-                relic_extension.setPower(RELIC_ARM_RETRACTION_POWER);
+                relic.retract(RELIC_ARM_RETRACTION_POWER, true);
             } else {
-                relic_extension.setPower(0);
+                relic.extend(0, false);
             }
             telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
 
@@ -358,30 +358,30 @@ public class TheWizardTeleop extends LinearOpMode {
                 relic.releaseRelic();
             }
             if(gamepadPlus2.y()){
-                relic_arm.setPosition(.86);
+                relic.setArmPosition(.86);
             }else if(gamepadPlus1.y()){
-                relic_arm.setPosition(0);
+                relic.setArmPosition(0);
             }
             //Relic Arm Servo Controls
-            if (relic_arm.getPosition() < .4) {
-                if (-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS) {
-                    relic.adjustArm(true, 0, 1, 0.05);
-                } else if (-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0.04) {
-                    relic.adjustArm(true, 0, 1, -0.05);
+            if (relic.returnArmPos()< .4) {
+                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= RELIC_ARM_GRAB_POS) {
+                    relic.adjustArm(true, 0.05);
+                } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
+                    relic.adjustArm(true, -0.05);
                 }
             } else {
-                if (-gamepad2.right_stick_y > 0.1 && relic_arm.getPosition() <= RELIC_ARM_GRAB_POS) {
-                    relic.adjustArm(true, 0, 1, .005);
-                } else if (-gamepad2.right_stick_y < -0.1 && relic_arm.getPosition() >= 0.04) {
-                    relic.adjustArm(true, 0, 1, -.005);
+                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= RELIC_ARM_GRAB_POS) {
+                    relic.adjustArm(true, .005);
+                } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
+                    relic.adjustArm(true, -.005);
                 }
             }
 
             //Relic Tilt Servo Controls
-            if (-gamepad2.left_stick_y > 0.1 && relic_tilt.getPosition() <= 0.96) {
-                relic.tiltRelic(true, 0, 1, 0.04);
-            } else if (-gamepad2.left_stick_y < -0.1 && relic_tilt.getPosition() >= 0.04) {
-                relic.tiltRelic(true, 0, 1, -0.04);
+            if (-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.96) {
+                relic.tiltRelic(true, 0.04);
+            } else if (-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.04) {
+                relic.tiltRelic(true, -0.04);
             }
 
             //Intake Toggle
