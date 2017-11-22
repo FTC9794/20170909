@@ -85,10 +85,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
     final double ROTATION_TIME = 1250;
 
-    final double RELIC_CLAW_CLOSED = 1;
-    final double RELIC_CLAW_OPENED = 0;
 
-    final double RELIC_TILT_ORIGIN = 1;
 
     final double RELIC_ARM_ORIGIN = 0;
     final double RELIC_ARM_GRAB_POS = 0.96;
