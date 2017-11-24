@@ -35,7 +35,7 @@ public class ClawThreePoint implements IRelic {
         this.claw.setPosition(RELIC_CLAW_CLOSED);
         this.arm.setPosition(RELIC_ARM_ORIGIN);
         this.tilt.setPosition(RELIC_TILT_ORIGIN);
-        this.relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+        //this.relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

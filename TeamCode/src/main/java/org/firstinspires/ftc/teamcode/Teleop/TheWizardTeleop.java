@@ -132,8 +132,7 @@ public class TheWizardTeleop extends LinearOpMode {
         }
 
         relic_extension = hardwareMap.dcMotor.get("relic_extension");
-        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
-        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
         relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -367,9 +366,9 @@ public class TheWizardTeleop extends LinearOpMode {
 
 
             //Relic Extension Motor Controls with Encoder Limits
-            if (gamepad2.dpad_up && relic_extension.getCurrentPosition() < 12200) {
+            if (gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2100) {
                 relic.extend(RELIC_ARM_EXTENSION_POWER, true);
-            } else if (gamepad2.dpad_down && relic_extension.getCurrentPosition() > 150) {
+            } else if (gamepad2.dpad_down && relic_extension.getCurrentPosition() > 75) {
                 relic.retract(RELIC_ARM_RETRACTION_POWER, true);
             } else {
                 relic.extend(0, false);
