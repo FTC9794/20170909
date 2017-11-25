@@ -68,10 +68,10 @@ public class TheWizardTeleop extends LinearOpMode {
     final double SPIN_START = .05;
     final double SPIN_ROTATED = .95;
 
-    final int LIFT_POSITION1 = 1100;
-    final int LIFT_POSITION2 = 3200;
-    final int LIFT_POSITION3 = 5300;
-    final int LIFT_POSITION4 = 6900;
+    final int LIFT_POSITION1 = 205;
+    final int LIFT_POSITION2 = 1780;
+    final int LIFT_POSITION3 = 3179;
+    final int LIFT_POSITION4 = 4519;
     final int ROTATE_POSITION = 2000;
 
     final double ANALOG_PRESSED = .5;
@@ -153,6 +153,7 @@ public class TheWizardTeleop extends LinearOpMode {
         glyphRotateState = rotateState.MANUAL;
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rotateTime = new ElapsedTime();
         gamepadPlus1 = new GamepadPlus(gamepad1);
@@ -256,7 +257,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     }
                     if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
                         lift.setPower(LIFT_POWER_DOWN);
-                    } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < LIFT_POSITION4) {
+                    } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < 5000) {
                         lift.setPower(LIFT_POWER_UP);
                     } else if (gamepadPlus2.leftBumper()) {
                         if (!leftBumperPressed) {
@@ -452,6 +453,7 @@ public class TheWizardTeleop extends LinearOpMode {
             telemetry.addData("intake direction", intakeDirection);
             telemetry.addData("intake pressed", intakePressed);
             telemetry.addData("Glyph Height", lift.getCurrentPosition());
+            telemetry.addData("Relic Arm Position", relic_arm.getPosition());
             telemetry.update();
 
         }
