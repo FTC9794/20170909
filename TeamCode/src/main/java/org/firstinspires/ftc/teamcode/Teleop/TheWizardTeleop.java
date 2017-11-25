@@ -89,6 +89,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
 
     final double RELIC_ARM_ORIGIN = 0;
+    final double RELIC_GRAB_POSITION = 0.8;
     final double RELIC_ARM_GRAB_POS = 0.96;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
@@ -382,9 +383,9 @@ public class TheWizardTeleop extends LinearOpMode {
                 relic.releaseRelic();
             }
             if(gamepadPlus2.y()){
-                relic.setArmPosition(.86);
+                relic.setArmPosition(RELIC_GRAB_POSITION);
             }else if(gamepadPlus1.y()){
-                relic.setArmPosition(0);
+                relic.setArmPosition(RELIC_ARM_ORIGIN);
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
