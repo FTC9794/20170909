@@ -353,7 +353,7 @@ public class TheWizardTeleop extends LinearOpMode {
             lfPower = thrust + sideways + pivot;
             lbPower = thrust - sideways + pivot;
 
-            if (gamepad1.right_bumper) {
+            if (gamepadPlus1.y()) {
                 rf.setPower(rfPower / 3);
                 rb.setPower(rbPower / 3);
                 lf.setPower(lfPower / 3);
@@ -384,7 +384,7 @@ public class TheWizardTeleop extends LinearOpMode {
             }
             if(gamepadPlus2.y()){
                 relic.setArmPosition(RELIC_GRAB_POSITION);
-            }else if(gamepadPlus1.y()){
+            }else if(gamepadPlus1.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
             }
             //Relic Arm Servo Controls
@@ -410,14 +410,14 @@ public class TheWizardTeleop extends LinearOpMode {
             }
 
             //Intake Toggle
-            if (gamepadPlus2.b()) {
+            if (gamepadPlus1.rightBumper()) {
                 rightWheel1.setPower(-1);
                 leftWheel1.setPower(-1);
                 rightWheel2.setPower(-1);
                 leftWheel2.setPower(-1);
                 intakeDirection = false;
 
-            } else if (!intakePressed && gamepadPlus2.x()) {
+            } else if (!intakePressed && gamepadPlus1.leftBumper()) {
                 intakePressed = true;
                 intakeDirection = !intakeDirection;
                 if (intakeDirection) {
@@ -433,7 +433,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     leftWheel2.setPower(0);
 
                 }
-            } else if (!gamepadPlus2.x()) {
+            } else if (!gamepadPlus1.leftBumper()) {
                 if (intakeDirection) {
                     rightWheel1.setPower(1);
                     leftWheel1.setPower(1);
