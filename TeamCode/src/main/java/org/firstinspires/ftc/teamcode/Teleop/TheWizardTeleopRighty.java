@@ -8,16 +8,17 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.GamepadPlus;
-import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
+
 import java.util.ArrayList;
 
 /**
  * Created by Sarthak on 11/1/2017.
  */
-@TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
-public class TheWizardTeleop extends LinearOpMode {
+@TeleOp(name = "The Wizard Teleop Righty", group = "Teleop")
+public class TheWizardTeleopRighty extends LinearOpMode {
     ElapsedTime rotateTime;
 
     GamepadPlus gamepadPlus1;
@@ -322,9 +323,9 @@ public class TheWizardTeleop extends LinearOpMode {
             }
 
             //Drivetrain controls
-            thrust = -gamepad1.left_stick_y;
-            sideways = gamepad1.left_stick_x;
-            pivot = gamepad1.right_stick_x;
+            thrust = -gamepad1.right_stick_y;
+            sideways = gamepad1.right_stick_x;
+            pivot = gamepad1.left_stick_x;
 
             rfPower = thrust - sideways - pivot;
             rbPower = thrust + sideways - pivot;
