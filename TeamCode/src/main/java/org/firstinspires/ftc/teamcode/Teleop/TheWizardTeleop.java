@@ -257,9 +257,19 @@ public class TheWizardTeleop extends LinearOpMode {
 
                     }
                     if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
-                        lift.setPower(LIFT_POWER_DOWN);
+                        if(gamepadPlus2.rightBumper()){
+                            lift.setPower(LIFT_POWER_DOWN*0.75);
+                        }else{
+                            lift.setPower(LIFT_POWER_DOWN);
+                        }
+
                     } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < LIFT_POSITION4+150) {
-                        lift.setPower(LIFT_POWER_UP);
+                        if(gamepadPlus2.rightBumper()){
+                            lift.setPower(LIFT_POWER_UP*0.75);
+                        }else{
+                            lift.setPower(LIFT_POWER_UP);
+                        }
+
                     } else if (gamepadPlus2.a()) {
                         if (!leftBumperPressed) {
                             if (lift.getCurrentPosition() < LIFT_POSITION1 + LIFT_GRACE_AREA) {
@@ -371,13 +381,13 @@ public class TheWizardTeleop extends LinearOpMode {
             //Relic Extension Motor Controls with Encoder Limits
             if (gamepad2.dpad_up && relic_extension.getCurrentPosition() > -2200) {
                 if (gamepadPlus2.rightBumper()) {
-                    relic.extend(-RELIC_ARM_EXTENSION_POWER/2, true);
+                    relic.extend(-RELIC_ARM_EXTENSION_POWER*0.75, true);
                 } else{
                     relic.extend(-RELIC_ARM_EXTENSION_POWER, true);
                 }
             } else if (gamepad2.dpad_down && relic_extension.getCurrentPosition() < -75) {
                 if(gamepadPlus2.rightBumper()){
-                    relic.retract(-RELIC_ARM_RETRACTION_POWER/2, true);
+                    relic.retract(-RELIC_ARM_RETRACTION_POWER*0.75, true);
                 }else{
                     relic.retract(-RELIC_ARM_RETRACTION_POWER, true);
                 }
