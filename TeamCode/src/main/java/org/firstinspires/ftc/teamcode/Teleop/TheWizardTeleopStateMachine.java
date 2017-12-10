@@ -8,16 +8,18 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
+
 import java.util.ArrayList;
 
 /**
  * Created by Sarthak on 11/1/2017.
  */
-@TeleOp(name = "The Wizard Teleop", group = "Teleop")
-public class TheWizardTeleop extends LinearOpMode {
+@TeleOp(name = "The Wizard Teleop State Machine", group = "Teleop")
+public class TheWizardTeleopStateMachine extends LinearOpMode {
     ElapsedTime rotateTime;
 
     GamepadPlus gamepadPlus1;
@@ -73,6 +75,7 @@ public class TheWizardTeleop extends LinearOpMode {
     final int LIFT_POSITION3 = 750;
     final int LIFT_POSITION4 = 1100;
     final int ROTATE_POSITION = 200;
+    final int UPPER_LIMIT = 1300;
 
     final double ANALOG_PRESSED = .5;
 
@@ -99,7 +102,7 @@ public class TheWizardTeleop extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-
+        ElapsedTime liftTime = new ElapsedTime();
         spin = hardwareMap.servo.get("spin_grip");
 
         pan = hardwareMap.servo.get("jewel_pan");
@@ -179,15 +182,110 @@ public class TheWizardTeleop extends LinearOpMode {
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
         relic.releaseRelic();
-        relic_tilt.setPosition(0.5);
+        relic_tilt.setPosition(0.7);
         spin.setPosition(SPIN_START);
 
         pan.setPosition(JEWEL_PAN_START);
-        tilt.setPosition(JEWEL_TILT_START);
+        tilt.setPosition(0.65);
         relic_arm.setPosition(RELIC_ARM_ORIGIN);
 
         while (opModeIsActive()) {
 
+
+
+            //Glyph Lift State Machine
+            switch (glyphLiftState) {
+                case MANUAL:
+                    //Reset lift encoder when the lift is all the way down
+                    if (!glyphLimit.getState()) {
+                        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                    }
+
+                    //Lower lift
+                    if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
+                        lift.setPower(LIFT_POWER_DOWN);
+
+                    } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < UPPER_LIMIT) {
+                        lift.setPower(LIFT_POWER_UP);
+
+                    } else if (gamepadPlus2.leftBumper()) {
+                        if (!leftBumperPressed) {
+                            if (lift.getCurrentPosition() < LIFT_POSITION1 + LIFT_GRACE_AREA) {
+                                liftIncriment = 0;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION2 + LIFT_GRACE_AREA) {
+                                liftIncriment = 1;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION3 + LIFT_GRACE_AREA) {
+                                liftIncriment = 2;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION4 + LIFT_GRACE_AREA) {
+                                liftIncriment = 3;
+                            }
+                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            glyphLiftState = liftState.POSITION;
+                        }
+                        leftBumperPressed = true;
+                    } else if (gamepadPlus2.rightBumper()) {
+                        if (!rightBumperPressed) {
+                            if (lift.getCurrentPosition() < LIFT_POSITION1 - LIFT_GRACE_AREA) {
+                                liftIncriment = 1;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION2 - LIFT_GRACE_AREA) {
+                                liftIncriment = 2;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION3 - LIFT_GRACE_AREA) {
+                                liftIncriment = 3;
+                            } else if (lift.getCurrentPosition() < LIFT_POSITION4 - LIFT_GRACE_AREA) {
+                                liftIncriment = 4;
+                            }
+                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            glyphLiftState = liftState.POSITION;
+                        }
+                        rightBumperPressed = true;
+                    } else {
+                        lift.setPower(0);
+                    }
+
+                    break;
+                case POSITION:
+                    if (gamepadPlus2.leftBumper() && liftIncriment > 0) {
+                        if (!leftBumperPressed) {
+                            liftIncriment--;
+                            leftBumperPressed = true;
+                        }
+
+                    } else {
+                        leftBumperPressed = false;
+                    }
+                    if (gamepadPlus2.rightBumper() && liftIncriment < 4) {
+                        if (!rightBumperPressed) {
+                            liftIncriment++;
+                            rightBumperPressed = true;
+                        }
+
+                    } else {
+                        rightBumperPressed = false;
+                    }
+                    if (liftIncriment == 1) {
+                        lift.setTargetPosition(LIFT_POSITION1);
+                    } else if (liftIncriment == 2) {
+                        lift.setTargetPosition(LIFT_POSITION2);
+                    } else if (liftIncriment == 3) {
+                        lift.setTargetPosition(LIFT_POSITION3);
+                    } else if (liftIncriment == 4) {
+                        lift.setTargetPosition(LIFT_POSITION4);
+                    } else if (liftIncriment == 0) {
+                        lift.setTargetPosition(0);
+                    } else if (liftIncriment == 1.5){
+                        lift.setTargetPosition(ROTATE_POSITION);
+                    }
+                    if (!lift.isBusy() || gamepadPlus2.leftTrigger() > ANALOG_PRESSED || gamepadPlus2.rightTrigger() > ANALOG_PRESSED) {
+                        glyphLiftState = liftState.MANUAL;
+                        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    }
+                    lift.setPower(LIFT_POWER_UP);
+                    break;
+            }
+
+/*
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
@@ -244,103 +342,7 @@ public class TheWizardTeleop extends LinearOpMode {
                     break;
             }
 
-            //Glyph Lift State Machine
-            switch (glyphLiftState) {
-                case MANUAL:
-                    if (!glyphLimit.getState()) {
-                        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                    }
-                    if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
-                        if(gamepadPlus2.rightBumper()){
-                            lift.setPower(LIFT_POWER_DOWN*0.75);
-                        }else{
-                            lift.setPower(LIFT_POWER_DOWN);
-                        }
-
-                    } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < LIFT_POSITION4+150) {
-                        if(gamepadPlus2.rightBumper()){
-                            lift.setPower(LIFT_POWER_UP*0.75);
-                        }else{
-                            lift.setPower(LIFT_POWER_UP);
-                        }
-
-                    } else if (gamepadPlus2.a()) {
-                        if (!leftBumperPressed) {
-                            if (lift.getCurrentPosition() < LIFT_POSITION1 + LIFT_GRACE_AREA) {
-                                liftIncriment = 0;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION2 + LIFT_GRACE_AREA) {
-                                liftIncriment = 1;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION3 + LIFT_GRACE_AREA) {
-                                liftIncriment = 2;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION4 + LIFT_GRACE_AREA) {
-                                liftIncriment = 3;
-                            }
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = liftState.POSITION;
-                        }
-                        leftBumperPressed = true;
-                    } else if (gamepadPlus2.y()) {
-                        if (!rightBumperPressed) {
-                            if (lift.getCurrentPosition() < LIFT_POSITION1 - LIFT_GRACE_AREA) {
-                                liftIncriment = 1;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION2 - LIFT_GRACE_AREA) {
-                                liftIncriment = 2;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION3 - LIFT_GRACE_AREA) {
-                                liftIncriment = 3;
-                            } else if (lift.getCurrentPosition() < LIFT_POSITION4 - LIFT_GRACE_AREA) {
-                                liftIncriment = 4;
-                            }
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = liftState.POSITION;
-                        }
-                        rightBumperPressed = true;
-                    } else {
-                        lift.setPower(0);
-                    }
-
-                    break;
-                case POSITION:
-                    if (gamepadPlus2.a() && liftIncriment > 0) {
-                        if (!leftBumperPressed) {
-                            liftIncriment--;
-                            leftBumperPressed = true;
-                        }
-
-                    } else {
-                        leftBumperPressed = false;
-                    }
-                    if (gamepadPlus2.y() && liftIncriment < 4) {
-                        if (!rightBumperPressed) {
-                            liftIncriment++;
-                            rightBumperPressed = true;
-                        }
-
-                    } else {
-                        rightBumperPressed = false;
-                    }
-                    if (liftIncriment == 1) {
-                        lift.setTargetPosition(LIFT_POSITION1);
-                    } else if (liftIncriment == 2) {
-                        lift.setTargetPosition(LIFT_POSITION2);
-                    } else if (liftIncriment == 3) {
-                        lift.setTargetPosition(LIFT_POSITION3);
-                    } else if (liftIncriment == 4) {
-                        lift.setTargetPosition(LIFT_POSITION4);
-                    } else if (liftIncriment == 0) {
-                        lift.setTargetPosition(0);
-                    } else if (liftIncriment == 1.5){
-                        lift.setTargetPosition(ROTATE_POSITION);
-                    }
-                    if (!lift.isBusy() || gamepadPlus2.leftTrigger() > ANALOG_PRESSED || gamepadPlus2.rightTrigger() > ANALOG_PRESSED) {
-                        glyphLiftState = liftState.MANUAL;
-                        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    }
-                    lift.setPower(LIFT_POWER_UP);
-                    break;
-            }
-
+*/
             //Drivetrain controls
             switch (hand){
                 case LEFT:
@@ -354,8 +356,6 @@ public class TheWizardTeleop extends LinearOpMode {
                     pivot = gamepad1.left_stick_x;
                     break;
             }
-
-
             rfPower = thrust - sideways - pivot;
             rbPower = thrust + sideways - pivot;
             lfPower = thrust + sideways + pivot;
