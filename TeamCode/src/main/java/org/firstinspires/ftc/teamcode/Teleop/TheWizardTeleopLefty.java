@@ -91,7 +91,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = 0.835;
+    final double RELIC_ARM_GRAB_POS = .84;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
@@ -361,8 +361,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 relic.releaseRelic();
             }
             if(gamepadPlus2.y()){
-                //relic.setArmPosition(RELIC_ARM_GRAB_POS);
-                relic_arm.setPosition(0.835);
+                relic.setArmPosition(RELIC_ARM_GRAB_POS);
+
             }else if(gamepadPlus1.a() || gamepadPlus2.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
@@ -370,13 +370,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
-                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= RELIC_ARM_GRAB_POS) {
+                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
                     relic.adjustArm(true, 0.05);
                 } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
                     relic.adjustArm(true, -0.05);
                 }
             } else {
-                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= RELIC_ARM_GRAB_POS) {
+                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
                     relic.adjustArm(true, .005);
                 } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
                     relic.adjustArm(true, -.005);
