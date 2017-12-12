@@ -8,16 +8,18 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
+
 import java.util.ArrayList;
 
 /**
  * Created by Sarthak on 11/1/2017.
  */
-@TeleOp(name = "The Wizard Teleop Righty", group = "Teleop")
-public class TheWizardTeleop extends LinearOpMode {
+@TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
+public class TheWizardTeleopLefty extends LinearOpMode {
     ElapsedTime rotateTime;
 
     GamepadPlus gamepadPlus1;
@@ -51,7 +53,7 @@ public class TheWizardTeleop extends LinearOpMode {
         POSITION
     }
 
-    liftState glyphLiftState;
+    TheWizardTeleop.liftState glyphLiftState;
 
     enum rotateState {
         MANUAL,
@@ -60,7 +62,7 @@ public class TheWizardTeleop extends LinearOpMode {
         LOWERING
     }
 
-    rotateState glyphRotateState;
+    TheWizardTeleop.rotateState glyphRotateState;
 
     double liftIncriment = 0;
 
@@ -72,7 +74,7 @@ public class TheWizardTeleop extends LinearOpMode {
     final int LIFT_POSITION2 = 357;
     final int LIFT_POSITION3 = 750;
     final int LIFT_POSITION4 = 1100;
-    final int ROTATE_POSITION = 500;
+    final int ROTATE_POSITION = 600;
 
     final double ANALOG_PRESSED = .5;
 
@@ -89,12 +91,12 @@ public class TheWizardTeleop extends LinearOpMode {
 
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = 0.9;
+    final double RELIC_ARM_GRAB_POS = 0.835;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
 
-    Handiness hand = Handiness.RIGHT;
+    Handiness hand = Handiness.LEFT;
     boolean selectedHand = false;
 
     @Override
@@ -150,8 +152,8 @@ public class TheWizardTeleop extends LinearOpMode {
         leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        glyphLiftState = liftState.MANUAL;
-        glyphRotateState = rotateState.MANUAL;
+        glyphLiftState = TheWizardTeleop.liftState.MANUAL;
+        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -193,53 +195,13 @@ public class TheWizardTeleop extends LinearOpMode {
                 case MANUAL:
                     if(gamepadPlus2.leftBumper()){
                         if(!spinPressed){
-                            if(lift.getCurrentPosition()>ROTATE_POSITION){
-                                glyphRotateState = rotateState.ROTATING;
-                                rotateTime.reset();
-
-                                lowerLift = false;
-                            }else{
-
+                            if(lift.getCurrentPosition()>ROTATE_POSITION) {
+                                glyphRotateState = TheWizardTeleop.rotateState.ROTATING;
                             }
-
-
                         }
                         spinPressed = true;
                     }else{
                         spinPressed = false;
-                    }
-                    break;
-                case LIFTING:
-
-                    if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
-                        glyphRotateState = rotateState.MANUAL;
-                    }else if(!lift.isBusy()){
-                        glyphRotateState = rotateState.ROTATING;
-                        rotateTime.reset();
-                    }
-                    break;
-                case ROTATING:
-                    if(spinAtOrigin){
-                        spin.setPosition(SPIN_ROTATED);
-                    }else{
-                        spin.setPosition(SPIN_START);
-                    }
-                    if(rotateTime.milliseconds()>ROTATION_TIME){
-
-                        spinAtOrigin = !spinAtOrigin;
-                        if(lowerLift){
-                            glyphRotateState = rotateState.LOWERING;
-                            glyphLiftState = liftState.POSITION;
-                            liftIncriment = 0;
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        }else{
-                            glyphRotateState = rotateState.MANUAL;
-                        }
-                    }
-                    break;
-                case LOWERING:
-                    if(!lift.isBusy()){
-                        glyphRotateState = rotateState.MANUAL;
                     }
                     break;
             }
@@ -278,7 +240,7 @@ public class TheWizardTeleop extends LinearOpMode {
                                 liftIncriment = 3;
                             }
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = liftState.POSITION;
+                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
                         }
                         leftBumperPressed = true;
                     } else if (gamepadPlus2.y()) {
@@ -293,7 +255,7 @@ public class TheWizardTeleop extends LinearOpMode {
                                 liftIncriment = 4;
                             }
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = liftState.POSITION;
+                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
                         }
                         rightBumperPressed = true;
                     } else {
@@ -399,7 +361,8 @@ public class TheWizardTeleop extends LinearOpMode {
                 relic.releaseRelic();
             }
             if(gamepadPlus2.y()){
-                relic.setArmPosition(RELIC_ARM_GRAB_POS);
+                //relic.setArmPosition(RELIC_ARM_GRAB_POS);
+                relic_arm.setPosition(0.835);
             }else if(gamepadPlus1.a() || gamepadPlus2.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
