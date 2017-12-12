@@ -91,7 +91,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = .84;
+    final double RELIC_ARM_GRAB_POS = .86;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
@@ -202,6 +202,39 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         spinPressed = true;
                     }else{
                         spinPressed = false;
+                    }
+                    break;
+                case LIFTING:
+
+                    if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
+                        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+                    }else if(!lift.isBusy()){
+                        glyphRotateState = TheWizardTeleop.rotateState.ROTATING;
+                        rotateTime.reset();
+                    }
+                    break;
+                case ROTATING:
+                    if(spinAtOrigin){
+                        spin.setPosition(SPIN_ROTATED);
+                    }else{
+                        spin.setPosition(SPIN_START);
+                    }
+                    if(rotateTime.milliseconds()>ROTATION_TIME){
+
+                        spinAtOrigin = !spinAtOrigin;
+                        if(lowerLift){
+                            glyphRotateState = TheWizardTeleop.rotateState.LOWERING;
+                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
+                            liftIncriment = 0;
+                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        }else{
+                            glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+                        }
+                    }
+                    break;
+                case LOWERING:
+                    if(!lift.isBusy()){
+                        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
                     }
                     break;
             }
