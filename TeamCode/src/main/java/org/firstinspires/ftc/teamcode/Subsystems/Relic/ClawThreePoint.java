@@ -55,8 +55,8 @@ public class ClawThreePoint implements IRelic {
     public void adjustArm(boolean condition, double increment){
         if(condition){
             arm.setPosition(arm.getPosition() + increment);
-            if(arm.getPosition() > 0.74) {
-                relicArmAngle = (arm.getPosition() - 0.74) / ((0.9 - .74) / 45);
+            if(arm.getPosition() > 0.685) {
+                relicArmAngle = (arm.getPosition() - 0.685) / ((0.9) / 180);
                 relicTiltPos = ((180-relicArmAngle) * (0.005)) + tiltOffset;
                 tilt.setPosition(relicTiltPos);
             }

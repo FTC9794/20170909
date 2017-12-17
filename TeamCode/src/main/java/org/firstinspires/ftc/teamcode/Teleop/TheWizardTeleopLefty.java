@@ -226,7 +226,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             glyphRotateState = TheWizardTeleop.rotateState.LOWERING;
                             glyphLiftState = TheWizardTeleop.liftState.POSITION;
                             liftIncriment = 0;
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         }else{
                             glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
                         }
@@ -272,8 +272,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             } else if (lift.getCurrentPosition() < LIFT_POSITION4 + LIFT_GRACE_AREA) {
                                 liftIncriment = 3;
                             }
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
+                            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            //glyphLiftState = TheWizardTeleop.liftState.POSITION;
                         }
                         leftBumperPressed = true;
                     } else if (gamepadPlus2.y()) {
@@ -287,8 +287,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             } else if (lift.getCurrentPosition() < LIFT_POSITION4 - LIFT_GRACE_AREA) {
                                 liftIncriment = 4;
                             }
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
+                            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            //glyphLiftState = TheWizardTeleop.liftState.POSITION;
                         }
                         rightBumperPressed = true;
                     } else {
@@ -395,11 +395,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
             if(gamepadPlus2.y()){
                 relic.setArmPosition(RELIC_ARM_GRAB_POS);
-
             }else if(gamepadPlus1.a() || gamepadPlus2.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
                 relic_tilt.setPosition(1);
+            }
+            if(gamepadPlus2.b()){
+                relic_tilt.setPosition(0.6);
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
@@ -468,6 +470,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             telemetry.addData("Glyph Height", lift.getCurrentPosition());
             telemetry.addData("Relic Tilt Pos", relic_tilt.getPosition());
             telemetry.addData("Relic Arm Pos", relic_arm.getPosition());
+            telemetry.addData("Glyph State", glyphLiftState);
             telemetry.update();
 
         }
