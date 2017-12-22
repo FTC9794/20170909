@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
     ClawThreePoint relic;
+    DualWheelIntake intake;
 
     ArrayList<DcMotor> driveMotors;
 
@@ -149,13 +151,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
         rightWheel2 = hardwareMap.crservo.get("right_glyph2");
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
-        leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         glyphLiftState = TheWizardTeleop.liftState.MANUAL;
         glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
 
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rotateTime = new ElapsedTime();
@@ -167,11 +169,14 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         telemetry.addData("Initialized", "Done");
         telemetry.addData("Hand Selected", hand);
         telemetry.update();
+
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
+
         relic.pickUpRelic();
         relic_tilt.setPosition(1);
-        spin.setPosition(SPIN_START);
+        //spin.setPosition(SPIN_START);
 
         pan.setPosition(JEWEL_PAN_START);
         tilt.setPosition(JEWEL_TILT_START);
@@ -203,11 +208,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
                     break;
                 case ROTATING:
-                    if(spinAtOrigin){
-                        spin.setPosition(SPIN_ROTATED);
-                    }else{
-                        spin.setPosition(SPIN_START);
-                    }
+                    intake.spin();
                     if(rotateTime.milliseconds()>ROTATION_TIME){
 
                         spinAtOrigin = !spinAtOrigin;
@@ -231,12 +232,20 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //Glyph Lift State Machine
             switch (glyphLiftState) {
                 case MANUAL:
-                    if (!glyphLimit.getState()) {
+                    /*if (!glyphLimit.getState()) {
                         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                    }
-                    if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
+                    }*/
+                    intake.checkGlyphLiftLimit();
+
+                    intake.changeHeight(LIFT_POWER_DOWN, gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState());
+                    intake.changeHeight(LIFT_POWER_DOWN * 0.75, (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState() && gamepadPlus2.rightBumper()));
+                    intake.changeHeight(LIFT_POWER_UP, gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 1450);
+                    intake.changeHeight(LIFT_POWER_UP * 0.75, gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 1450 && gamepadPlus2.rightBumper());
+                    intake.setLiftPowerZero(!(gamepadPlus2.rightTrigger() > ANALOG_PRESSED) && !(gamepadPlus2.leftTrigger() > ANALOG_PRESSED));
+
+                    /*if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
                         if(gamepadPlus2.rightBumper()){
                             lift.setPower(LIFT_POWER_DOWN*0.75);
                         }else{
@@ -282,7 +291,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         rightBumperPressed = true;
                     } else {
                         lift.setPower(0);
-                    }
+                    }*/
 
                     break;
                 case POSITION:
@@ -416,40 +425,45 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
             //Intake Toggle
             if (gamepadPlus1.rightBumper()) {
-                rightWheel1.setPower(-1);
+                /*rightWheel1.setPower(-1);
                 leftWheel1.setPower(-1);
                 rightWheel2.setPower(-1);
-                leftWheel2.setPower(-1);
+                leftWheel2.setPower(-1);*/
+                intake.dispenseGlyph();
                 intakeDirection = false;
 
             } else if (!intakePressed && gamepadPlus1.leftBumper()) {
                 intakePressed = true;
                 intakeDirection = !intakeDirection;
                 if (intakeDirection) {
-                    rightWheel1.setPower(1);
+                    /*rightWheel1.setPower(1);
                     leftWheel1.setPower(1);
                     rightWheel2.setPower(1);
-                    leftWheel2.setPower(1);
+                    leftWheel2.setPower(1);*/
+                    intake.secureGlyph();
 
                 } else {
-                    rightWheel1.setPower(0);
+                    /*rightWheel1.setPower(0);
                     leftWheel1.setPower(0);
                     rightWheel2.setPower(0);
-                    leftWheel2.setPower(0);
+                    leftWheel2.setPower(0);*/
+                    intake.setIntakePowerZero();
 
                 }
             } else if (!gamepadPlus1.leftBumper()) {
                 if (intakeDirection) {
-                    rightWheel1.setPower(1);
+                    /*rightWheel1.setPower(1);
                     leftWheel1.setPower(1);
                     rightWheel2.setPower(1);
-                    leftWheel2.setPower(1);
+                    leftWheel2.setPower(1);*/
+                    intake.secureGlyph();
 
                 } else {
-                    rightWheel1.setPower(0);
+                    /*rightWheel1.setPower(0);
                     leftWheel1.setPower(0);
                     rightWheel2.setPower(0);
-                    leftWheel2.setPower(0);
+                    leftWheel2.setPower(0);*/
+                    intake.setIntakePowerZero();
 
                 }
                 intakePressed = false;
