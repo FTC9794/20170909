@@ -162,18 +162,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
 
-        /*while(!selectedHand){
-            telemetry.addData("Press dpad left", "Lefty controls");
-            telemetry.addData("Press dpad right", "Righty controls");
-            if(gamepad1.dpad_left){
-                hand = Handiness.LEFT;
-                selectedHand = true;
-            }else if(gamepad1.dpad_right){
-                hand = Handiness.RIGHT;
-                selectedHand = true;
-            }
-            telemetry.update();
-        }*/
+
 
         telemetry.addData("Initialized", "Done");
         telemetry.addData("Hand Selected", hand);
