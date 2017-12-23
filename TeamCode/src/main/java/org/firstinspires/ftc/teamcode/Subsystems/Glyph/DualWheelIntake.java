@@ -78,6 +78,10 @@ public class DualWheelIntake implements IGlyph {
         }
     }
 
+    public void setLiftPower(double power){
+        lift.setPower(power);
+    }
+
     public void setLiftPowerZero(boolean condition){
         if(condition){
             lift.setPower(0);
