@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
+import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     ClawThreePoint relic;
     DualWheelIntake intake;
     OmniDirectionalDrive drive;
+    TwoPointJewelArm jewel;
 
     List<DcMotor> driveMotors;
 
@@ -58,7 +60,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         POSITION
     }
 
-    TheWizardTeleop.liftState glyphLiftState;
+    liftState glyphLiftState;
 
     enum rotateState {
         MANUAL,
@@ -67,7 +69,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         LOWERING
     }
 
-    TheWizardTeleop.rotateState glyphRotateState;
+    rotateState glyphRotateState;
 
     double liftIncriment = 0;
 
@@ -157,8 +159,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         //leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         //rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        glyphLiftState = TheWizardTeleop.liftState.MANUAL;
-        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+        glyphLiftState = liftState.MANUAL;
+        glyphRotateState = rotateState.MANUAL;
 
         //lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -177,15 +179,14 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         drive = new OmniDirectionalDrive(driveMotors, telemetry);
+        jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);
 
         relic.pickUpRelic();
-        //relic_tilt.setPosition(1);
         relic.setTiltPosition(1);
-        //spin.setPosition(SPIN_START);
 
-        pan.setPosition(JEWEL_PAN_START);
-        tilt.setPosition(JEWEL_TILT_START);
-        //relic_arm.setPosition(RELIC_ARM_ORIGIN);
+        //pan.setPosition(JEWEL_PAN_START);
+        //tilt.setPosition(JEWEL_TILT_START);
+        jewel.setPanTiltPos(JEWEL_PAN_START, JEWEL_TILT_START);
         relic.setArmPosition(RELIC_ARM_ORIGIN);
 
         while (opModeIsActive()) {
@@ -196,7 +197,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     if(gamepadPlus2.leftBumper()){
                         if(!spinPressed){
                             if(lift.getCurrentPosition()>ROTATE_POSITION) {
-                                glyphRotateState = TheWizardTeleop.rotateState.ROTATING;
+                                glyphRotateState = rotateState.ROTATING;
                             }
                         }
                         spinPressed = true;
@@ -207,9 +208,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 case LIFTING:
 
                     if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
-                        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+                        glyphRotateState = rotateState.MANUAL;
                     }else if(!lift.isBusy()){
-                        glyphRotateState = TheWizardTeleop.rotateState.ROTATING;
+                        glyphRotateState = rotateState.ROTATING;
                         rotateTime.reset();
                     }
                     break;
@@ -219,18 +220,18 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
                         spinAtOrigin = !spinAtOrigin;
                         if(lowerLift){
-                            glyphRotateState = TheWizardTeleop.rotateState.LOWERING;
-                            glyphLiftState = TheWizardTeleop.liftState.POSITION;
+                            glyphRotateState = rotateState.LOWERING;
+                            glyphLiftState = liftState.POSITION;
                             liftIncriment = 0;
                             //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                         }else{
-                            glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+                            glyphRotateState = rotateState.MANUAL;
                         }
                     }
                     break;
                 case LOWERING:
                     if(!lift.isBusy()){
-                        glyphRotateState = TheWizardTeleop.rotateState.MANUAL;
+                        glyphRotateState = rotateState.MANUAL;
                     }
                     break;
             }
