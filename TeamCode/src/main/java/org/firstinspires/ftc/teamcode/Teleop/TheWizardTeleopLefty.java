@@ -238,11 +238,6 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //Glyph Lift State Machine
             switch (glyphLiftState) {
                 case MANUAL:
-                    /*if (!glyphLimit.getState()) {
-                        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-                    }*/
                     intake.checkGlyphLiftLimit();
 
                     intake.changeHeight(LIFT_POWER_DOWN, gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState());
@@ -426,20 +421,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
-                /*if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
-                    relic.adjustArm(true, 0.05);
-                } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
-                    relic.adjustArm(true, -0.05);
-                }*/
                 relic.adjustArm((-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1), 0.05);
                 relic.adjustArm((-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04), -0.05);
 
             } else {
-                /*if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
-                    relic.adjustArm(true, .005);
-                } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
-                    relic.adjustArm(true, -.005);
-                }*/
                 relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
                 relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
             }
@@ -447,19 +432,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //Relic Tilt Servo Controls
             relic.tiltRelic(-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.9, 0.01);
             relic.tiltRelic(-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01, -0.01);
-
-            /*if (-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.99) {
-                relic.tiltRelic(true, 0.01);
-            } else if (-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01) {
-                relic.tiltRelic(true, -0.01);
-            }*/
-
             //Intake Toggle
             if (gamepadPlus1.rightBumper()) {
-                /*rightWheel1.setPower(-1);
-                leftWheel1.setPower(-1);
-                rightWheel2.setPower(-1);
-                leftWheel2.setPower(-1);*/
                 intake.dispenseGlyph();
                 intakeDirection = false;
 
@@ -467,33 +441,17 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 intakePressed = true;
                 intakeDirection = !intakeDirection;
                 if (intakeDirection) {
-                    /*rightWheel1.setPower(1);
-                    leftWheel1.setPower(1);
-                    rightWheel2.setPower(1);
-                    leftWheel2.setPower(1);*/
                     intake.secureGlyph();
 
                 } else {
-                    /*rightWheel1.setPower(0);
-                    leftWheel1.setPower(0);
-                    rightWheel2.setPower(0);
-                    leftWheel2.setPower(0);*/
                     intake.setIntakePowerZero();
 
                 }
             } else if (!gamepadPlus1.leftBumper()) {
                 if (intakeDirection) {
-                    /*rightWheel1.setPower(1);
-                    leftWheel1.setPower(1);
-                    rightWheel2.setPower(1);
-                    leftWheel2.setPower(1);*/
                     intake.secureGlyph();
 
                 } else {
-                    /*rightWheel1.setPower(0);
-                    leftWheel1.setPower(0);
-                    rightWheel2.setPower(0);
-                    leftWheel2.setPower(0);*/
                     intake.setIntakePowerZero();
 
                 }
