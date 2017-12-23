@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 
+import org.firstinspires.ftc.teamcode.Utilities;
+
 /**
  * Created by Sarthak on 9/24/2017.
  */
@@ -20,8 +22,11 @@ public interface IDrivetrain {
      * @param timeAfterAngle
      * @return
      */
-    boolean move(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle);
+    boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle);
 
+
+
+    boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount);
     /**
      * balances the robot on the balancing stone
      * @param highPower The maximum speed the robot will move at

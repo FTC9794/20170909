@@ -19,7 +19,7 @@ public class ClawThreePoint implements IRelic {
     private double relicTiltPos = 0;
     private double tiltOffset = 0.095;
 
-    private final double RELIC_CLAW_CLOSED = 1;
+    private final double RELIC_CLAW_CLOSED = .75;
     private final double RELIC_CLAW_OPENED = 0;
 
     private final double RELIC_TILT_ORIGIN = 0;
@@ -102,8 +102,6 @@ public class ClawThreePoint implements IRelic {
     public void extend(double power, boolean condition) {
         if(condition) {
             relic_extension.setPower(power);
-        }else{
-            relic_extension.setPower(0);
         }
     }
 
@@ -111,8 +109,10 @@ public class ClawThreePoint implements IRelic {
     public void retract(double power, boolean condition) {
         if(condition) {
             relic_extension.setPower(power);
-        }else{
-            relic_extension.setPower(0);
         }
+    }
+
+    public void extensionPowerZero(){
+        relic_extension.setPower(0);
     }
 }

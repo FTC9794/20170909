@@ -51,13 +51,17 @@ public class DualWheelIntake implements IGlyph {
     @Override
     public void secureGlyph() {
         rightWheel1.setPower(INTAKE_SPPED);
+        rightWheel2.setPower(INTAKE_SPPED);
         leftWheel1.setPower(INTAKE_SPPED);
+        leftWheel2.setPower(INTAKE_SPPED);
     }
 
     @Override
     public void dispenseGlyph() {
         rightWheel1.setPower(OUTTAKE_SPEED);
+        rightWheel2.setPower(OUTTAKE_SPEED);
         leftWheel1.setPower(OUTTAKE_SPEED);
+        leftWheel2.setPower(OUTTAKE_SPEED);
     }
 
     public void setIntakePowerZero(){

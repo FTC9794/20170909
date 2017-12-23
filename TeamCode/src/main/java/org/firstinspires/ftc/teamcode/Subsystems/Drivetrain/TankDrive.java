@@ -41,7 +41,7 @@ public class TankDrive implements IDrivetrain {
 
 
     @Override
-    public boolean move(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
+    public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
         if((endCondition&&
                 (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
                 ||needsToPivot){
@@ -54,6 +54,11 @@ public class TankDrive implements IDrivetrain {
             needsToPivot = false;
             return false;
         }
+    }
+
+    @Override
+    public boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount) {
+        return false;
     }
 
     @Override

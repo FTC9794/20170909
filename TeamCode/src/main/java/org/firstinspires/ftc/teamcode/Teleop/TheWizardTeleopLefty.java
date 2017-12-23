@@ -11,10 +11,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Sarthak on 11/1/2017.
@@ -38,8 +40,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     ClawThreePoint relic;
     DualWheelIntake intake;
+    OmniDirectionalDrive drive;
 
-    ArrayList<DcMotor> driveMotors;
+    List<DcMotor> driveMotors;
 
     boolean spinAtOrigin = true;
     boolean spinPressed = false;
@@ -173,14 +176,17 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
+        drive = new OmniDirectionalDrive(driveMotors, telemetry);
 
         relic.pickUpRelic();
-        relic_tilt.setPosition(1);
+        //relic_tilt.setPosition(1);
+        relic.setTiltPosition(1);
         //spin.setPosition(SPIN_START);
 
         pan.setPosition(JEWEL_PAN_START);
         tilt.setPosition(JEWEL_TILT_START);
-        relic_arm.setPosition(RELIC_ARM_ORIGIN);
+        //relic_arm.setPosition(RELIC_ARM_ORIGIN);
+        relic.setArmPosition(RELIC_ARM_ORIGIN);
 
         while (opModeIsActive()) {
 
@@ -335,7 +341,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
 
             //Drivetrain controls
-            switch (hand){
+            /*switch (hand){
                 case LEFT:
                     thrust = -gamepad1.left_stick_y;
                     sideways = gamepad1.left_stick_x;
@@ -364,25 +370,42 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 rb.setPower(rbPower*.75);
                 lf.setPower(lfPower*.75);
                 lb.setPower(lbPower*.75);
+            }*/
+            switch (hand){
+                case LEFT:
+                    if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
+                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.5, true, -gamepadPlus1.rightStickX());
+                    }else{
+                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.75, true, -gamepadPlus1.rightStickX());
+                    }
+                    break;
+                case RIGHT:
+                    if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
+                        drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.5, true, -gamepadPlus1.leftStickX());
+                    }else{
+                        drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.75, true, -gamepadPlus1.leftStickX());
+                    }
             }
+
 
 
             //Relic Extension Motor Controls with Encoder Limits
-            if (gamepad2.dpad_up && relic_extension.getCurrentPosition() > -2200) {
-                if (gamepadPlus2.rightBumper()) {
-                    relic.extend(-RELIC_ARM_EXTENSION_POWER, true);
-                } else{
-                    relic.extend(-RELIC_ARM_EXTENSION_POWER*0.7, true);
-                }
-            } else if (gamepad2.dpad_down && relic_extension.getCurrentPosition() < -75) {
-                if(gamepadPlus2.rightBumper()){
-                    relic.retract(-RELIC_ARM_RETRACTION_POWER, true);
-                }else{
-                    relic.retract(-RELIC_ARM_RETRACTION_POWER*0.7, true);
-                }
-            } else {
-                relic.extend(0, false);
+            if (gamepadPlus2.rightBumper()) {
+                relic.extend(-RELIC_ARM_EXTENSION_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() > -2200);
+            } else{
+                relic.extend(-RELIC_ARM_EXTENSION_POWER*0.7, gamepad2.dpad_up && relic_extension.getCurrentPosition() > -2200);
             }
+
+            if(gamepadPlus2.rightBumper()){
+                relic.retract(-RELIC_ARM_RETRACTION_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() < -75);
+            }else{
+                relic.retract(-RELIC_ARM_RETRACTION_POWER*0.7, gamepad2.dpad_down && relic_extension.getCurrentPosition() < -75);
+            }
+
+            if(!gamepadPlus2.dpadUp() && !gamepadPlus2.dpadDown()){
+                relic.extensionPowerZero();
+            }
+
             telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
 
             //Claw servo controls
@@ -396,32 +419,40 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }else if(gamepadPlus1.a() || gamepadPlus2.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
-                relic_tilt.setPosition(1);
+                relic.setTiltPosition(1);
             }
             if(gamepadPlus2.b()){
-                relic_tilt.setPosition(0.6);
+                relic.setTiltPosition(0.6);
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
-                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
+                /*if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
                     relic.adjustArm(true, 0.05);
                 } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
                     relic.adjustArm(true, -0.05);
-                }
+                }*/
+                relic.adjustArm((-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1), 0.05);
+                relic.adjustArm((-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04), -0.05);
+
             } else {
-                if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
+                /*if (-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1) {
                     relic.adjustArm(true, .005);
                 } else if (-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04) {
                     relic.adjustArm(true, -.005);
-                }
+                }*/
+                relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
+                relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
             }
 
             //Relic Tilt Servo Controls
-            if (-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.99) {
+            relic.tiltRelic(-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.9, 0.01);
+            relic.tiltRelic(-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01, -0.01);
+
+            /*if (-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.99) {
                 relic.tiltRelic(true, 0.01);
             } else if (-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01) {
                 relic.tiltRelic(true, -0.01);
-            }
+            }*/
 
             //Intake Toggle
             if (gamepadPlus1.rightBumper()) {
