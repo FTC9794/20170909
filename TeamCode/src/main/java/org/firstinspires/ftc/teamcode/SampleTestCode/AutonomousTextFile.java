@@ -435,7 +435,7 @@ public class AutonomousTextFile extends LinearOpMode {
                     switch (slideCaseNum){
                         case 1: //Encoders
                             powerChange = (condition * COUNTS_PER_INCH) - drive.averageEncoders();
-                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
+                            if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
                                     condition*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && condition*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
                                 telemetry.addData("Max Power", maxPower);
                                 telemetry.addData("Min Power", minPower);
@@ -456,7 +456,7 @@ public class AutonomousTextFile extends LinearOpMode {
                             break;
 
                         case 2: //pivot
-                            if(drive.move(maxPower, minPower, 0, 0, 0, 0, 0.001, orientation, true, 1000)){
+                            if(drive.moveIMU(maxPower, minPower, 0, 0, 0, 0, 0.001, orientation, true, 1000)){
                                 telemetry.addData("Move", "Pivot");
                             }else{
                                 telemetry.addData("Pivot", "Finished");
@@ -470,7 +470,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
                         case 3: //Move for time
                             powerChange = condition - timer.seconds();
-                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .025, .0001, orientation,
+                            if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .025, .0001, orientation,
                                     timer.seconds() > condition, timeAfterAngle)){
                             }else{
                                 telemetry.addData("Slide", "Finished");
@@ -484,7 +484,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
                         case 4: //VuMark
                             powerChange = (vuMarkDistance * COUNTS_PER_INCH) - drive.averageEncoders();
-                            if(drive.move(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
+                            if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
                                     vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
                                 telemetry.addData("Max Power", maxPower);
                                 telemetry.addData("Min Power", minPower);
