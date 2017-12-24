@@ -46,7 +46,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     List<DcMotor> driveMotors;
 
-    boolean spinAtOrigin = true;
+    boolean hasSpinned = false;
     boolean spinPressed = false;
     boolean incrementPressed = false;
     boolean decrementPressed = false;
@@ -54,6 +54,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     boolean intakeDirection = false;
     boolean intakePressed = false;
 
+    boolean limitSwitchPressed = false;
+    int desiredEncoderPosition = 0;
 
     enum liftState {
         MANUAL,
@@ -83,6 +85,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     final int LIFT_POSITION4 = 1100;
     final int ROTATE_POSITION = 600;
 
+    final int[] LIFT_POSITIONS = {160, 840, 1460, 2230};
+
     final double ANALOG_PRESSED = .5;
 
     final double LIFT_GRACE_AREA = 100;
@@ -93,7 +97,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     final double JEWEL_PAN_START = .55;
     final double JEWEL_TILT_START = 1;
 
-    final double ROTATION_TIME = 50;
+    final double ROTATION_TIME = 250;
 
 
 
@@ -148,6 +152,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         relic_arm = hardwareMap.servo.get("relic_arm");
         relic_claw = hardwareMap.servo.get("relic_claw");
         relic_tilt = hardwareMap.servo.get("relic_tilt");
@@ -188,6 +195,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         //tilt.setPosition(JEWEL_TILT_START);
         jewel.setPanTiltPos(JEWEL_PAN_START, JEWEL_TILT_START);
         relic.setArmPosition(RELIC_ARM_ORIGIN);
+        desiredEncoderPosition = intake.returnLiftPosition();
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        ElapsedTime liftTime = new ElapsedTime();
 
         while (opModeIsActive()) {
 
@@ -200,11 +210,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                                 glyphRotateState = rotateState.ROTATING;
                                 rotateTime.reset();
                                 lowerLift = false;
+                                hasSpinned = false;
                             }else{
                                 glyphLiftState = liftState.POSITION;
                                 liftIncriment = 1.5;
                                 glyphRotateState = rotateState.LIFTING;
                                 lowerLift = true;
+                                hasSpinned = false;
                                 lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             }
                         }
@@ -215,16 +227,23 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     break;
 
                 case ROTATING:
-                    intake.spin();
+                    if(!hasSpinned){
+                        intake.spin();
+                        hasSpinned = true;
+                    }else{
+                        hasSpinned = true;
+                    }
+
                     if(rotateTime.milliseconds()>ROTATION_TIME){
-                        spinAtOrigin = !spinAtOrigin;
                         if(lowerLift){
                             glyphRotateState = rotateState.LOWERING;
                             glyphLiftState = liftState.POSITION;
                             liftIncriment = 0;
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            hasSpinned = false;
                         }else{
                             glyphRotateState = rotateState.MANUAL;
+                            hasSpinned = false;
                         }
                     }
                     break;
@@ -247,7 +266,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
 
             //Glyph Lift State Machine
-            switch (glyphLiftState) {
+            /*switch (glyphLiftState) {
                 case MANUAL:
                     intake.checkGlyphLiftLimit();
 
@@ -271,7 +290,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             lift.setPower(LIFT_POWER_UP);
                         }
 
-                    } else*/
+                    } else
                     if (gamepadPlus2.a()) {
                         if (!decrementPressed) {
                             if (lift.getCurrentPosition() < LIFT_POSITION1 + LIFT_GRACE_AREA) {
@@ -304,7 +323,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         incrementPressed = true;
                     }/* else {
                         lift.setPower(0);
-                    }*/
+                    }
 
                     break;
                 case POSITION:
@@ -335,17 +354,17 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     } else if (liftIncriment == 4) {
                         lift.setTargetPosition(LIFT_POSITION4);
                     } else if (liftIncriment == 0) {
-                        lift.setTargetPosition(0);
+                        intake.setLiftPower(LIFT_POWER_DOWN);
                     } else if (liftIncriment == 1.5){
                         lift.setTargetPosition(ROTATE_POSITION);
                     }
-                    if (!lift.isBusy() || gamepadPlus2.leftTrigger() > ANALOG_PRESSED || gamepadPlus2.rightTrigger() > ANALOG_PRESSED) {
+                    if (!lift.isBusy() || gamepadPlus2.leftTrigger() > ANALOG_PRESSED || gamepadPlus2.rightTrigger() > ANALOG_PRESSED || !glyphLimit.getState()) {
                         glyphLiftState = liftState.MANUAL;
                         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     }
                     lift.setPower(LIFT_POWER_UP);
                     break;
-            }
+            }*/
 
             //Drivetrain controls
             /*switch (hand){
@@ -394,7 +413,74 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
             }
 
+            if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
+                desiredEncoderPosition -= 100;
+            }else if(gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 2600){
+                desiredEncoderPosition += 100;
+            }
 
+            if(desiredEncoderPosition > 2600) { desiredEncoderPosition = 2600; }
+            //else if(desiredEncoderPosition < 0) { desiredEncoderPosition = 0; }
+
+            if(!(gamepadPlus2.leftTrigger() > ANALOG_PRESSED) && !(gamepadPlus2.rightTrigger() > ANALOG_PRESSED) && liftTime.seconds() > 2){
+                desiredEncoderPosition = intake.returnLiftPosition();
+            }
+
+            if(!glyphLimit.getState()){
+                if(!limitSwitchPressed) {
+                    lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    desiredEncoderPosition = 0;
+                }
+                limitSwitchPressed = true;
+            }else{
+                limitSwitchPressed = false;
+            }
+
+            if (gamepadPlus2.y() && intake.returnLiftPosition() < LIFT_POSITIONS[3]) {
+                if (!incrementPressed) {
+                    int currentPosition = intake.returnLiftPosition();
+                    liftTime.reset();
+                    if(currentPosition < LIFT_POSITIONS[0] - LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[0];
+                    }else if(currentPosition < LIFT_POSITIONS[1] - LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[1];
+                    }
+                    else if(currentPosition < LIFT_POSITIONS[2] - LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[2];
+                    }else if(currentPosition < LIFT_POSITIONS[3] - LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[3];
+                    }
+                    incrementPressed = true;
+                }
+
+            } else {
+                incrementPressed = false;
+            }
+            if (gamepadPlus2.a() && intake.returnLiftPosition() > LIFT_POSITIONS[0]) {
+                if (!decrementPressed) {
+                    int currentPosition = intake.returnLiftPosition();
+                    liftTime.reset();
+                    if(currentPosition > LIFT_POSITIONS[0] + LIFT_GRACE_AREA && currentPosition < LIFT_POSITIONS[1] + LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[0];
+                    }else if(currentPosition > LIFT_POSITIONS[1] + LIFT_GRACE_AREA && currentPosition < LIFT_POSITIONS[2] + LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[1];
+                    }
+                    else if(currentPosition > LIFT_POSITIONS[2] + LIFT_GRACE_AREA && currentPosition < LIFT_POSITIONS[3] + LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[2];
+                    }else if(currentPosition > LIFT_POSITIONS[3] + LIFT_GRACE_AREA){
+                        desiredEncoderPosition = LIFT_POSITIONS[3];
+                    }
+                    decrementPressed = true;
+                }
+
+            } else {
+                decrementPressed = false;
+            }
+
+
+            lift.setTargetPosition(desiredEncoderPosition);
+            lift.setPower(1);
 
             //Relic Extension Motor Controls with Encoder Limits
             if (gamepadPlus2.rightBumper()) {
@@ -421,9 +507,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             } else if (gamepad2.dpad_right) {
                 relic.releaseRelic();
             }
-            if(gamepadPlus2.y()){
+            if(gamepadPlus2.x()){
                 relic.setArmPosition(RELIC_ARM_GRAB_POS);
-            }else if(gamepadPlus1.a() || gamepadPlus2.a()){
+            }else if(gamepadPlus1.a()){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
                 relic.setTiltPosition(1);
@@ -475,6 +561,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             telemetry.addData("Relic Tilt Pos", relic_tilt.getPosition());
             telemetry.addData("Relic Arm Pos", relic_arm.getPosition());
             telemetry.addData("Glyph State", glyphLiftState);
+            telemetry.addData("Desired Encoder Position", desiredEncoderPosition);
+            telemetry.addData("Limit Switch Pressed", limitSwitchPressed);
+            telemetry.addData("Glyph Limit", glyphLimit.getState());
             telemetry.update();
 
         }
