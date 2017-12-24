@@ -79,6 +79,44 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.newLine();
 
     }
+
+    public OmniDirectionalDrive(List<DcMotor> motors, Telemetry telemetry){
+        this.motors = motors;
+        this.imu = null;
+        this.telemetry = telemetry;
+        data = new DataLogger(new Date().toString()+"Omni Directional");
+        pivotTime = new ElapsedTime();
+        accThread = new AccelerationThread();
+        boolean runThread = false;
+        for(DcMotor motor:motors){
+            if(motor.getClass()==AcceleratedDcMotor.class){
+                runThread=true;
+                accThread.addMotor((AcceleratedDcMotor) motor);
+            }
+        }
+        if(runThread){
+            accThread.start();
+        }
+
+        data.addField("Slide or Pivot");
+        data.addField("high power");
+        data.addField("low power");
+        data.addField("move angle");
+        data.addField("orientation");
+        data.addField("power change");
+        data.addField("power gain");
+        data.addField("o gain");
+        data.addField("current angle");
+        data.addField("adjusted current angle");
+        data.addField("adjusted move angle");
+        data.addField("power");
+        data.addField("adjusted power");
+        data.addField("horizontal");
+        data.addField("vertical");
+        data.addField("pivot correction");
+        data.newLine();
+
+    }
 /*
     public OmniDirectionalDrive(List<DcMotor> motors, IIMU imu){
         this.motors = motors;
@@ -110,7 +148,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
      * @return true if method still needs to run to finish action or false if method is done running
      */
     @Override
-    public boolean move(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
+    public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
         if((endCondition&&
                 (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
                 ||needsToPivot){
@@ -129,6 +167,22 @@ public class OmniDirectionalDrive implements IDrivetrain {
             return false;
         }
 
+    }
+
+    @Override
+    public boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount) {
+        //return the new X and Y values using the angle needed and the speed the robot was
+        //traveling at
+        double horizontal = Utilities.round2D(calculateX(angle, speed));
+        double vertical = Utilities.round2D(calculateY(angle, speed));
+
+        //determine the powers using the new X and Y values and the other joystick to pivot
+        if (condition) {
+            rawSlide(horizontal, vertical, pivotAmount, speed);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

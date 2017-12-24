@@ -80,7 +80,7 @@ public class OmniDirectionalAutonomousDemo extends LinearOpMode {
 /*
         while(opModeIsActive()&&drive.move(0.5, 0.2, 0, 0, 0, 0, 0.0001, 90, true, 1000));
 */
-        while(opModeIsActive()&&drive.move(.5, MIN_POWER, 12*COUNTS_PER_INCH-drive.averageEncoders(), 0.003, 45, .025, .003, 0,
+        while(opModeIsActive()&&drive.moveIMU(.5, MIN_POWER, 12*COUNTS_PER_INCH-drive.averageEncoders(), 0.003, 45, .025, .003, 0,
                 24*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && 24*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, 1000));
 
 /*

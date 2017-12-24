@@ -17,4 +17,6 @@ public class MRRangeSensor implements IUltrasonic {
     public double cmDistance() {
         return ultrasonic.cmUltrasonic();
     }
+
+    public double opticalDistance() { return ultrasonic.cmOptical(); }
 }

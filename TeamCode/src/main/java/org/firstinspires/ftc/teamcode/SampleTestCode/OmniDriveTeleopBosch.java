@@ -79,7 +79,7 @@ public class OmniDriveTeleopBosch extends LinearOpMode {
             telemetry.addData("Desired Angle", gamepadPlus1.getAngleLeftStick());
             telemetry.addData("Desired Power", gamepadPlus1.getDistanceFromCenterLeft());
             telemetry.update();
-            drive.move(1, 0, gamepadPlus1.getDistanceFromCenterRight(), 1, gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterLeft()*.02, 0, imu.getZAngle()+gamepadPlus1.leftStickX() * 40, false, 0);
+            drive.moveIMU(1, 0, gamepadPlus1.getDistanceFromCenterRight(), 1, gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterLeft()*.02, 0, imu.getZAngle()+gamepadPlus1.leftStickX() * 40, false, 0);
 
 
         }
