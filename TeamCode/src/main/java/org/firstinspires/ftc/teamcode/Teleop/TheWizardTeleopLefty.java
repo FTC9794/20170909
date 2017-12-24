@@ -37,7 +37,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     DcMotor lift, relic_extension;
     DcMotor rf, rb, lf, lb;
 
-    double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
+    //double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
     ClawThreePoint relic;
     DualWheelIntake intake;
