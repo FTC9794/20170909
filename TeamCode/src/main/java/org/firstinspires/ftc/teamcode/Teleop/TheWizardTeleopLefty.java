@@ -479,8 +479,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
 
 
-            lift.setTargetPosition(desiredEncoderPosition);
-            lift.setPower(1);
+            /*lift.setTargetPosition(desiredEncoderPosition);
+            lift.setPower(1);*/
+            intake.setLiftTargetPosition(desiredEncoderPosition, LIFT_POWER_UP);
 
             //Relic Extension Motor Controls with Encoder Limits
             if (gamepadPlus2.rightBumper()) {
