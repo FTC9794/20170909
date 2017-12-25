@@ -214,6 +214,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             }else{
                                 glyphLiftState = liftState.POSITION;
                                 liftIncriment = 1.5;
+                                liftTime.reset();
                                 glyphRotateState = rotateState.LIFTING;
                                 lowerLift = true;
                                 hasSpinned = false;
@@ -237,6 +238,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     if(rotateTime.milliseconds()>ROTATION_TIME){
                         if(lowerLift){
                             glyphRotateState = rotateState.LOWERING;
+                            liftTime.reset();
                             glyphLiftState = liftState.POSITION;
                             liftIncriment = 0;
                             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -249,17 +251,22 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     break;
 
                 case LIFTING:
-
+                    desiredEncoderPosition = LIFT_POSITIONS[1];
                     if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
                         glyphRotateState = rotateState.MANUAL;
-                    }else if(!lift.isBusy()){
+                        desiredEncoderPosition = intake.returnLiftPosition();
+                    }else if(!lift.isBusy() || liftTime.milliseconds() > 1750){
                         glyphRotateState = rotateState.ROTATING;
                         rotateTime.reset();
                     }
                     break;
 
                 case LOWERING:
-                    if(!lift.isBusy()){
+                    desiredEncoderPosition = 0;
+                    if(gamepadPlus2.leftTrigger()>ANALOG_PRESSED||gamepadPlus2.rightTrigger()>ANALOG_PRESSED) {
+                        glyphRotateState = rotateState.MANUAL;
+                        desiredEncoderPosition = intake.returnLiftPosition();
+                    }else if(!lift.isBusy() || liftTime.milliseconds() > 1750 || !glyphLimit.getState()){
                         glyphRotateState = rotateState.MANUAL;
                     }
                     break;
