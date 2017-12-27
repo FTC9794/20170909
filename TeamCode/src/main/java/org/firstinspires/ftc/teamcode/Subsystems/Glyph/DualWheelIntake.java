@@ -96,6 +96,11 @@ public class DualWheelIntake implements IGlyph {
         }
     }
 
+    public void setLiftTargetPosition(int targetPosition, double power){
+        lift.setTargetPosition(targetPosition);
+        setLiftPower(power);
+    }
+
     public void spin(){
         if(spinAtOrigin){
             spin.setPosition(SPIN_ROTATED);
