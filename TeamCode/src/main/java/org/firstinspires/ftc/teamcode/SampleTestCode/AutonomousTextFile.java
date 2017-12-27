@@ -424,25 +424,17 @@ public class AutonomousTextFile extends LinearOpMode {
                     if(lookupTable[lookupCount][STATE_ACTION].indexOf("NoIMU") != -1){
                         //Get move parameters
                         String abbreviatedAction = lookupTable[lookupCount][STATE_ACTION]; //Separate parameters from rest of string
-                        abbreviatedAction = abbreviatedAction.substring(11, abbreviatedAction.length()-1);
+                        abbreviatedAction = abbreviatedAction.substring(16, abbreviatedAction.length()-1);
                         String[] moveParameters = abbreviatedAction.split(",");
-                        double maxPower = Double.parseDouble(moveParameters[0]);        //Get Maz Power
-                        double minPower = Double.parseDouble(moveParameters[1]);        //Get Min Power
-                        int moveAngle = Integer.parseInt(moveParameters[2]);            //Get Move Angle
-                        int orientation = Integer.parseInt(moveParameters[3]);          //Get Orientation
-                        double timeAfterAngle = Double.parseDouble(moveParameters[4]);  //Get time after angle
-                        double powerChange;                                             //Will be calculated within case
+                        double maxPower = Double.parseDouble(moveParameters[1]);        //Get Max Power
+                        int moveAngle = Integer.parseInt(moveParameters[0]);            //Get Move Angle
 
                         switch (slideCaseNum){
                             case 1: //Encoders
-                                powerChange = (condition * COUNTS_PER_INCH) - drive.averageEncoders();
-                                if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
-                                        condition*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && condition*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                if(drive.averageEncoders() < condition*COUNTS_PER_INCH){
+                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
                                     telemetry.addData("Max Power", maxPower);
-                                    telemetry.addData("Min Power", minPower);
-                                    telemetry.addData("power change", powerChange);
                                     telemetry.addData("move angle", moveAngle);
-                                    telemetry.addData("orientation", orientation);
                                     telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
                                     telemetry.addData("Encoder Count", encoderAverage);
                                     telemetry.addData("Condition", condition);
@@ -457,9 +449,8 @@ public class AutonomousTextFile extends LinearOpMode {
                                 break;
 
                             case 2: //Move for time
-                                powerChange = condition - timer.seconds();
-                                if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .025, .0001, orientation,
-                                        timer.seconds() > condition, timeAfterAngle)){
+                                if(timer.milliseconds() < condition){
+                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
                                 }else{
                                     telemetry.addData("Slide", "Finished");
                                     timer.reset();
@@ -471,14 +462,10 @@ public class AutonomousTextFile extends LinearOpMode {
                                 break;
 
                             case 3: //VuMark
-                                powerChange = (vuMarkDistance * COUNTS_PER_INCH) - drive.averageEncoders();
-                                if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
-                                        vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && vuMarkDistance*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                if(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH){
+                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
                                     telemetry.addData("Max Power", maxPower);
-                                    telemetry.addData("Min Power", minPower);
-                                    telemetry.addData("power change", powerChange);
                                     telemetry.addData("move angle", moveAngle);
-                                    telemetry.addData("orientation", orientation);
                                     telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
                                     telemetry.addData("Encoder Count", encoderAverage);
                                     telemetry.addData("Condition", condition);
