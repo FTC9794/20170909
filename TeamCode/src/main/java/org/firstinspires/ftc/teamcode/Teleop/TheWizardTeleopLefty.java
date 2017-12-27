@@ -477,6 +477,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         desiredEncoderPosition = LIFT_POSITIONS[2];
                     }else if(currentPosition > LIFT_POSITIONS[3] + LIFT_GRACE_AREA){
                         desiredEncoderPosition = LIFT_POSITIONS[3];
+                    }else if(currentPosition < LIFT_POSITIONS[0]){
+                        desiredEncoderPosition = 0;
                     }
                     decrementPressed = true;
                 }
