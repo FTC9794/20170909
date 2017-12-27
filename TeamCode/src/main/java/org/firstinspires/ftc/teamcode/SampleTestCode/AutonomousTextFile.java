@@ -5,8 +5,10 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -36,6 +38,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.AcceleratedDcMotor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.IDrivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.FourArmRotatingGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
@@ -55,23 +58,27 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 @Autonomous(name = "Autonomous Text File", group = "Test")
 public class AutonomousTextFile extends LinearOpMode {
 
-    DcMotor rf, rb, lf, lb;
-    DcMotor lift, relic_extension;
     BNO055IMU boschIMU;
-    LynxI2cColorRangeSensor lynx;
-    FourArmRotatingGlyph glyph;
+    DualWheelIntake intake;
     ClawThreePoint relic;
+    IColorSensor color;
+    TwoPointJewelArm jewel;
 
     VuforiaLocalizer vuforia;
 
     Servo pan, tilt;
-    Servo right1, right2, left1, left2, spin;
-    Servo relic_claw, relic_arm, relic_tilt;
-    IIMU imu;
-    IColorSensor colorSensor;
-    OmniDirectionalDrive drive;
-    TwoPointJewelArm jewel;
+    CRServo rightWheel1, rightWheel2, leftWheel1, leftWheel2;
+    Servo spin;
+    DcMotor rf, rb, lf, lb;
     List<DcMotor> motors;
+    DcMotor lift;
+    DcMotor relic_extension;
+    Servo relic_claw, relic_arm, relic_tilt;
+    DigitalChannel glyphLimit;
+    LynxI2cColorRangeSensor lynx;
+    IIMU imu;
+    OmniDirectionalDrive drive;
+
     ElapsedTime timer;
     String vumarkSeen = "";
     double vuMarkDistance = 28;
@@ -192,10 +199,11 @@ public class AutonomousTextFile extends LinearOpMode {
         pan = hardwareMap.servo.get("jewel_pan");
         tilt = hardwareMap.servo.get("jewel_tilt");
 
-        //right1 = hardwareMap.servo.get("right_glyph1");
-        right2 = hardwareMap.servo.get("right_glyph2");
-        //left1 = hardwareMap.servo.get("left_glyph1");
-        left2 = hardwareMap.servo.get("left_glyph2");
+        rightWheel1 = hardwareMap.crservo.get("right_glyph1");
+        leftWheel1 = hardwareMap.crservo.get("left_glyph1");
+        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
+        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+
         spin = hardwareMap.servo.get("spin_grip");
 
         relic_extension = hardwareMap.dcMotor.get("relic_extension");
@@ -210,36 +218,21 @@ public class AutonomousTextFile extends LinearOpMode {
         relic_tilt = hardwareMap.servo.get("relic_tilt");
 
 
-        colorSensor = new LynxColorRangeSensor(lynx);
-        jewel = new TwoPointJewelArm(pan, tilt, colorSensor, telemetry);
+        color = new LynxColorRangeSensor(lynx);
+        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
         telemetry.addData("Init", "Jewel Hardware Initialized");
         telemetry.update();
         jewel.setPanTiltPos(0.5, 1);
         telemetry.addData("Init", "Jewel Servos Set");
         telemetry.update();
 
-        right2.setDirection(Servo.Direction.REVERSE);
-        //left1.setDirection(Servo.Direction.REVERSE);
-
-        //right1.setPosition(GRIP_OPEN1);
-        right2.setPosition(GRIP_OPEN2);
-        //left1.setPosition(GRIP_OPEN1);
-        left2.setPosition(GRIP_OPEN2);
-
-        spin.setPosition(SPIN_START);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
         telemetry.addData("Init", "Initialized Glyph System");
         telemetry.update();
 
-        relic_claw.setPosition(RELIC_CLAW_CLOSED);
-        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
-        relic_arm.setPosition(RELIC_ARM_ORIGIN);
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
-        relic_claw.setPosition(RELIC_CLAW_CLOSED);
-        relic_tilt.setPosition(RELIC_TILT_ORIGIN);
-        relic_arm.setPosition(RELIC_ARM_ORIGIN);
         telemetry.addData("Init", "Initialized Relic System");
         telemetry.update();
 
@@ -431,7 +424,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
                         switch (slideCaseNum){
                             case 1: //Encoders
-                                if(drive.averageEncoders() < condition*COUNTS_PER_INCH){
+                                if(drive.averageEncoders() < condition){
                                     drive.moveNoIMU(moveAngle, maxPower, true, 0);
                                     telemetry.addData("Max Power", maxPower);
                                     telemetry.addData("move angle", moveAngle);
@@ -495,9 +488,9 @@ public class AutonomousTextFile extends LinearOpMode {
 
                         switch (slideCaseNum){
                             case 1: //Encoders
-                                powerChange = (condition * COUNTS_PER_INCH) - drive.averageEncoders();
+                                powerChange = (condition) - drive.averageEncoders();
                                 if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
-                                        condition*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && condition*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                        condition - drive.averageEncoders() < ENCODER_OFFSET && condition - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
                                     telemetry.addData("Max Power", maxPower);
                                     telemetry.addData("Min Power", minPower);
                                     telemetry.addData("power change", powerChange);
