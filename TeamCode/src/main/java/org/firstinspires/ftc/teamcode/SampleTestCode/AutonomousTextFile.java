@@ -62,6 +62,7 @@ public class AutonomousTextFile extends LinearOpMode {
     DualWheelIntake intake;
     ClawThreePoint relic;
     IColorSensor color;
+    IColorSensor floor_color;
     TwoPointJewelArm jewel;
 
     VuforiaLocalizer vuforia;
@@ -75,7 +76,7 @@ public class AutonomousTextFile extends LinearOpMode {
     DcMotor relic_extension;
     Servo relic_claw, relic_arm, relic_tilt;
     DigitalChannel glyphLimit;
-    LynxI2cColorRangeSensor lynx;
+    LynxI2cColorRangeSensor lynx, lynx_floor;
     IIMU imu;
     OmniDirectionalDrive drive;
 
@@ -100,7 +101,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
 
     JexlEngine jexl = new JexlBuilder().create();
-    String autoFileName = "test.txt";
+    String autoFileName = "RedStone1.txt";
     File autoFile = AppUtil.getInstance().getSettingsFile(autoFileName);
     String fileText = "";
     String[] inputs;
@@ -196,6 +197,7 @@ public class AutonomousTextFile extends LinearOpMode {
         lift = hardwareMap.dcMotor.get("glyph_lift");
 
         lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
+        lynx_floor = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
         pan = hardwareMap.servo.get("jewel_pan");
         tilt = hardwareMap.servo.get("jewel_tilt");
 
@@ -219,21 +221,21 @@ public class AutonomousTextFile extends LinearOpMode {
 
 
         color = new LynxColorRangeSensor(lynx);
+        floor_color = new LynxColorRangeSensor(lynx_floor);
         jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
-        telemetry.addData("Init", "Jewel Hardware Initialized");
+        telemetry.addData("Init", "Jewel, Relic Hardware Initialized");
         telemetry.update();
         jewel.setPanTiltPos(0.5, 1);
         telemetry.addData("Init", "Jewel Servos Set");
         telemetry.update();
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        telemetry.addData("Init", "Initialized Glyph System");
-        telemetry.update();
-
-        telemetry.addData("Init", "Initialized Relic System");
+        telemetry.addData("Init", "Initialized Intake System");
         telemetry.update();
 
         //create array list of motors
@@ -253,8 +255,8 @@ public class AutonomousTextFile extends LinearOpMode {
         telemetry.update();
         boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
         imu = new BoschIMU(boschIMU);
+        imu.initialize();
         imu.setOffset(0);
-        imu.calibrate();
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
 
@@ -267,11 +269,13 @@ public class AutonomousTextFile extends LinearOpMode {
         timer = new ElapsedTime();
         telemetry.addData("Init", "Timer Initialized");
         telemetry.addData("Init", "Completed");
+        telemetry.addData("Lookuptable 0, 0", lookupTable[0][0]);
         telemetry.update();
         waitForStart();
         relicTrackables.activate();
         timer.reset();
         while(opModeIsActive()){
+            telemetry.addData("Autonomous", "In Loop, Running");
             imuAngle = imu.getZAngle();
             encoderAverage = drive.averageEncoders();
 

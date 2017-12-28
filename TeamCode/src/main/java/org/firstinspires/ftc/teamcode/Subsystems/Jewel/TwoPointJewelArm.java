@@ -63,21 +63,21 @@ public class TwoPointJewelArm implements IJewel {
         if(alliance.equals("blue")){
             if(ballColor.equals("blue")){
                 while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.01, 0.23);
+                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.23);
                 }
             }else{
                 while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.01, 0.23);
+                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.23);
                 }
             }
         }else if(alliance.equals("red")){
             if(ballColor.equals("red")){
                 while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.01, 0.23);
+                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.23);
                 }
             }else{
                 while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.01, 0.23);
+                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.23);
                 }
             }
         }

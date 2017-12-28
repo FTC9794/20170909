@@ -42,6 +42,7 @@ public class DualWheelIntake implements IGlyph {
         this.lift = lift;
         this.glyphLimit = glyphLimit;
 
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
