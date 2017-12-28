@@ -49,65 +49,79 @@ public class DualWheelIntake implements IGlyph {
     }
 
     @Override
-    public void secureGlyph() {
+    public boolean secureGlyph() {
         rightWheel1.setPower(INTAKE_SPPED);
         rightWheel2.setPower(INTAKE_SPPED);
         leftWheel1.setPower(INTAKE_SPPED);
         leftWheel2.setPower(INTAKE_SPPED);
+        return true;
     }
 
     @Override
-    public void dispenseGlyph() {
+    public boolean dispenseGlyph() {
         rightWheel1.setPower(OUTTAKE_SPEED);
         rightWheel2.setPower(OUTTAKE_SPEED);
         leftWheel1.setPower(OUTTAKE_SPEED);
         leftWheel2.setPower(OUTTAKE_SPEED);
+        return true;
     }
 
-    public void setIntakePowerZero(){
+    public boolean setIntakePowerZero(){
         rightWheel1.setPower(0);
         rightWheel2.setPower(0);
         leftWheel1.setPower(0);
         leftWheel2.setPower(0);
+        return true;
     }
 
     @Override
-    public void changeHeight(double power, boolean condition) {
+    public boolean changeHeight(double power, boolean condition) {
         if(condition){
             lift.setPower(power);
+            return true;
+        }else{
+            return false;
         }
     }
 
-    public void setLiftPower(double power){
+    public boolean setLiftPower(double power){
         lift.setPower(power);
+        return true;
     }
 
-    public void setLiftPowerZero(boolean condition){
+    public boolean setLiftPowerZero(boolean condition){
         if(condition){
             lift.setPower(0);
+            return true;
+        }else{
+            return false;
         }
     }
 
-    public void checkGlyphLiftLimit(){
+    public boolean checkGlyphLiftLimit(){
         if (!glyphLimit.getState()) {
             lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+            return true;
+        }else{
+            return false;
         }
     }
 
-    public void setLiftTargetPosition(int targetPosition, double power){
+    public boolean setLiftTargetPosition(int targetPosition, double power){
         lift.setTargetPosition(targetPosition);
         setLiftPower(power);
+        return true;
     }
 
-    public void spin(){
+    public boolean spin(){
         if(spinAtOrigin){
             spin.setPosition(SPIN_ROTATED);
         }else{
             spin.setPosition(SPIN_START);
         }
         spinAtOrigin = !spinAtOrigin;
+        return true;
     }
 
     public int returnLiftPosition(){ return lift.getCurrentPosition(); }

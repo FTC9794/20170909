@@ -228,8 +228,8 @@ public class AutonomousTextFile extends LinearOpMode {
         telemetry.update();
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        //glyph = new FourArmRotatingGlyph(right1, right2, left1, left2, spin, lift);
+        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
+        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         telemetry.addData("Init", "Initialized Glyph System");
         telemetry.update();
 
@@ -308,6 +308,26 @@ public class AutonomousTextFile extends LinearOpMode {
                         lookupCount++;
                         drive.resetEncoders();
                     }
+                    break;
+
+                case "intake":
+                    String jexlExpIntake = lookupTable[lookupCount][STATE_ACTION];
+                    telemetry.addData("Intake", "Got Expression");
+                    telemetry.update();
+                    JexlExpression eIntake = jexl.createExpression(jexlExpIntake);
+                    JexlContext contextIntake = new MapContext();
+                    telemetry.addData("Intake", "Made Jexl Expression");
+                    telemetry.update();
+                    contextIntake.set("intake", intake);
+                    Object evaluatedExpressionObjIntake = eIntake.evaluate(contextIntake);
+                    telemetry.addData("Intake", "Evaluated Context");
+                    telemetry.update();
+                    Object intakeReult = evaluatedExpressionObjIntake;
+                    telemetry.addData("Intake", "Assigned Result to Var");
+                    telemetry.update();
+                    timer.reset();
+                    lookupCount++;
+                    drive.resetEncoders();
                     break;
 
                 case "jewel":

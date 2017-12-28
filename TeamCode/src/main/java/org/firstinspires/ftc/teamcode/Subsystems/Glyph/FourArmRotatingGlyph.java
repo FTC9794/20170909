@@ -62,7 +62,7 @@ public class FourArmRotatingGlyph implements  IGlyph {
     }
 
     @Override
-    public void secureGlyph() {
+    public boolean secureGlyph() {
         if(spinAtOrigin){
             right2.setPosition(GRIP_CLOSE2);
             left2.setPosition(GRIP_CLOSE2);
@@ -70,9 +70,10 @@ public class FourArmRotatingGlyph implements  IGlyph {
             right1.setPosition(GRIP_CLOSE1);
             left1.setPosition(GRIP_CLOSE1);
         }
+        return true;
     }
 
-    public void secureTopGlyph() {
+    public boolean secureTopGlyph() {
         if (spinAtOrigin) {
             right1.setPosition(GRIP_CLOSE1);
             left1.setPosition(GRIP_CLOSE1);
@@ -80,10 +81,11 @@ public class FourArmRotatingGlyph implements  IGlyph {
             right2.setPosition(GRIP_CLOSE2);
             left2.setPosition(GRIP_CLOSE2);
         }
+        return true;
     }
 
     @Override
-    public void dispenseGlyph() {
+    public boolean dispenseGlyph() {
         if(spinAtOrigin){
             right2.setPosition(GRIP_OPEN2);
             left2.setPosition(GRIP_OPEN2);
@@ -91,6 +93,7 @@ public class FourArmRotatingGlyph implements  IGlyph {
             right1.setPosition(GRIP_OPEN1);
             left1.setPosition(GRIP_OPEN1);
         }
+        return true;
     }
 
     public void dispenseTopGlyph(){
@@ -114,11 +117,13 @@ public class FourArmRotatingGlyph implements  IGlyph {
     }
 
     @Override
-    public void changeHeight(double power, boolean condition) {
+    public boolean changeHeight(double power, boolean condition) {
         if(condition){
             this.lift.setPower(power);
+            return true;
         }else{
             this.lift.setPower(0);
+            return false;
         }
     }
 }
