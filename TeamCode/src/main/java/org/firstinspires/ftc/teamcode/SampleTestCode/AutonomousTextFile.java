@@ -418,17 +418,6 @@ public class AutonomousTextFile extends LinearOpMode {
                     }
                     break;
 
-                case "glyph":
-                    String glyphExpJewel = lookupTable[lookupCount][STATE_ACTION];
-                    telemetry.addData("Glyph", "Got Expression");
-                    telemetry.update();
-                    //Create JEXL Expression
-                    JexlExpression eGlyph = jexl.createExpression(glyphExpJewel);
-                    JexlContext contextGlyph = new MapContext();
-                    telemetry.addData("Glyph", "Made JEXL Expression");
-                    telemetry.update();
-                    break;
-
                 case "move":
                     //Get condition
                     String[] slideCondition = (lookupTable[lookupCount][STATE_CONDITION].split("-"));
@@ -441,11 +430,18 @@ public class AutonomousTextFile extends LinearOpMode {
                         String[] moveParameters = abbreviatedAction.split(",");
                         double maxPower = Double.parseDouble(moveParameters[1]);        //Get Max Power
                         int moveAngle = Integer.parseInt(moveParameters[0]);            //Get Move Angle
-
+                        String moveNoIMUString = "";
                         switch (slideCaseNum){
                             case 1: //Encoders
                                 if(drive.averageEncoders() < condition){
-                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
+                                    moveNoIMUString = lookupTable[lookupCount][STATE_ACTION];
+                                    JexlExpression moveNoIMUExp = jexl.createExpression(moveNoIMUString);
+                                    JexlContext moveNoIMUConext = new MapContext();
+                                    moveNoIMUConext.set("true", true);
+                                    moveNoIMUConext.set("drive", drive);
+                                    //drive.moveNoIMU(moveAngle, maxPower, true, 0);
+                                    Object moveNoIMUResult = moveNoIMUExp.evaluate(moveNoIMUConext);
+
                                     telemetry.addData("Max Power", maxPower);
                                     telemetry.addData("move angle", moveAngle);
                                     telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
