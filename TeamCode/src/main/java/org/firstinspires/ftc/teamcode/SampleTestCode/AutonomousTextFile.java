@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -45,6 +46,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
+import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
+import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.MRRangeSensor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -64,6 +67,8 @@ public class AutonomousTextFile extends LinearOpMode {
     IColorSensor color;
     IColorSensor floor_color;
     TwoPointJewelArm jewel;
+    IUltrasonic jewel_us;
+    IUltrasonic back_us;
 
     VuforiaLocalizer vuforia;
 
@@ -79,10 +84,12 @@ public class AutonomousTextFile extends LinearOpMode {
     LynxI2cColorRangeSensor lynx, lynx_floor;
     IIMU imu;
     OmniDirectionalDrive drive;
+    ModernRoboticsI2cRangeSensor ultrasonic_jewel;
+    ModernRoboticsI2cRangeSensor ultrasonic_back;
 
     ElapsedTime timer;
     String vumarkSeen = "";
-    double vuMarkDistance = 28;
+    double vuMarkDistance = 36;
 
     final double GRIP_OPEN1 = .5;
     final double GRIP_OPEN2 = .5;
@@ -251,6 +258,29 @@ public class AutonomousTextFile extends LinearOpMode {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
+        int aligned = 0;
+        ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
+        jewel_us = new MRRangeSensor(ultrasonic_jewel);
+        ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
+        back_us = new MRRangeSensor(ultrasonic_back);
+        while(aligned == 0){
+            telemetry.addData("Jewel Ultrasonic", jewel_us.cmDistance());
+            telemetry.addData("Back Ultrasnoic", back_us.cmDistance());
+            if(back_us.cmDistance() == 38 && jewel_us.cmDistance() == 35){
+                telemetry.addData("Alinged", "True");
+            }else{
+                telemetry.addData("Aligned", "False");
+            }
+            telemetry.update();
+            if(isStopRequested()){
+                aligned = 1;
+            }else if(gamepad1.a){
+                aligned = 1;
+            }
+            telemetry.update();
+        }
+        telemetry.update();
+
         telemetry.addData("Init", "IMU Calibrating");
         telemetry.update();
         boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
@@ -269,7 +299,6 @@ public class AutonomousTextFile extends LinearOpMode {
         timer = new ElapsedTime();
         telemetry.addData("Init", "Timer Initialized");
         telemetry.addData("Init", "Completed");
-        telemetry.addData("Lookuptable 0, 0", lookupTable[0][0]);
         telemetry.update();
         waitForStart();
         relicTrackables.activate();
@@ -410,7 +439,7 @@ public class AutonomousTextFile extends LinearOpMode {
                         drive.resetEncoders();
                         lookupCount++;
                     }else if (vumarkSeen.equals("RIGHT")){
-                        vuMarkDistance = 28;
+                        vuMarkDistance = 25;
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
@@ -437,17 +466,14 @@ public class AutonomousTextFile extends LinearOpMode {
                         String moveNoIMUString = "";
                         switch (slideCaseNum){
                             case 1: //Encoders
-                                if(drive.averageEncoders() < condition){
+                                if(drive.averageEncoders() < condition*COUNTS_PER_INCH){
                                     moveNoIMUString = lookupTable[lookupCount][STATE_ACTION];
                                     JexlExpression moveNoIMUExp = jexl.createExpression(moveNoIMUString);
                                     JexlContext moveNoIMUConext = new MapContext();
                                     moveNoIMUConext.set("true", true);
                                     moveNoIMUConext.set("drive", drive);
-                                    //drive.moveNoIMU(moveAngle, maxPower, true, 0);
                                     Object moveNoIMUResult = moveNoIMUExp.evaluate(moveNoIMUConext);
 
-                                    telemetry.addData("Max Power", maxPower);
-                                    telemetry.addData("move angle", moveAngle);
                                     telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
                                     telemetry.addData("Encoder Count", encoderAverage);
                                     telemetry.addData("Condition", condition);
@@ -463,7 +489,12 @@ public class AutonomousTextFile extends LinearOpMode {
 
                             case 2: //Move for time
                                 if(timer.milliseconds() < condition){
-                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
+                                    moveNoIMUString = lookupTable[lookupCount][STATE_ACTION];
+                                    JexlExpression moveNoIMUExp = jexl.createExpression(moveNoIMUString);
+                                    JexlContext moveNoIMUConext = new MapContext();
+                                    moveNoIMUConext.set("true", true);
+                                    moveNoIMUConext.set("drive", drive);
+                                    Object moveNoIMUResult = moveNoIMUExp.evaluate(moveNoIMUConext);
                                 }else{
                                     telemetry.addData("Slide", "Finished");
                                     timer.reset();
@@ -476,10 +507,12 @@ public class AutonomousTextFile extends LinearOpMode {
 
                             case 3: //VuMark
                                 if(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH){
-                                    drive.moveNoIMU(moveAngle, maxPower, true, 0);
-                                    telemetry.addData("Max Power", maxPower);
-                                    telemetry.addData("move angle", moveAngle);
-                                    telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
+                                    moveNoIMUString = lookupTable[lookupCount][STATE_ACTION];
+                                    JexlExpression moveNoIMUExp = jexl.createExpression(moveNoIMUString);
+                                    JexlContext moveNoIMUConext = new MapContext();
+                                    moveNoIMUConext.set("true", true);
+                                    moveNoIMUConext.set("drive", drive);
+                                    Object moveNoIMUResult = moveNoIMUExp.evaluate(moveNoIMUConext);telemetry.addData("Slide Encoders", condition*COUNTS_PER_INCH-encoderAverage + " inches left");
                                     telemetry.addData("Encoder Count", encoderAverage);
                                     telemetry.addData("Condition", condition);
                                 }else{
@@ -497,7 +530,7 @@ public class AutonomousTextFile extends LinearOpMode {
                     }else{
                         //Get move parameters
                         String abbreviatedAction = lookupTable[lookupCount][STATE_ACTION]; //Separate parameters from rest of string
-                        abbreviatedAction = abbreviatedAction.substring(11, abbreviatedAction.length()-1);
+                        abbreviatedAction = abbreviatedAction.substring(14, abbreviatedAction.length()-1);
                         String[] moveParameters = abbreviatedAction.split(",");
                         double maxPower = Double.parseDouble(moveParameters[0]);        //Get Maz Power
                         double minPower = Double.parseDouble(moveParameters[1]);        //Get Min Power
@@ -508,9 +541,9 @@ public class AutonomousTextFile extends LinearOpMode {
 
                         switch (slideCaseNum){
                             case 1: //Encoders
-                                powerChange = (condition) - drive.averageEncoders();
+                                powerChange = (condition*COUNTS_PER_INCH) - drive.averageEncoders();
                                 if(drive.moveIMU(maxPower, minPower, powerChange, 0.003, moveAngle, .035, .001, orientation,
-                                        condition - drive.averageEncoders() < ENCODER_OFFSET && condition - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
+                                        condition*COUNTS_PER_INCH - drive.averageEncoders() < ENCODER_OFFSET && condition*COUNTS_PER_INCH - drive.averageEncoders() > -ENCODER_OFFSET, timeAfterAngle)){
                                     telemetry.addData("Max Power", maxPower);
                                     telemetry.addData("Min Power", minPower);
                                     telemetry.addData("power change", powerChange);

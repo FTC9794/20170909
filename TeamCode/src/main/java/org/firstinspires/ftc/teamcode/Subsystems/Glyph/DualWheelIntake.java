@@ -21,8 +21,8 @@ public class DualWheelIntake implements IGlyph {
 
     Telemetry telemetry;
 
-    private final double INTAKE_SPPED = 1;
-    private final double OUTTAKE_SPEED = -1;
+    private final double INTAKE_SPPED = -0.74;
+    private final double OUTTAKE_SPEED = 0.74;
     final double SPIN_START = 1;
     final double SPIN_ROTATED = 0;
 
@@ -35,7 +35,7 @@ public class DualWheelIntake implements IGlyph {
         this.leftWheel2 = leftWheel2;
 
         leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.spin = spin;
         this.telemetry = telemetry;

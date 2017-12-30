@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -11,10 +12,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
+import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
+import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
+import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
+import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +41,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     DigitalChannel glyphLimit;
     DcMotor lift, relic_extension;
     DcMotor rf, rb, lf, lb;
+    IUltrasonic glyphColor1;
+    IUltrasonic glyphColor2;
+    LynxI2cColorRangeSensor glyphSensor1;
+    LynxI2cColorRangeSensor glyphSensor2;
 
     //double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
@@ -176,7 +185,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
 
-
+        glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
+        glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
+        glyphColor1 = new RevRangeSensor(glyphSensor1);
+        glyphColor2 = new RevRangeSensor(glyphSensor2);
 
         telemetry.addData("Initialized", "Done");
         telemetry.addData("Hand Selected", hand);
@@ -200,6 +212,12 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         ElapsedTime liftTime = new ElapsedTime();
 
         while (opModeIsActive()) {
+
+            if(glyphColor1.cmDistance() < 10){
+                telemetry.addLine("YOU HAVE A BOTTOM GLYPH");
+            }/*else if(glyphColor2.cmDistance() < 10){
+                telemetry.addLine("YOU HAVE A TOP GLYPH");
+            }*/
 
             //Glyph rotation state machine
             switch(glyphRotateState){
