@@ -122,6 +122,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     Handiness hand = Handiness.LEFT;
     boolean selectedHand = false;
     boolean intakePowerOff = true;
+    boolean resetTime1 = true;
+    boolean resetTime2 = true;
+    boolean spinAtOrigin = true;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -219,16 +223,31 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            if(glyphColor1.cmDistance() < 6){
-                telemetry.addLine("YOU HAVE A BOTTOM GLYPH");
-                leds.turnOn();
-                intakePowerOff = true;
-                ledTime.reset();
-            }else if(glyphColor2.cmDistance() < 6){
-                telemetry.addLine("YOU HAVE A TOP GLYPH");
-            }else{
-                leds.turnOff();
+            telemetry.addData("Glyph 1 Distance", glyphColor1.cmDistance());
+            telemetry.addData("Glyph 2 Distance", glyphColor2.cmDistance());
+            if(!gamepadPlus1.rightBumper()){
+                if(glyphColor1.cmDistance() < 6){
+                    telemetry.addLine("YOU HAVE A BOTTOM GLYPH");
+                    intakePowerOff = true;
+                    if(resetTime1){
+                        ledTime.reset();
+                        resetTime1 = false;
+                    }
+                }else if(glyphColor2.cmDistance() < 6){
+                    telemetry.addLine("YOU HAVE A TOP GLYPH");
+                    intakePowerOff = true;
+                    if(resetTime2){
+                        ledTime.reset();
+                        resetTime2 = false;
+                    }
+                }else{
+                    leds.turnOff();
+                    intakePowerOff = false;
+                    resetTime1 = true;
+                    resetTime2 = true;
+                }
             }
+
 
             //Glyph rotation state machine
             switch(glyphRotateState){
@@ -251,6 +270,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             }*/
                             if(lift.getCurrentPosition()>ROTATE_POSITION) {
                                 intake.spin();
+                                spinAtOrigin = !spinAtOrigin;
                             }
                         }
                         spinPressed = true;
@@ -572,31 +592,53 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //Relic Tilt Servo Controls
             relic.tiltRelic(-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.9, 0.01);
             relic.tiltRelic(-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01, -0.01);
-            //Intake Toggle
-            if (gamepadPlus1.rightBumper()) {
-                intake.dispenseGlyph();
-                intakeDirection = false;
 
-            } else if (!intakePressed && gamepadPlus1.leftBumper()) {
-                intakePressed = true;
-                intakeDirection = !intakeDirection;
-                if (intakeDirection) {
-                    intake.secureGlyph();
-
-                } else {
-                    intake.setIntakePowerZero();
-
-                }
-            } else if (!gamepadPlus1.leftBumper()) {
-                if (intakeDirection) {
-                    intake.secureGlyph();
-
-                } else {
-                    intake.setIntakePowerZero();
-
-                }
-                intakePressed = false;
+            if(gamepadPlus1.rightBumper()){
+                intakePowerOff = false;
             }
+            if(intakePowerOff && ledTime.milliseconds() > 50){
+                if((spinAtOrigin && glyphColor1.cmDistance() < 6) || (!spinAtOrigin && glyphColor2.cmDistance()< 6)){
+                    leds.turnOn();
+                }
+
+                if(glyphColor1.cmDistance() < 6 && glyphColor2.cmDistance() < 6) {
+                    intake.setIntakePowerZero();
+                }else if(glyphColor1.cmDistance() < 6){
+                    intake.setIntakePower(0, rightWheel2.getPower());
+                }else if (glyphColor2.cmDistance() < 6){
+                    intake.setIntakePower(rightWheel1.getPower(), 0);
+                }else{
+                    intakePowerOff = false;
+                }
+            }else{
+                //Intake Toggle
+                if (gamepadPlus1.rightBumper()) {
+                    intake.dispenseGlyph();
+                    intakeDirection = false;
+
+                } else if (!intakePressed && gamepadPlus1.leftBumper()) {
+                    intakePressed = true;
+                    intakeDirection = !intakeDirection;
+                    if (intakeDirection) {
+                        intake.secureGlyph();
+
+                    } else {
+                        intake.setIntakePowerZero();
+
+                    }
+                } else if (!gamepadPlus1.leftBumper()) {
+                    if (intakeDirection) {
+                        intake.secureGlyph();
+
+                    } else {
+                        intake.setIntakePowerZero();
+
+                    }
+                    intakePressed = false;
+                }
+            }
+
+
             telemetry.addData("intake direction", intakeDirection);
             telemetry.addData("intake pressed", intakePressed);
             telemetry.addData("Glyph Height", lift.getCurrentPosition());
