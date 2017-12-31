@@ -172,9 +172,6 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
         rightWheel2 = hardwareMap.crservo.get("right_glyph2");
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
-        //leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        //rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
-
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
 
