@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
+import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
@@ -45,6 +46,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     IUltrasonic glyphColor2;
     LynxI2cColorRangeSensor glyphSensor1;
     LynxI2cColorRangeSensor glyphSensor2;
+    DcMotor led_motor;
+    LED leds;
 
     //double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
@@ -118,6 +121,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     Handiness hand = Handiness.LEFT;
     boolean selectedHand = false;
+    boolean intakePowerOff = true;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -179,6 +183,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rotateTime = new ElapsedTime();
+        ElapsedTime ledTime = new ElapsedTime();
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
 
@@ -186,6 +191,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
         glyphColor1 = new RevRangeSensor(glyphSensor1);
         glyphColor2 = new RevRangeSensor(glyphSensor2);
+
+        led_motor = hardwareMap.dcMotor.get("leds");
+        leds = new LED(led_motor);
 
         telemetry.addData("Initialized", "Done");
         telemetry.addData("Hand Selected", hand);
@@ -207,21 +215,27 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         desiredEncoderPosition = intake.returnLiftPosition();
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         ElapsedTime liftTime = new ElapsedTime();
+        ledTime.reset();
 
         while (opModeIsActive()) {
 
-            if(glyphColor1.cmDistance() < 10){
+            if(glyphColor1.cmDistance() < 6){
                 telemetry.addLine("YOU HAVE A BOTTOM GLYPH");
-            }/*else if(glyphColor2.cmDistance() < 10){
+                leds.turnOn();
+                intakePowerOff = true;
+                ledTime.reset();
+            }else if(glyphColor2.cmDistance() < 6){
                 telemetry.addLine("YOU HAVE A TOP GLYPH");
-            }*/
+            }else{
+                leds.turnOff();
+            }
 
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
                     if(gamepadPlus2.leftBumper()){
                         if(!spinPressed){
-                            if(lift.getCurrentPosition()>ROTATE_POSITION) {
+                            /*if(lift.getCurrentPosition()>ROTATE_POSITION) {
                                 glyphRotateState = rotateState.ROTATING;
                                 rotateTime.reset();
                                 lowerLift = false;
@@ -234,6 +248,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                                 lowerLift = true;
                                 hasSpinned = false;
                                 lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            }*/
+                            if(lift.getCurrentPosition()>ROTATE_POSITION) {
+                                intake.spin();
                             }
                         }
                         spinPressed = true;

@@ -67,6 +67,14 @@ public class DualWheelIntake implements IGlyph {
         return true;
     }
 
+    public boolean setIntakePower(double power1, double power2){
+        rightWheel1.setPower(power1);
+        rightWheel2.setPower(power2);
+        leftWheel1.setPower(power1);
+        leftWheel2.setPower(power2);
+        return true;
+    }
+
     public boolean setIntakePowerZero(){
         rightWheel1.setPower(0);
         rightWheel2.setPower(0);

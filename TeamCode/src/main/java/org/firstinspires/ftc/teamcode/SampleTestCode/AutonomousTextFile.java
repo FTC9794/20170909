@@ -45,6 +45,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
+import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.MRRangeSensor;
@@ -69,6 +70,7 @@ public class AutonomousTextFile extends LinearOpMode {
     TwoPointJewelArm jewel;
     IUltrasonic jewel_us;
     IUltrasonic back_us;
+    LED led;
 
     VuforiaLocalizer vuforia;
 
@@ -86,6 +88,7 @@ public class AutonomousTextFile extends LinearOpMode {
     OmniDirectionalDrive drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
+    DcMotor leds;
 
     ElapsedTime timer;
     String vumarkSeen = "";
@@ -263,13 +266,17 @@ public class AutonomousTextFile extends LinearOpMode {
         jewel_us = new MRRangeSensor(ultrasonic_jewel);
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
         back_us = new MRRangeSensor(ultrasonic_back);
+        leds = hardwareMap.dcMotor.get("leds");
+        led = new LED(leds);
         while(aligned == 0){
             telemetry.addData("Jewel Ultrasonic", jewel_us.cmDistance());
             telemetry.addData("Back Ultrasnoic", back_us.cmDistance());
             if(back_us.cmDistance() == 38 && jewel_us.cmDistance() == 35){
                 telemetry.addData("Alinged", "True");
+                led.turnOn();
             }else{
                 telemetry.addData("Aligned", "False");
+                led.turnOff();
             }
             telemetry.update();
             if(isStopRequested()){
@@ -429,17 +436,29 @@ public class AutonomousTextFile extends LinearOpMode {
                         }
                     }
                     if(vumarkSeen.equals("LEFT")){
-                        vuMarkDistance = 52;
+                        if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
+                            vuMarkDistance = 52;
+                        }else{
+                            vuMarkDistance = 28;
+                        }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
                     }else if (vumarkSeen.equals("CENTER")){
-                        vuMarkDistance = 36;
+                        if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
+                            vuMarkDistance = 36;
+                        }else{
+                            vuMarkDistance = 20;
+                        }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
                     }else if (vumarkSeen.equals("RIGHT")){
-                        vuMarkDistance = 25;
+                        if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
+                            vuMarkDistance = 25;
+                        }else{
+                            vuMarkDistance = 13;
+                        }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
