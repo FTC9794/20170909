@@ -170,7 +170,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         relic_arm = hardwareMap.servo.get("relic_arm");
         relic_claw = hardwareMap.servo.get("relic_claw");
@@ -217,7 +217,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         jewel.setPanTiltPos(JEWEL_PAN_START, JEWEL_TILT_START);
         relic.setArmPosition(RELIC_ARM_ORIGIN);
         desiredEncoderPosition = intake.returnLiftPosition();
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         ElapsedTime liftTime = new ElapsedTime();
         ledTime.reset();
 
@@ -293,7 +293,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                             liftTime.reset();
                             glyphLiftState = liftState.POSITION;
                             liftIncriment = 0;
-                            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                             hasSpinned = false;
                         }else{
                             glyphRotateState = rotateState.MANUAL;
@@ -472,7 +472,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
             }
 
-            if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
+            /*if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
                 desiredEncoderPosition -= 100;
             }else if(gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 2600){
                 desiredEncoderPosition += 100;
@@ -542,7 +542,24 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
             /*lift.setTargetPosition(desiredEncoderPosition);
             lift.setPower(1);*/
-            intake.setLiftTargetPosition(desiredEncoderPosition, LIFT_POWER_UP);
+            //intake.setLiftTargetPosition(desiredEncoderPosition, LIFT_POWER_UP);
+            if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
+                if(gamepadPlus2.rightBumper()){
+                    lift.setPower(LIFT_POWER_DOWN*0.75);
+                }else{
+                    lift.setPower(LIFT_POWER_DOWN);
+                }
+            } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < 2600) {
+                if(gamepadPlus2.rightBumper()){
+                    lift.setPower(LIFT_POWER_UP*0.75);
+                }else{
+                    lift.setPower(LIFT_POWER_UP);
+                }
+            }else{
+                lift.setPower(0);
+            }
+
+            intake.checkGlyphLiftLimit();
 
             //Relic Extension Motor Controls with Encoder Limits
             if (gamepadPlus2.rightBumper()) {
@@ -596,9 +613,19 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             if(gamepadPlus1.rightBumper()){
                 intakePowerOff = false;
             }
-            if(intakePowerOff && ledTime.milliseconds() > 50){
-                if((spinAtOrigin && glyphColor1.cmDistance() < 6) || (!spinAtOrigin && glyphColor2.cmDistance()< 6)){
-                    leds.turnOn();
+            if(intakePowerOff && ledTime.milliseconds() > 1000){
+                if(spinAtOrigin){
+                    if(glyphColor1.cmDistance() < 6){
+                        leds.turnOn();
+                    }else{
+                        leds.turnOff();
+                    }
+                }else{
+                    if(glyphColor2.cmDistance() < 6){
+                        leds.turnOn();
+                    }else{
+                        leds.turnOff();
+                    }
                 }
 
                 if(glyphColor1.cmDistance() < 6 && glyphColor2.cmDistance() < 6) {
