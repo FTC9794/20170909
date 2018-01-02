@@ -71,8 +71,9 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     boolean decrementPressed = false;
     boolean lowerLift = false;
     boolean intakeDirection = false;
-    boolean intakePressed = false;
+    boolean intakePressed;
     boolean limitSwitchPressed = false;
+    boolean intaking = false;
     int desiredEncoderPosition = 0;
 
     enum liftState {
@@ -146,7 +147,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-
+        intakePressed = false;
         spin = hardwareMap.servo.get("spin_grip");
 
         pan = hardwareMap.servo.get("jewel_pan");
@@ -197,6 +198,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
         rightWheel2 = hardwareMap.crservo.get("right_glyph2");
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+        rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
         lowerIntakeState = intakeState.NOTHING;
@@ -688,11 +690,19 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     intakePressed = false;
                 }
             }*/
+            if(gamepadPlus1.leftBumper()&&!intakePressed){
+                intaking = !intaking;
+                intakePressed = true;
+            }else if(gamepadPlus1.leftBumper()){
+                intakePressed = true;
+            }else{
+                intakePressed = false;
+            }
             switch(lowerIntakeState){
                 case NOTHING:
                     if(gamepadPlus1.rightBumper()){
                         lowerIntakeState = intakeState.OUTAKE;
-                    }else if (gamepadPlus1.leftBumper()&&!intakePressed) {
+                    }else if (intaking) {
                         lowerIntakeState = intakeState.INTAKE_MOTOR;
                         intake1Time.reset();
                     }else{
@@ -705,7 +715,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         lowerIntakeState = intakeState.INTAKE_NO_MOTOR;
                     }else if(gamepadPlus1.rightBumper()){
                         lowerIntakeState = intakeState.OUTAKE;
-                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        intaking = false;
+                    }else if(!intaking){
                         lowerIntakeState = intakeState.NOTHING;
                     }else if(glyphColor1.cmDistance() > GLYPH_GRAB_DISTANCE){
                         intake1Time.reset();
@@ -720,7 +731,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         intake1Time.reset();
                     }else if(gamepadPlus1.rightBumper()){
                         lowerIntakeState = intakeState.OUTAKE;
-                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        intaking = false;
+                    }else if(!intaking){
                         lowerIntakeState = intakeState.NOTHING;
                     }else{
                         bottomIntake.turnOff();
@@ -739,7 +751,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 case NOTHING:
                     if(gamepadPlus1.rightBumper()){
                         upperIntakeState = intakeState.OUTAKE;
-                    }else if (gamepadPlus1.leftBumper()&&!intakePressed) {
+                    }else if (intaking) {
                         upperIntakeState = intakeState.INTAKE_MOTOR;
                         intake2Time.reset();
                     }else{
@@ -748,11 +760,12 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     break;
 
                 case INTAKE_MOTOR:
-                    if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE&&intake1Time.milliseconds()>GLYPH_VISIBLE_TIME){
+                    if(glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE&&intake2Time.milliseconds()>GLYPH_VISIBLE_TIME){
                         upperIntakeState= intakeState.INTAKE_NO_MOTOR;
                     }else if(gamepadPlus1.rightBumper()){
                         upperIntakeState = intakeState.OUTAKE;
-                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        intaking = false;
+                    }else if(!intaking){
                         upperIntakeState = intakeState.NOTHING;
                     }else if(glyphColor1.cmDistance() > GLYPH_GRAB_DISTANCE){
                         intake2Time.reset();
@@ -762,12 +775,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
                     break;
                 case INTAKE_NO_MOTOR:
-                    if(glyphColor1.cmDistance()>GLYPH_GRAB_DISTANCE){
+                    if(glyphColor2.cmDistance()>GLYPH_GRAB_DISTANCE){
                         upperIntakeState = intakeState.INTAKE_MOTOR;
                         intake2Time.reset();
                     }else if(gamepadPlus1.rightBumper()){
                         upperIntakeState = intakeState.OUTAKE;
-                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        intaking = false;
+                    }else if(!intaking){
                         upperIntakeState = intakeState.NOTHING;
                     }else{
                         topIntake.turnOff();
@@ -781,7 +795,6 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
                     break;
             }
-            intakePressed = gamepadPlus1.leftBumper();
 
             if((intake.spinPosition()&&lowerIntakeState==intakeState.INTAKE_NO_MOTOR)||(!intake.spinPosition()&&upperIntakeState==intakeState.INTAKE_NO_MOTOR)){
                 leds.turnOn();
@@ -789,15 +802,13 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 leds.turnOff();
             }
 
-            telemetry.addData("intake direction", intakeDirection);
-            telemetry.addData("intake pressed", intakePressed);
             telemetry.addData("Glyph Height", lift.getCurrentPosition());
             telemetry.addData("Relic Tilt Pos", relic_tilt.getPosition());
             telemetry.addData("Relic Arm Pos", relic_arm.getPosition());
-            telemetry.addData("Glyph State", glyphLiftState);
-            telemetry.addData("Desired Encoder Position", desiredEncoderPosition);
-            telemetry.addData("Limit Switch Pressed", limitSwitchPressed);
-            telemetry.addData("Glyph Limit", glyphLimit.getState());
+            telemetry.addData("intaking", intaking);
+            telemetry.addData("intaking pressed", intakePressed);
+            telemetry.addData("bottom state", lowerIntakeState);
+            telemetry.addData("top state", upperIntakeState);
             telemetry.update();
 
         }

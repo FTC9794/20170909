@@ -126,4 +126,9 @@ public class FourArmRotatingGlyph implements  IGlyph {
             return false;
         }
     }
+
+    @Override
+    public boolean turnOff() {
+        return false;
+    }
 }

@@ -34,9 +34,7 @@ public class DualWheelIntake implements IGlyph {
         this.leftWheel1 = leftWheel1;
         this.leftWheel2 = leftWheel2;
 
-        leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+
         this.spin = spin;
         this.telemetry = telemetry;
         this.lift = lift;
