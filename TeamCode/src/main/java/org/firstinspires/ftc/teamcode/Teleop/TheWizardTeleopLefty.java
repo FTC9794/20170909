@@ -33,6 +33,8 @@ import javax.microedition.khronos.opengles.GL;
 @TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
 public class TheWizardTeleopLefty extends LinearOpMode {
     ElapsedTime rotateTime;
+    ElapsedTime intake1Time;
+    ElapsedTime intake2Time;
 
     GamepadPlus gamepadPlus1;
     GamepadPlus gamepadPlus2;
@@ -67,7 +69,6 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     boolean lowerLift = false;
     boolean intakeDirection = false;
     boolean intakePressed = false;
-
     boolean limitSwitchPressed = false;
     int desiredEncoderPosition = 0;
 
@@ -84,7 +85,14 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         ROTATING,
         LOWERING
     }
+    enum intakeState{
+        NOTHING,
+        INTAKE_MOTOR,
+        INTAKE_NO_MOTOR,
+        OUTAKE
+    }
 
+    intakeState lowerIntakeState;
     rotateState glyphRotateState;
 
     double liftIncriment = 0;
@@ -114,6 +122,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     final double ROTATION_TIME = 250;
 
     final double GLYPH_GRAB_DISTANCE = 5.8;
+    final double GLYPH_VISIBLE_TIME = 250;
 
     final double RELIC_ARM_ORIGIN = 0;
     final double RELIC_ARM_GRAB_POS = .84;
@@ -184,12 +193,15 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
+        lowerIntakeState = intakeState.NOTHING;
 
         //lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rotateTime = new ElapsedTime();
         ElapsedTime ledTime = new ElapsedTime();
+        intake1Time = new ElapsedTime();
+        intake2Time = new ElapsedTime();
         gamepadPlus1 = new GamepadPlus(gamepad1);
         gamepadPlus2 = new GamepadPlus(gamepad2);
 
@@ -612,7 +624,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //Relic Tilt Servo Controls
             relic.tiltRelic(-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.9, 0.01);
             relic.tiltRelic(-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01, -0.01);
-
+/*
             if(gamepadPlus1.rightBumper()){
                 intakePowerOff = false;
             }
@@ -666,8 +678,56 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }
                     intakePressed = false;
                 }
-            }
+            }*/
+            switch(lowerIntakeState){
+                case NOTHING:
+                    if(gamepadPlus1.rightBumper()){
+                        lowerIntakeState = intakeState.OUTAKE;
+                    }else if (gamepadPlus1.leftBumper()&&!intakePressed) {
+                        lowerIntakeState = intakeState.INTAKE_MOTOR;
+                        intake1Time.reset();
+                    }else{
+                        intake.stopGlyph1();
+                    }
+                    intakePressed = gamepadPlus1.leftBumper();
 
+                    break;
+
+                case INTAKE_MOTOR:
+                    if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE&&intake1Time.milliseconds()>GLYPH_VISIBLE_TIME){
+                        lowerIntakeState = intakeState.INTAKE_NO_MOTOR;
+                    }else if(gamepadPlus1.rightBumper()){
+                        lowerIntakeState = intakeState.OUTAKE;
+                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        lowerIntakeState = intakeState.NOTHING;
+                    }else if(glyphColor1.cmDistance() > GLYPH_GRAB_DISTANCE){
+                        intake1Time.reset();
+                        intake.secureGlyph1();
+                    }else{
+                        intake.secureGlyph1();
+                    }
+                    intakePressed = gamepadPlus1.leftBumper();
+                    break;
+                case INTAKE_NO_MOTOR:
+                    if(glyphColor1.cmDistance()>GLYPH_GRAB_DISTANCE){
+                        lowerIntakeState = intakeState.INTAKE_MOTOR;
+                        intake1Time.reset();
+                    }else if(gamepadPlus1.rightBumper()){
+                        lowerIntakeState = intakeState.OUTAKE;
+                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        lowerIntakeState = intakeState.NOTHING;
+                    }else{
+                        intake.stopGlyph1();
+                    }
+                    intakePressed = gamepadPlus1.leftBumper();
+                    break;
+                case OUTAKE:
+                    if(!gamepadPlus1.rightBumper()){
+                        lowerIntakeState = intakeState.NOTHING;
+                    }else{
+                        intake.dispenseGlyph1();
+                    }
+            }
 
             telemetry.addData("intake direction", intakeDirection);
             telemetry.addData("intake pressed", intakePressed);

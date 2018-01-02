@@ -57,7 +57,21 @@ public class DualWheelIntake implements IGlyph {
         leftWheel2.setPower(INTAKE_SPPED);
         return true;
     }
-
+    public boolean secureGlyph1(){
+        rightWheel1.setPower(INTAKE_SPPED);
+        leftWheel1.setPower(INTAKE_SPPED);
+        return true;
+    }
+    public boolean stopGlyph1(){
+        rightWheel1.setPower(0);
+        leftWheel1.setPower(0);
+        return true;
+    }
+    public boolean dispenseGlyph1(){
+        rightWheel1.setPower(OUTTAKE_SPEED);
+        leftWheel1.setPower(OUTTAKE_SPEED);
+        return true;
+    }
     @Override
     public boolean dispenseGlyph() {
         rightWheel1.setPower(OUTTAKE_SPEED);
