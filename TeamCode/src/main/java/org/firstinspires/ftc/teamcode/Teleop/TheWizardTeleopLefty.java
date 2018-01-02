@@ -25,6 +25,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.microedition.khronos.opengles.GL;
+
 /**
  * Created by Sarthak on 11/1/2017.
  */
@@ -111,10 +113,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     final double ROTATION_TIME = 250;
 
-
+    final double GLYPH_GRAB_DISTANCE = 5.8;
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = .86;
+    final double RELIC_ARM_GRAB_POS = .84;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
@@ -595,7 +597,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
             if(gamepadPlus2.b()){
                 relic.setTiltPosition(0.6);
-                relic.setArmPosition(0.4);
+                relic.setArmPosition(0.6);
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
@@ -614,26 +616,26 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             if(gamepadPlus1.rightBumper()){
                 intakePowerOff = false;
             }
-            if(intakePowerOff && ledTime.milliseconds() > 1000){
+            if(intakePowerOff && ledTime.milliseconds() > 250){
                 if(spinAtOrigin){
-                    if(glyphColor1.cmDistance() < 6){
+                    if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE){
                         leds.turnOn();
                     }else{
                         leds.turnOff();
                     }
                 }else{
-                    if(glyphColor2.cmDistance() < 6){
+                    if(glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE){
                         leds.turnOn();
                     }else{
                         leds.turnOff();
                     }
                 }
 
-                if(glyphColor1.cmDistance() < 6 && glyphColor2.cmDistance() < 6) {
+                if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE && glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE) {
                     intake.setIntakePowerZero();
-                }else if(glyphColor1.cmDistance() < 6){
+                }else if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE){
                     intake.setIntakePower(0, rightWheel2.getPower());
-                }else if (glyphColor2.cmDistance() < 6){
+                }else if (glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE){
                     intake.setIntakePower(rightWheel1.getPower(), 0);
                 }else{
                     intakePowerOff = false;
