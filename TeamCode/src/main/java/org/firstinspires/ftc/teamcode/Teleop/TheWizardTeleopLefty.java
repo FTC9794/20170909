@@ -595,6 +595,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             }
             if(gamepadPlus2.b()){
                 relic.setTiltPosition(0.6);
+                relic.setArmPosition(0.4);
             }
             //Relic Arm Servo Controls
             if (relic.returnArmPos()< .4) {
