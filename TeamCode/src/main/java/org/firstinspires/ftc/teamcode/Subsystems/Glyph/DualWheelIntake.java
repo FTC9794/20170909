@@ -107,6 +107,11 @@ public class DualWheelIntake implements IGlyph {
         }
     }
 
+    @Override
+    public boolean turnOff() {
+        return false;
+    }
+
     public boolean setLiftPower(double power){
         lift.setPower(power);
         return true;
@@ -146,6 +151,8 @@ public class DualWheelIntake implements IGlyph {
         spinAtOrigin = !spinAtOrigin;
         return true;
     }
-
+    public boolean spinPosition(){
+        return spinAtOrigin;
+    }
     public int returnLiftPosition(){ return lift.getCurrentPosition(); }
 }

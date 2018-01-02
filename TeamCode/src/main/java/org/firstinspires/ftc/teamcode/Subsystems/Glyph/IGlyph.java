@@ -18,4 +18,6 @@ public interface IGlyph {
      */
     boolean changeHeight(double power, boolean condition);
 
+    boolean turnOff();
+
 }

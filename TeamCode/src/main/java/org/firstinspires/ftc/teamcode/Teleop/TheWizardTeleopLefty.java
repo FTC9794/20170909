@@ -16,6 +16,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.twoWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
@@ -55,6 +57,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     //double thrust, sideways, pivot, rfPower, rbPower, lfPower, lbPower;
 
+    IGlyph bottomIntake, topIntake;
     ClawThreePoint relic;
     DualWheelIntake intake;
     OmniDirectionalDrive drive;
@@ -93,11 +96,14 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     }
 
     intakeState lowerIntakeState;
+    intakeState upperIntakeState;
     rotateState glyphRotateState;
 
     double liftIncriment = 0;
 
 
+    final double INTAKE_POWER = .74;
+    final double OUTAKE_POWER = -.74;
     final double SPIN_START = 1;
     final double SPIN_ROTATED = 0;
 
@@ -194,6 +200,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         glyphLiftState = liftState.MANUAL;
         glyphRotateState = rotateState.MANUAL;
         lowerIntakeState = intakeState.NOTHING;
+        upperIntakeState = intakeState.NOTHING;
 
         //lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -222,6 +229,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         drive = new OmniDirectionalDrive(driveMotors, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);
+        bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
+        topIntake = new twoWheelIntake(leftWheel2, rightWheel2, INTAKE_POWER, OUTAKE_POWER);
 
         relic.pickUpRelic();
         relic.setTiltPosition(1);
@@ -687,10 +696,8 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         lowerIntakeState = intakeState.INTAKE_MOTOR;
                         intake1Time.reset();
                     }else{
-                        intake.stopGlyph1();
+                        bottomIntake.turnOff();
                     }
-                    intakePressed = gamepadPlus1.leftBumper();
-
                     break;
 
                 case INTAKE_MOTOR:
@@ -702,11 +709,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         lowerIntakeState = intakeState.NOTHING;
                     }else if(glyphColor1.cmDistance() > GLYPH_GRAB_DISTANCE){
                         intake1Time.reset();
-                        intake.secureGlyph1();
+                        bottomIntake.secureGlyph();
                     }else{
-                        intake.secureGlyph1();
+                        bottomIntake.secureGlyph();
                     }
-                    intakePressed = gamepadPlus1.leftBumper();
                     break;
                 case INTAKE_NO_MOTOR:
                     if(glyphColor1.cmDistance()>GLYPH_GRAB_DISTANCE){
@@ -717,16 +723,70 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }else if(gamepadPlus1.leftBumper()&&!intakePressed){
                         lowerIntakeState = intakeState.NOTHING;
                     }else{
-                        intake.stopGlyph1();
+                        bottomIntake.turnOff();
                     }
-                    intakePressed = gamepadPlus1.leftBumper();
                     break;
                 case OUTAKE:
                     if(!gamepadPlus1.rightBumper()){
                         lowerIntakeState = intakeState.NOTHING;
                     }else{
-                        intake.dispenseGlyph1();
+                        bottomIntake.dispenseGlyph();
                     }
+                    break;
+            }
+
+            switch(upperIntakeState){
+                case NOTHING:
+                    if(gamepadPlus1.rightBumper()){
+                        upperIntakeState = intakeState.OUTAKE;
+                    }else if (gamepadPlus1.leftBumper()&&!intakePressed) {
+                        upperIntakeState = intakeState.INTAKE_MOTOR;
+                        intake2Time.reset();
+                    }else{
+                        topIntake.turnOff();
+                    }
+                    break;
+
+                case INTAKE_MOTOR:
+                    if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE&&intake1Time.milliseconds()>GLYPH_VISIBLE_TIME){
+                        upperIntakeState= intakeState.INTAKE_NO_MOTOR;
+                    }else if(gamepadPlus1.rightBumper()){
+                        upperIntakeState = intakeState.OUTAKE;
+                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        upperIntakeState = intakeState.NOTHING;
+                    }else if(glyphColor1.cmDistance() > GLYPH_GRAB_DISTANCE){
+                        intake2Time.reset();
+                        topIntake.secureGlyph();
+                    }else{
+                        topIntake.secureGlyph();
+                    }
+                    break;
+                case INTAKE_NO_MOTOR:
+                    if(glyphColor1.cmDistance()>GLYPH_GRAB_DISTANCE){
+                        upperIntakeState = intakeState.INTAKE_MOTOR;
+                        intake2Time.reset();
+                    }else if(gamepadPlus1.rightBumper()){
+                        upperIntakeState = intakeState.OUTAKE;
+                    }else if(gamepadPlus1.leftBumper()&&!intakePressed){
+                        upperIntakeState = intakeState.NOTHING;
+                    }else{
+                        topIntake.turnOff();
+                    }
+                    break;
+                case OUTAKE:
+                    if(!gamepadPlus1.rightBumper()){
+                        upperIntakeState = intakeState.NOTHING;
+                    }else{
+                        topIntake.dispenseGlyph();
+                    }
+                    break;
+            }
+            intakePressed = gamepadPlus1.leftBumper();
+
+            if((intake.spinPosition()&&lowerIntakeState==intakeState.INTAKE_NO_MOTOR)||(!intake.spinPosition()&&upperIntakeState==intakeState.INTAKE_NO_MOTOR)){
+                leds.turnOn();
+            }else{
+                leds.turnOff();
             }
 
             telemetry.addData("intake direction", intakeDirection);
