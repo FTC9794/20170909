@@ -19,15 +19,15 @@ public class MRRangeSensor implements IUltrasonic {
 
     @Override
     public double cmDistance() {
-        /*if(!firstRead){
+        if(!firstRead){
             prevValue = ultrasonic.cmUltrasonic();
             firstRead = true;
         }else{
             currentValue = lowPass(ultrasonic.cmUltrasonic(), 0.75, prevValue);
             prevValue = currentValue;
         }
-        return currentValue;*/
-        return smoothMedian();
+        return currentValue;
+        //return smoothMedian();
     }
 
     public double opticalDistance() { return ultrasonic.cmOptical(); }
