@@ -39,6 +39,14 @@ public class BoschIMU implements IIMU {
         return -imu.getAngularOrientation().firstAngle - offset;
     }
 
+    @Override
+    public double getZAngle(double desiredAngle) {
+        double angle = this.getZAngle();
+        int multiplier = (int)Math.floor((angle-desiredAngle)/-180);
+        angle = angle+(360*multiplier);
+        return angle;
+    }
+
     //Get X Acceleration
     @Override
     public double getXAcc() {

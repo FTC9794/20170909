@@ -570,15 +570,15 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //intake.setLiftTargetPosition(desiredEncoderPosition, LIFT_POWER_UP);
             if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
                 if(gamepadPlus2.rightBumper()){
-                    lift.setPower(LIFT_POWER_DOWN*0.75);
+                    lift.setPower(LIFT_POWER_DOWN*0.375);
                 }else{
-                    lift.setPower(LIFT_POWER_DOWN);
+                    lift.setPower(LIFT_POWER_DOWN*0.75);
                 }
             } else if (gamepadPlus2.rightTrigger() > ANALOG_PRESSED && lift.getCurrentPosition() < 2600) {
                 if(gamepadPlus2.rightBumper()){
-                    lift.setPower(LIFT_POWER_UP*0.75);
+                    lift.setPower(LIFT_POWER_UP*0.375);
                 }else{
-                    lift.setPower(LIFT_POWER_UP);
+                    lift.setPower(LIFT_POWER_UP*0.75);
                 }
             }else{
                 lift.setPower(0);

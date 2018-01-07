@@ -111,7 +111,7 @@ public class AutonomousTextFile extends LinearOpMode {
 
 
     JexlEngine jexl = new JexlBuilder().create();
-    String autoFileName = "RedStone1.txt";
+    String autoFileName = "RedStone2.txt";
     File autoFile = AppUtil.getInstance().getSettingsFile(autoFileName);
     String fileText = "";
     String[] inputs;
@@ -172,6 +172,8 @@ public class AutonomousTextFile extends LinearOpMode {
 
         telemetry.addData("Init", "reading file");
         telemetry.update();
+
+        boolean autoSelected = false;
 
         fileText = ReadWriteFile.readFile(autoFile);
         inputs = fileText.split("~");
@@ -234,6 +236,7 @@ public class AutonomousTextFile extends LinearOpMode {
         floor_color = new LynxColorRangeSensor(lynx_floor);
         jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic.setTiltPosition(1);
         telemetry.addData("Init", "Jewel, Relic Hardware Initialized");
         telemetry.update();
         jewel.setPanTiltPos(0.5, 1);
@@ -245,6 +248,7 @@ public class AutonomousTextFile extends LinearOpMode {
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         telemetry.addData("Init", "Initialized Intake System");
         telemetry.update();
 
@@ -269,9 +273,9 @@ public class AutonomousTextFile extends LinearOpMode {
         leds = hardwareMap.dcMotor.get("leds");
         led = new LED(leds);
         while(aligned == 0){
-            telemetry.addData("Jewel Ultrasonic", jewel_us.cmDistance());
-            telemetry.addData("Back Ultrasnoic", back_us.cmDistance());
-            if(back_us.cmDistance() == 38 && jewel_us.cmDistance() == 35){
+            telemetry.addData("Jewel Ultrasonic", ultrasonic_jewel.cmUltrasonic());
+            telemetry.addData("Back Ultrasnoic", ultrasonic_back.cmUltrasonic());
+            if(ultrasonic_back.cmUltrasonic() == 37 && ultrasonic_jewel.cmUltrasonic() == 36){
                 telemetry.addData("Alinged", "True");
                 led.turnOn();
             }else{
@@ -308,6 +312,7 @@ public class AutonomousTextFile extends LinearOpMode {
         telemetry.addData("Init", "Completed");
         telemetry.update();
         waitForStart();
+        led.turnOff();
         relicTrackables.activate();
         timer.reset();
         while(opModeIsActive()){
@@ -413,6 +418,8 @@ public class AutonomousTextFile extends LinearOpMode {
                     break;
 
                 case "vumark":
+                    telemetry.addData("state", "vumark");
+                    telemetry.update();
                     RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
                     if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
 
@@ -437,33 +444,28 @@ public class AutonomousTextFile extends LinearOpMode {
                     }
                     if(vumarkSeen.equals("LEFT")){
                         if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
-                            vuMarkDistance = 52;
+                            vuMarkDistance = 30;
                         }else{
-                            vuMarkDistance = 28;
-                        }
-                        timer.reset();
-                        drive.resetEncoders();
-                        lookupCount++;
-                    }else if (vumarkSeen.equals("CENTER")){
-                        if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
-                            vuMarkDistance = 36;
-                        }else{
-                            vuMarkDistance = 20;
+                            vuMarkDistance = 16;
                         }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
                     }else if (vumarkSeen.equals("RIGHT")){
                         if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
-                            vuMarkDistance = 25;
+                            vuMarkDistance = 15;
                         }else{
-                            vuMarkDistance = 13;
+                            vuMarkDistance = 5;
                         }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
-                    }else{
-                        vuMarkDistance = 28;
+                    }else {
+                        if(lookupTable[lookupCount][STATE_CONDITION].equals("0")){
+                            vuMarkDistance = 22;
+                        }else{
+                            vuMarkDistance = 10;
+                        }
                         timer.reset();
                         drive.resetEncoders();
                         lookupCount++;
@@ -582,13 +584,13 @@ public class AutonomousTextFile extends LinearOpMode {
                                 break;
 
                             case 2: //pivot
-                                if(drive.moveIMU(maxPower, minPower, 0, 0, 0, 0, 0.001, orientation, true, 1000)){
+                                if(drive.moveIMU(maxPower, minPower, 0, 0, 0, 0, 0.005, orientation, true, 1000)){
                                     telemetry.addData("Move", "Pivot");
                                 }else{
                                     telemetry.addData("Pivot", "Finished");
                                     timer.reset();
                                     drive.setPowerZero();
-                                    drive.softResetEncoder();
+                                    drive.resetEncoders();
                                     lookupCount++;
                                     break;
                                 }

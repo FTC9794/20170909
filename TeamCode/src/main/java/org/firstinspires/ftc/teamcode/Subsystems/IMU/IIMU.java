@@ -8,6 +8,7 @@ public interface IIMU {
     double getXAngle();  //Gets angle on x-axis
     double getYAngle();  //Gets angle on y-axis
     double getZAngle();  //Gets angle on z-axis
+    double getZAngle(double desiredAngle); //get z angle with the discontinuity being opposite of the desired angle
     double getXAcc();    //Gets acceleration on x-axis
     double getYAcc();    //Gets acceleration on y-axis
     double getZAcc();    //Gets acceleration on z-axis

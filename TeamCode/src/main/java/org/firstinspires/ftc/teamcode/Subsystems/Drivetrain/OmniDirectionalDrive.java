@@ -169,6 +169,27 @@ public class OmniDirectionalDrive implements IDrivetrain {
 
     }
 
+    public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle, boolean opModeIsActive) {
+        if((endCondition&&
+                (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
+                ||needsToPivot){
+            needsToPivot = pivotToAngle(endOrientationAngle, highPower, lowPower, timeAfterAngle, pGain, opModeIsActive);;
+            telemetry.addData("endOrientationAngle", endOrientationAngle);
+            telemetry.addData("State", "Pivot");
+            //telemetry.update();
+            return needsToPivot;
+        }else if(!endCondition){
+            slideAngle(moveAngle, endOrientationAngle, highPower, lowPower, powerChange, powerGain, oGain);
+            telemetry.addData("State", "Slide");
+            //telemetry.update();
+            return true;
+        }else{
+            needsToPivot = false;
+            return false;
+        }
+
+    }
+
     @Override
     public boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount) {
         //return the new X and Y values using the angle needed and the speed the robot was
@@ -205,12 +226,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
 
         double currentAngle = imu.getZAngle();
 
-        double difference = (currentAngle - angle)+180;
-        if(difference>180){
-            difference-=360;
-        }else if(difference<-180){
-            difference+=360;
-        }
+        double difference = (currentAngle - angle);
 
         double magSpeed = Math.abs(difference * pGain);
         if(magSpeed > highPower){
@@ -219,11 +235,14 @@ public class OmniDirectionalDrive implements IDrivetrain {
         if(magSpeed<lowPower){
             magSpeed = lowPower;
         }
+
         if(difference<0){
-            this.setPowerAll(magSpeed, magSpeed, -magSpeed, -magSpeed);
-        }else{
             this.setPowerAll(-magSpeed, -magSpeed, magSpeed, magSpeed);
+        }else{
+            this.setPowerAll(magSpeed, magSpeed, -magSpeed, -magSpeed);
         }
+        telemetry.addData("Mag Speed", magSpeed);
+        telemetry.addData("difference", difference);
         //send back data about what the robot is doing
         if(currentAngle<angle+END_ANGLE_OFFSET&&currentAngle>angle-END_ANGLE_OFFSET&&!targetReached){
             targetReached = true;
@@ -243,6 +262,55 @@ public class OmniDirectionalDrive implements IDrivetrain {
             return true;
         }
     }
+
+    private boolean pivotToAngle(double angle, double highPower, double lowPower, double timeAfterAngle, double pGain, boolean opModeIsActive) {
+        //measure the gyro sensor
+        //get gyro sensor value
+
+        double currentAngle = imu.getZAngle();
+
+        double difference = (currentAngle - angle);
+        while((difference > 180 || difference < -180) && opModeIsActive){
+            if(difference>180){
+                difference-=360;
+            }else if(difference<-180){
+                difference+=360;
+            }
+        }
+
+        double magSpeed = Math.abs(difference * pGain);
+        if(magSpeed > highPower){
+            magSpeed = highPower;
+        }
+        if(magSpeed<lowPower){
+            magSpeed = lowPower;
+        }
+        if(difference<0){
+            this.setPowerAll(magSpeed, magSpeed, -magSpeed, -magSpeed);
+        }else{
+            this.setPowerAll(-magSpeed, -magSpeed, magSpeed, magSpeed);
+        }
+        telemetry.addData("Mag Speed", magSpeed);
+        //send back data about what the robot is doing
+        if(currentAngle<angle+END_ANGLE_OFFSET&&currentAngle>angle-END_ANGLE_OFFSET&&!targetReached){
+            targetReached = true;
+            telemetry.addData("Pivot", "Timer Reset");
+            pivotTime.reset();
+        }
+        if(targetReached&&pivotTime.milliseconds()>timeAfterAngle){
+            this.setPowerAll(0, 0, 0, 0);
+            targetReached = false;
+            return false;
+        }else{
+            telemetry.addData("Angle Difference", difference);
+            telemetry.addData("Current Angle", currentAngle);
+            telemetry.addData("Angle", angle);
+            telemetry.addData("Angle Cond 1", angle+END_ANGLE_OFFSET);
+            telemetry.addData("Angle Cond 2", angle-END_ANGLE_OFFSET);
+            return true;
+        }
+    }
+
 
     /**
      *
@@ -306,7 +374,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)horizontal);
         double vertical = Utilities.round2D(calculateY(moveAngle, power));
         data.addField((float)vertical);
-        double pivotCorrection = -((orientationAngle - currentAngle) * oGain);
+        double pivotCorrection = ((orientationAngle - currentAngle) * oGain);
         data.addField((float)pivotCorrection);
         //data.newLine();
         rawSlide(horizontal, vertical, pivotCorrection, power);

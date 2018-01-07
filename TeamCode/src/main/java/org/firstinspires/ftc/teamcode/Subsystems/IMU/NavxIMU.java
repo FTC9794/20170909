@@ -34,6 +34,11 @@ public class NavxIMU implements IIMU {
         return navX.getYaw();
     }
 
+    @Override
+    public double getZAngle(double desiredAngle) {
+        return 0;
+    }
+
     //Get X Acceleration
     @Override
     public double getXAcc() {
