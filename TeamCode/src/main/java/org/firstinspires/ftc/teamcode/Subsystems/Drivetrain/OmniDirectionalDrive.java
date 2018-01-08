@@ -374,7 +374,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)horizontal);
         double vertical = Utilities.round2D(calculateY(moveAngle, power));
         data.addField((float)vertical);
-        double pivotCorrection = ((orientationAngle - currentAngle) * oGain);
+        double pivotCorrection = ((currentAngle - orientationAngle) * oGain);
         data.addField((float)pivotCorrection);
         //data.newLine();
         rawSlide(horizontal, vertical, pivotCorrection, power);
