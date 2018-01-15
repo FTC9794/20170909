@@ -132,7 +132,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     final double GLYPH_VISIBLE_TIME = 250;
 
     final double RELIC_ARM_ORIGIN = 0;
-    final double RELIC_ARM_GRAB_POS = .84;
+    final double RELIC_ARM_GRAB_POS = .82;
 
     final double RELIC_ARM_EXTENSION_POWER = 1;
     final double RELIC_ARM_RETRACTION_POWER = -1;
@@ -570,7 +570,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
             //intake.setLiftTargetPosition(desiredEncoderPosition, LIFT_POWER_UP);
             if (gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()) {
                 if(gamepadPlus2.rightBumper()){
-                    lift.setPower(LIFT_POWER_DOWN*0.05);
+                    lift.setPower(LIFT_POWER_DOWN*0.5);
                 }else{
                     lift.setPower(LIFT_POWER_DOWN*0.2);
                 }
