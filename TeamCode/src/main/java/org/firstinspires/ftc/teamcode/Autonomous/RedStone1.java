@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,11 +14,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuMarkInstanceId;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
@@ -39,7 +46,7 @@ import java.util.List;
 /**
  * Created by Sarthak on 1/19/2018.
  */
-
+@Autonomous(name = "RedStone1 Java", group = "Autonomous")
 public class RedStone1 extends LinearOpMode {
 
 
@@ -94,6 +101,8 @@ public class RedStone1 extends LinearOpMode {
     final double ENCODER_OFFSET = 30;
 
     double imuAngle, encoderAverage;
+
+    final int RED_LINE_COLOR_VALUE = 50;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -211,14 +220,16 @@ public class RedStone1 extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-
-        int aligned = 0;
+        telemetry.addData("Init", "Set Drivetrain mode");
+        telemetry.update();
+        leds = hardwareMap.dcMotor.get("leds");
+        led = new LED(leds);
+        /*int aligned = 0;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         jewel_us = new MRRangeSensor(ultrasonic_jewel);
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
         back_us = new MRRangeSensor(ultrasonic_back);
         leds = hardwareMap.dcMotor.get("leds");
-        led = new LED(leds);
         while(aligned == 0){
             telemetry.addData("Jewel Ultrasonic", ultrasonic_jewel.cmUltrasonic());
             telemetry.addData("Back Ultrasnoic", ultrasonic_back.cmUltrasonic());
@@ -232,11 +243,12 @@ public class RedStone1 extends LinearOpMode {
             telemetry.update();
             if(isStopRequested()){
                 aligned = 1;
-            }else if(gamepad1.a){
+            }else if(gamepad1.a || gamepad2.a){
                 aligned = 1;
             }
             telemetry.update();
-        }
+        }*/
+        led.turnOff();
         telemetry.update();
 
         telemetry.addData("Init", "IMU Calibrating");
@@ -258,11 +270,130 @@ public class RedStone1 extends LinearOpMode {
         telemetry.addData("Init", "Timer Initialized");
         telemetry.addData("Init", "Completed");
         telemetry.update();
+        led.setLEDPower(0.5);
         waitForStart();
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         led.turnOff();
         relicTrackables.activate();
         timer.reset();
+        //Reset drive encoders
+        drive.resetEncoders();
 
+        /*//Move jewel to position and read color
+        jewel.setPanTiltPos(0.5, 0.22);
+        timer.reset();
+        while(timer.milliseconds() < 1000){
+            telemetry.addData("Jewel", "Moving to Read Position");
+            telemetry.addData("Timer", timer.milliseconds());
+            telemetry.update();
+        }
+        jewel.readColor(5);
+        jewel.knockOffJewel("red");
+        jewel.setPanTiltPos(0.5, 1);
+        telemetry.addData("Jewel", "Done");
+
+        //Read VuMark and determine drive distance and column
+        telemetry.addData("VuMark", "Reading");
+        telemetry.update();
+        */
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+        if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+
+                /* Found an instance of the template. In the actual game, you will probably
+                 * loop until this condition occurs, then move on to act accordingly depending
+                 * on which VuMark was visible. */
+            telemetry.addData("VuMark", vuMark.toString());
+            telemetry.update();
+            vumarkSeen = vuMark.toString();
+
+                /* For fun, we also exhibit the navigational pose. In the Relic Recovery game,
+                 * it is perhaps unlikely that you will actually need to act on this pose information, but
+                 * we illustrate it nevertheless, for completeness. */
+            OpenGLMatrix pose = ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).getPose();
+
+                /* We further illustrate how to decompose the pose into useful rotational and
+                 * translational components */
+            if (pose != null) {
+                            /*
+
+                             */
+            }
+        }
+        if(vumarkSeen.equals("LEFT")){
+            vuMarkDistance = 30;
+        }else if (vumarkSeen.equals("RIGHT")){
+            vuMarkDistance = 15;
+        }else {
+            vuMarkDistance = 22;
+        }
+        telemetry.addData("VuMark", "Finished");
+        telemetry.update();
+
+        /*//Intake Glyph
+        intake.secureGlyph();
+        timer.reset();
+        while(timer.milliseconds() < 250){
+
+        }
+        intake.setLiftTargetPosition(400, 1);
+        timer.reset();
+        while(timer.milliseconds() < 50){
+
+        }
+        while(glyphLimit.getState()){
+            intake.setLiftTargetPosition(-100, 1);
+        }
+        intake.setLiftPower(0);
+        intake.setLiftTargetPosition(700, 1);
+        timer.reset();
+        while(timer.milliseconds() < 400){
+
+        }
+        intake.setIntakePowerZero();*/
+
+        //Drive to desired VuMark target
+        drive.resetEncoders();
+        while(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveNoIMU(0, 0.4, true, 0);
+            telemetry.addData("Encoder Count", encoderAverage);
+            telemetry.update();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+        while(drive.moveIMU(0.4, 0.2, 0, 0, 0, 0, 0.005, 90, true, 1000) && opModeIsActive()){
+            telemetry.addData("Move", "Pivot");
+            telemetry.update();
+        }
+        drive.setPowerZero();
+        drive.resetEncoders();
+        while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, 0, 0, 90, 0.001, 0.001, 90,
+                    false, 1000);
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+        /*
+        Dispense glyph
+         */
+        //Back away from cryptobox
+        while(drive.averageEncoders() < 15*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, 0, 0, -90, 0.001, 0.001, 90,
+                    false, 1000);
+        }
+        //Pivot to glyph pit
+        while(drive.moveIMU(0.4, 0.2, 0, 0, 0, 0, 0.005, -90, true, 1000) && opModeIsActive()){
+            telemetry.addData("Move", "Pivot");
+            telemetry.update();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+        //Drive to glyph pit
+        intake.dispenseGlyph();
+        while(floor_color.red() < RED_LINE_COLOR_VALUE){
+            drive.moveIMU(0.3, 0.1, 0, 0, 90, 0.001, 0.001, 90,
+                    false, 1000);
+        }
+        intake.secureGlyph();
         while (opModeIsActive()){
             telemetry.addData("Program", "Running");
             telemetry.update();
