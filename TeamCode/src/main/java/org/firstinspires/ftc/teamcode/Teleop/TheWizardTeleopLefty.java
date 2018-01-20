@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.DataLogger;
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.microedition.khronos.opengles.GL;
@@ -34,6 +36,10 @@ import javax.microedition.khronos.opengles.GL;
  */
 @TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
 public class TheWizardTeleopLefty extends LinearOpMode {
+
+    DataLogger data;
+    Date day;
+
     ElapsedTime rotateTime;
     ElapsedTime intake1Time;
     ElapsedTime intake2Time;
@@ -147,6 +153,30 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+        day = new Date();
+        data = new DataLogger(day.toString() + " Teleop");
+        data.addField("Gamepad1 Left Stick Y");
+        data.addField("Gamepad1 Left Stick X");
+        data.addField("Gamepad1 Right Stick X");
+        data.addField("Gamepad1 Left Bumper");
+        data.addField("Gamepad1 Right Bumper");
+        data.addField("Gamepad1 Right Trigger");
+        data.addField("Gamepad1 A");
+        data.addField("Gamepad2 Left Stick Y");
+        data.addField("Gamepad2 Right Stick Y");
+        data.addField("Gamepad2 X");
+        data.addField("Gamepad2 B");
+        data.addField("Gamepad2 UP");
+        data.addField("Gamepad2 DOWN");
+        data.addField("Gamepad2 LEFT");
+        data.addField("Gamepad2 RIGHT");
+        data.addField("Gamepad2 Left Bumper");
+        data.addField("Gamepad2 Right Bumper");
+        data.addField("Gamepad1 Left Trigger");
+        data.addField("Gamepad1 Right Trigger");
+        data.newLine();
+
         intakePressed = false;
         spin = hardwareMap.servo.get("spin_grip");
 
@@ -247,6 +277,28 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         ledTime.reset();
 
         while (opModeIsActive()) {
+
+            //Log control inputs
+            data.addField((float) gamepadPlus1.leftStickY());
+            data.addField((float) gamepadPlus1.leftStickX());
+            data.addField((float) gamepadPlus1.rightStickX());
+            data.addField(gamepadPlus1.leftBumper());
+            data.addField(gamepadPlus1.rightBumper());
+            data.addField((float) gamepadPlus1.rightTrigger());
+            data.addField(gamepadPlus1.a());
+            data.addField((float) gamepadPlus1.leftStickY());
+            data.addField((float) gamepadPlus1.rightStickY());
+            data.addField(gamepadPlus2.x());
+            data.addField(gamepadPlus2.b());
+            data.addField(gamepadPlus2.dpadUp());
+            data.addField(gamepadPlus2.dpadDown());
+            data.addField(gamepadPlus2.dpadLeft());
+            data.addField(gamepadPlus2.dpadRight());
+            data.addField(gamepadPlus2.leftBumper());
+            data.addField(gamepadPlus2.rightBumper());
+            data.addField((float) gamepadPlus1.leftTrigger());
+            data.addField((float) gamepadPlus1.rightTrigger());
+            data.newLine();
 
             telemetry.addData("Glyph 1 Distance", glyphColor1.cmDistance());
             telemetry.addData("Glyph 2 Distance", glyphColor2.cmDistance());
