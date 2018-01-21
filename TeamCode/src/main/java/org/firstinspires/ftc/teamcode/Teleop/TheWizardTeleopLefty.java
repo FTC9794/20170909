@@ -128,7 +128,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     final double ROTATION_TIME = 250;
 
-    final double GLYPH_GRAB_DISTANCE = 5.8;
+    final double GLYPH_GRAB_DISTANCE = 5.6;
     final double GLYPH_VISIBLE_TIME = 250;
 
     final double RELIC_ARM_ORIGIN = 0;
@@ -247,7 +247,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         ledTime.reset();
 
         while (opModeIsActive()) {
-
+/*
             telemetry.addData("Glyph 1 Distance", glyphColor1.cmDistance());
             telemetry.addData("Glyph 2 Distance", glyphColor2.cmDistance());
             if(!gamepadPlus1.rightBumper()){
@@ -273,7 +273,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 }
             }
 
-
+*/
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
@@ -486,7 +486,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
                         drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.5, true, -gamepadPlus1.rightStickX()*0.5);
                     }else{
-                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.85, true, -gamepadPlus1.rightStickX()*0.85);
+                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.85, true, -gamepadPlus1.rightStickX()*1);
                     }
                     break;
                 case RIGHT:
@@ -496,7 +496,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.85, true, -gamepadPlus1.leftStickX()*0.85);
                     }
             }
-
+            telemetry.addData("rf", rf.getPower());
+            telemetry.addData("rb", rb.getPower());
+            telemetry.addData("lf", lf.getPower());
+            telemetry.addData("lb", lb.getPower());
             /*if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
                 desiredEncoderPosition -= 100;
             }else if(gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 2600){
