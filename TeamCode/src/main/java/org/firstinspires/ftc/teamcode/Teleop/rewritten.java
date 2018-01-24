@@ -7,11 +7,13 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.twoWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
+import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
 
@@ -20,14 +22,16 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
  */
 @TeleOp(name = "rewritten teleop", group = "teleop")
 public class rewritten extends OpMode {
-    DcMotor lf, lb, rf, rb, lift;
+    DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
+    Servo spin, pan, tilt, relic_claw, relic_arm, relic_tilt;
     LynxI2cColorRangeSensor glyphSensor1;
     LynxI2cColorRangeSensor glyphSensor2;
     DcMotor led_motor;
     LED leds;
     ElapsedTime intake1Time;
     ElapsedTime intake2Time;
+    ElapsedTime rotateTime;
     double pitch, roll, pivot;
     int liftPosition;
     private enum glyphLiftStates{
@@ -39,13 +43,21 @@ public class rewritten extends OpMode {
         INTAKE_NO_MOTOR,
         OUTAKE
     }
+    private enum glyphRotateStates{
+        LIFTING, ROTATING, LOWERING, STOPPED
+    }
     glyphLiftStates liftState;
     DigitalChannel glyphLimit;
+    glyphRotateStates rotateState;
+    boolean yPressed;
+    boolean aPressed;
 
-    boolean rightBumpPressed;
-    boolean leftBumpPressed;
+    boolean spined = false;
+    boolean rotateLower = false;
 
     final double LIFT_POWER = 1;
+    final double LIFT_HALF_POWER_DOWN = .1;
+    final double LIFT_HALF_POWER_UP = .75;
     final int LIFT_UPPER_LIMIT = 2300;
     final int GLYPH_POSITION_0 = 0;
     final int GLYPH_POSITION_1 = 160;
@@ -53,6 +65,7 @@ public class rewritten extends OpMode {
     final int GLYPH_POSITION_3 = 1460;
     final int GLYPH_POSITION_4 = 2230;
     final int LIFT_POSITION_OFFSET = 100;
+    final int GLYPH_ROTATE_POSITION = 800;
 
     final double ANALOG_PRESSED = .2;
 
@@ -61,8 +74,24 @@ public class rewritten extends OpMode {
     final double GLYPH_GRAB_DISTANCE = 5.6;
     final double GLYPH_VISIBLE_TIME = 250;
 
+    final double SPIN_NORMAL_POSITION = 1;
+    final double SPIN_SPUN_POSITION = 0;
+    final double ROTATE_TIME = 750;
+
+    final double JEWEL_TILT_POSITION = 1;
+    final double JEWEL_PAN_POSITION = .55;
+
     boolean intaking = false;
     boolean intakePressed = false;
+
+    final double DRIVE_LOW_SPEED = .5;
+
+    final double RELIC_ARM_ORIGIN = 0;
+    final double RELIC_ARM_GRAB_POS = .82;
+    final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
+    final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
+    final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
+    final double RELIC_ARM_RETRACTION_FULL_POWER = -1;
 
     intakeState lowerIntakeState;
     intakeState upperIntakeState;
@@ -70,6 +99,7 @@ public class rewritten extends OpMode {
     IGlyph bottomIntake, topIntake;
     IUltrasonic glyphColor1;
     IUltrasonic glyphColor2;
+    ClawThreePoint relic;
     @Override
     public void init() {
         lf = hardwareMap.dcMotor.get("left_front");
@@ -77,11 +107,19 @@ public class rewritten extends OpMode {
         rf = hardwareMap.dcMotor.get("right_front");
         rb = hardwareMap.dcMotor.get("right_back");
         lift = hardwareMap.dcMotor.get("glyph_lift");
+        relic_extension = hardwareMap.dcMotor.get("relic_extension");
 
         rightWheel1 = hardwareMap.crservo.get("right_glyph1");
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
         rightWheel2 = hardwareMap.crservo.get("right_glyph2");
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+
+        spin = hardwareMap.servo.get("spin_grip");
+        pan = hardwareMap.servo.get("jewel_pan");
+        tilt = hardwareMap.servo.get("jewel_tilt");
+        relic_arm = hardwareMap.servo.get("relic_arm");
+        relic_claw = hardwareMap.servo.get("relic_claw");
+        relic_tilt = hardwareMap.servo.get("relic_tilt");
 
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -98,35 +136,74 @@ public class rewritten extends OpMode {
         lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         rf.setDirection(DcMotorSimple.Direction.REVERSE);
         rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        rf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
 
         liftState = glyphLiftStates.POSITION;
         lowerIntakeState = intakeState.NOTHING;
         upperIntakeState = intakeState.NOTHING;
+        rotateState = glyphRotateStates.STOPPED;
 
-        rightBumpPressed = false;
-        leftBumpPressed = false;
+        yPressed = false;
+        aPressed = false;
 
         intake1Time = new ElapsedTime();
         intake2Time = new ElapsedTime();
+        rotateTime = new ElapsedTime();
 
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
         topIntake = new twoWheelIntake(leftWheel2, rightWheel2, INTAKE_POWER, OUTAKE_POWER);
+
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
+
     }
 
     @Override
+    public void start(){
+        pan.setPosition(JEWEL_PAN_POSITION);
+        tilt.setPosition(JEWEL_TILT_POSITION);
+        relic.pickUpRelic();
+        relic.setTiltPosition(1);
+        relic.setArmPosition(RELIC_ARM_ORIGIN);
+    }
+    @Override
     public void loop() {
+
+
         pitch = -gamepad1.left_stick_y;
         roll = gamepad1.left_stick_x;
         pivot = gamepad1.right_stick_x;
-        rf.setPower(pitch-roll-pivot);
-        rb.setPower(pitch+roll-pivot);
-        lf.setPower(pitch+roll+pivot);
-        lb.setPower(pitch-roll+pivot);
+        if(gamepad1.left_trigger>.2){
+            rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
+            rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
+            lf.setPower((pitch+roll+pivot)*DRIVE_LOW_SPEED);
+            lb.setPower((pitch-roll+pivot)*DRIVE_LOW_SPEED);
+        }else{
+            rf.setPower(pitch-roll-pivot);
+            rb.setPower(pitch+roll-pivot);
+            lf.setPower(pitch+roll+pivot);
+            lb.setPower(pitch-roll+pivot);
+        }
+
 
         switch(liftState) {
             case MANUAL:
@@ -137,17 +214,25 @@ public class rewritten extends OpMode {
                     liftState = glyphLiftStates.POSITION;
                     telemetry.addData("case", "leaving");
                 } else if (gamepad2.right_trigger >= ANALOG_PRESSED && liftPosition < LIFT_UPPER_LIMIT) {
-                    lift.setPower(LIFT_POWER);
+                    if(gamepad2.right_bumper){
+                        lift.setPower(LIFT_HALF_POWER_UP);
+                    }else{
+                        lift.setPower(LIFT_POWER);
+                    }
                     telemetry.addData("case", "up");
                 } else if (gamepad2.left_trigger >= ANALOG_PRESSED && glyphLimit.getState()) {
-                    lift.setPower(-LIFT_POWER);
+                    if(gamepad2.right_bumper){
+                        lift.setPower(-LIFT_HALF_POWER_DOWN);
+                    }else{
+                        lift.setPower(-LIFT_POWER);
+                    }
                     telemetry.addData("case", "down");
                 } else if (!glyphLimit.getState()) {
                     lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     liftPosition = 0;
                     lift.setPower(0);
                     telemetry.addData("case", "switch pressed");
-                } else if (gamepad2.left_bumper) {
+                } else if (gamepad2.a) {
                     if (liftPosition < GLYPH_POSITION_1 + LIFT_POSITION_OFFSET) {
                         liftPosition = GLYPH_POSITION_0;
                     } else if (liftPosition < GLYPH_POSITION_2 + LIFT_POSITION_OFFSET) {
@@ -157,10 +242,10 @@ public class rewritten extends OpMode {
                     } else {
                         liftPosition = GLYPH_POSITION_3;
                     }
-                    leftBumpPressed = true;
+                    aPressed = true;
                     liftState = glyphLiftStates.POSITION;
                     telemetry.addData("case", "left bumper");
-                } else if (gamepad2.right_bumper) {
+                } else if (gamepad2.y) {
                     if (liftPosition > GLYPH_POSITION_3 - LIFT_POSITION_OFFSET) {
                         liftPosition = GLYPH_POSITION_4;
                     } else if (liftPosition > GLYPH_POSITION_2 - LIFT_POSITION_OFFSET) {
@@ -170,7 +255,7 @@ public class rewritten extends OpMode {
                     } else {
                         liftPosition = GLYPH_POSITION_1;
                     }
-                    rightBumpPressed = true;
+                    yPressed = true;
                     liftState = glyphLiftStates.POSITION;
                     telemetry.addData("case", "right bumper");
                 }
@@ -198,8 +283,8 @@ public class rewritten extends OpMode {
                     liftState = glyphLiftStates.MANUAL;
                     lift.setPower(0);
                     telemetry.addData("if", "leaving");
-                } else if (gamepad2.left_bumper) {
-                    if (!leftBumpPressed) {
+                } else if (gamepad2.a) {
+                    if (!aPressed) {
                         if (liftPosition < GLYPH_POSITION_1 + LIFT_POSITION_OFFSET) {
                             liftPosition = GLYPH_POSITION_0;
                         } else if (liftPosition < GLYPH_POSITION_2 + LIFT_POSITION_OFFSET) {
@@ -209,12 +294,12 @@ public class rewritten extends OpMode {
                         } else {
                             liftPosition = GLYPH_POSITION_3;
                         }
-                        leftBumpPressed = true;
+                        aPressed = true;
 
                     }
                     telemetry.addData("if", "left bumper");
-                } else if (gamepad2.right_bumper) {
-                    if (!rightBumpPressed) {
+                } else if (gamepad2.y) {
+                    if (!yPressed) {
                         if (liftPosition > GLYPH_POSITION_3 - LIFT_POSITION_OFFSET) {
                             liftPosition = GLYPH_POSITION_4;
                         } else if (liftPosition > GLYPH_POSITION_2 - LIFT_POSITION_OFFSET) {
@@ -224,16 +309,16 @@ public class rewritten extends OpMode {
                         } else {
                             liftPosition = GLYPH_POSITION_1;
                         }
-                        rightBumpPressed = true;
+                        yPressed = true;
                     }
                     telemetry.addData("if", "right bumper");
                 }
 
-                if(!gamepad2.right_bumper){
-                    rightBumpPressed = false;
+                if(!gamepad2.y){
+                    yPressed = false;
                 }
-                if(!gamepad2.left_bumper){
-                    leftBumpPressed = false;
+                if(!gamepad2.a){
+                    aPressed = false;
                 }
                 break;
         }
@@ -343,7 +428,116 @@ public class rewritten extends OpMode {
                 }
                 break;
         }
+        switch(rotateState){
+            case STOPPED:
+                if(spined){
+                    spin.setPosition(SPIN_SPUN_POSITION);
+                }else{
+                    spin.setPosition(SPIN_NORMAL_POSITION);
+                }
+                if(gamepad2.left_bumper&&liftState!=glyphLiftStates.MANUAL){
+                    if(liftPosition < GLYPH_ROTATE_POSITION){
+                        rotateState = glyphRotateStates.LIFTING;
+                        liftPosition = GLYPH_ROTATE_POSITION+LIFT_POSITION_OFFSET;
+                        rotateLower = true;
+                    }else{
+                        rotateState = glyphRotateStates.ROTATING;
+                        spined = !spined;
+                        rotateTime.reset();
+                        rotateLower = false;
+                    }
+                }
+                break;
+            case LIFTING:
+                if(liftState == glyphLiftStates.MANUAL){
+                    rotateState = glyphRotateStates.STOPPED;
+                }
+                if(lift.getCurrentPosition()>=GLYPH_ROTATE_POSITION){
+                    rotateState = glyphRotateStates.ROTATING;
+                    spined = !spined;
+                    rotateTime.reset();
+                }
+                break;
+            case ROTATING:
+                if(rotateTime.milliseconds()>ROTATE_TIME){
+                    if(rotateLower){
+                        rotateState = glyphRotateStates.LOWERING;
+                        liftPosition = 0;
+                    }else{
+                        rotateState = glyphRotateStates.STOPPED;
+                    }
+                }else if(liftState == glyphLiftStates.MANUAL){
+                    rotateState = glyphRotateStates.STOPPED;
+                }else if(spined){
+                    spin.setPosition(SPIN_SPUN_POSITION);
+                }else{
+                    spin.setPosition(SPIN_NORMAL_POSITION);
+                }
+                break;
+            case LOWERING:
+                if(lift.getCurrentPosition()<LIFT_POSITION_OFFSET||liftState == glyphLiftStates.MANUAL){
+                    rotateState = glyphRotateStates.STOPPED;
+                }
+        }
+        if(spined){
+            if(upperIntakeState==intakeState.INTAKE_NO_MOTOR){
+                leds.setLEDPower(.5);
+            }else{
+                leds.setLEDPower(0);
+            }
+        }else{
+            if(lowerIntakeState==intakeState.INTAKE_NO_MOTOR){
+                leds.setLEDPower(.5);
+            }else{
+                leds.setLEDPower(0);
+            }
+        }
 
+        //Relic Extension Motor Controls with Encoder Limits
+        if (gamepad2.right_bumper) {
+            relic.extend(RELIC_ARM_EXTENSION_FULL_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2200);
+        } else{
+            relic.extend(RELIC_ARM_EXTENSION_HALF_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2200);
+        }
+
+        if(gamepad2.right_bumper){
+            relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
+        }else{
+            relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
+        }
+
+        if(!gamepad2.dpad_up && !gamepad2.dpad_down){
+            relic.extensionPowerZero();
+        }
+
+        telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
+
+        //Claw servo controls
+        if (gamepad2.dpad_left) {
+            relic.pickUpRelic();
+        } else if (gamepad2.dpad_right) {
+            relic.releaseRelic();
+        }
+        if(gamepad2.x){
+            relic.setArmPosition(RELIC_ARM_GRAB_POS);
+        }else if(gamepad1.a){
+            relic.setArmPosition(RELIC_ARM_ORIGIN);
+            relic.pickUpRelic();
+            relic.setTiltPosition(1);
+        }
+        if(gamepad2.b){
+            relic.setTiltPosition(0.6);
+            relic.setArmPosition(0.6);
+        }
+        //Relic Arm Servo Controls
+        if (relic.returnArmPos()< .4) {
+            relic.adjustArm((-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1), 0.05);
+            relic.adjustArm((-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04), -0.05);
+
+        } else {
+            relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
+            relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
+        }
 
     }
 }

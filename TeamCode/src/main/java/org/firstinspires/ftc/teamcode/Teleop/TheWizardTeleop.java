@@ -222,7 +222,7 @@ public class TheWizardTeleop extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         drive = new OmniDirectionalDrive(driveMotors, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);

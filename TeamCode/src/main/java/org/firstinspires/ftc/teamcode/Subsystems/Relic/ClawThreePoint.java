@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by Sarthak on 11/8/2017.
@@ -13,7 +12,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class ClawThreePoint implements IRelic {
     private DcMotor relic_extension;
     private Servo arm, tilt, claw;
-    private Telemetry telemetry;
 
     private double relicArmAngle = 0;
     private double relicTiltPos = 0;
@@ -26,15 +24,15 @@ public class ClawThreePoint implements IRelic {
 
     private final double RELIC_ARM_ORIGIN = 0;
 
-    public ClawThreePoint(DcMotor extension, Servo arm, Servo tilt, Servo claw, Telemetry telemetry){
+    public ClawThreePoint(DcMotor extension, Servo arm, Servo tilt, Servo claw){
         this.relic_extension = extension;
         this.arm = arm;
         this.tilt = tilt;
         this.claw = claw;
-        this.telemetry = telemetry;
+        /*
         this.claw.setPosition(RELIC_CLAW_CLOSED);
         this.arm.setPosition(RELIC_ARM_ORIGIN);
-        this.tilt.setPosition(RELIC_TILT_ORIGIN);
+        this.tilt.setPosition(RELIC_TILT_ORIGIN);*/
         //this.relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

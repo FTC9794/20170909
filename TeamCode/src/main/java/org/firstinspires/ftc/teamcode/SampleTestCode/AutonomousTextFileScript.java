@@ -155,7 +155,7 @@ public class AutonomousTextFileScript extends LinearOpMode{
         drive = new OmniDirectionalDrive(driveMotors, imu, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
 
         fileText = ReadWriteFile.readFile(autoFile);
         inputs = fileText.split("~");
