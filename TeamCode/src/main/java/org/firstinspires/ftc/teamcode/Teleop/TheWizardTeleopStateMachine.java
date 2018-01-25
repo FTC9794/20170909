@@ -180,7 +180,7 @@ public class TheWizardTeleopStateMachine extends LinearOpMode {
         telemetry.addData("Hand Selected", hand);
         telemetry.update();
         waitForStart();
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         relic.releaseRelic();
         relic_tilt.setPosition(0.7);
         spin.setPosition(SPIN_START);

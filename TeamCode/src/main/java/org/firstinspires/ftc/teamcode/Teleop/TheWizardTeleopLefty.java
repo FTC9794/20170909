@@ -134,7 +134,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
 
     final double ROTATION_TIME = 250;
 
-    final double GLYPH_GRAB_DISTANCE = 5.8;
+    final double GLYPH_GRAB_DISTANCE = 5.6;
     final double GLYPH_VISIBLE_TIME = 250;
 
     final double RELIC_ARM_ORIGIN = 0;
@@ -257,7 +257,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         drive = new OmniDirectionalDrive(driveMotors, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);
@@ -277,29 +277,6 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         ledTime.reset();
 
         while (opModeIsActive()) {
-
-            //Log control inputs
-            data.addField((float) gamepadPlus1.leftStickY());
-            data.addField((float) gamepadPlus1.leftStickX());
-            data.addField((float) gamepadPlus1.rightStickX());
-            data.addField(gamepadPlus1.leftBumper());
-            data.addField(gamepadPlus1.rightBumper());
-            data.addField((float) gamepadPlus1.rightTrigger());
-            data.addField(gamepadPlus1.a());
-            data.addField((float) gamepadPlus1.leftStickY());
-            data.addField((float) gamepadPlus1.rightStickY());
-            data.addField(gamepadPlus2.x());
-            data.addField(gamepadPlus2.b());
-            data.addField(gamepadPlus2.dpadUp());
-            data.addField(gamepadPlus2.dpadDown());
-            data.addField(gamepadPlus2.dpadLeft());
-            data.addField(gamepadPlus2.dpadRight());
-            data.addField(gamepadPlus2.leftBumper());
-            data.addField(gamepadPlus2.rightBumper());
-            data.addField((float) gamepadPlus1.leftTrigger());
-            data.addField((float) gamepadPlus1.rightTrigger());
-            data.newLine();
-
             telemetry.addData("Glyph 1 Distance", glyphColor1.cmDistance());
             telemetry.addData("Glyph 2 Distance", glyphColor2.cmDistance());
             if(!gamepadPlus1.rightBumper()){
@@ -325,7 +302,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 }
             }
 
-
+*/
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
@@ -538,7 +515,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
                         drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.5, true, -gamepadPlus1.rightStickX()*0.5);
                     }else{
-                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.85, true, -gamepadPlus1.rightStickX()*0.85);
+                        drive.moveNoIMU(gamepadPlus1.getAngleLeftStick(), gamepadPlus1.getDistanceFromCenterLeft()*0.85, true, -gamepadPlus1.rightStickX()*1);
                     }
                     break;
                 case RIGHT:
@@ -548,7 +525,10 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                         drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.85, true, -gamepadPlus1.leftStickX()*0.85);
                     }
             }
-
+            telemetry.addData("rf", rf.getPower());
+            telemetry.addData("rb", rb.getPower());
+            telemetry.addData("lf", lf.getPower());
+            telemetry.addData("lb", lb.getPower());
             /*if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
                 desiredEncoderPosition -= 100;
             }else if(gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 2600){
