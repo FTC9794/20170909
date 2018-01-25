@@ -175,6 +175,7 @@ public class RedStone1 extends LinearOpMode {
 
         rightWheel1 = hardwareMap.crservo.get("right_glyph1");
         leftWheel1 = hardwareMap.crservo.get("left_glyph1");
+        //leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel2 = hardwareMap.crservo.get("right_glyph2");
         leftWheel2 = hardwareMap.crservo.get("left_glyph2");
 
@@ -204,7 +205,6 @@ public class RedStone1 extends LinearOpMode {
         telemetry.update();
 
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setDirection(DcMotorSimple.Direction.REVERSE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
@@ -220,16 +220,10 @@ public class RedStone1 extends LinearOpMode {
         motors.add(lf);
         motors.add(lb);
 
-        //set motor modes and zero power behavior
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-        telemetry.addData("Init", "Set Drivetrain mode");
-        telemetry.update();
+
         leds = hardwareMap.dcMotor.get("leds");
         led = new LED(leds);
-        boolean aligned = false;
+        /*boolean aligned = false;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         jewel_us = new MRRangeSensor(ultrasonic_jewel);
         while(!aligned){
@@ -248,8 +242,38 @@ public class RedStone1 extends LinearOpMode {
                 aligned = true;
             }
             telemetry.update();
+        }*/
+
+        boolean aligned = false;
+        ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
+        ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
+        while(!aligned){
+            telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
+            telemetry.addData("Back US", ultrasonic_back.cmUltrasonic());
+            if(ultrasonic_back.cmUltrasonic() == 37 && ultrasonic_jewel.cmUltrasonic() == 36){
+                led.turnOn();
+            }else{
+                telemetry.addData("Aligned", "False");
+                led.turnOff();
+            }
+            telemetry.update();
+            if(isStopRequested()){
+                aligned = true;
+            }else if(gamepad1.a || gamepad2.a){
+                aligned = true;
+            }
+            telemetry.update();
         }
+
         led.turnOff();
+        telemetry.update();
+
+        //set motor modes and zero power behavior
+        for (DcMotor motor : motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        telemetry.addData("Init", "Set Drivetrain mode");
         telemetry.update();
 
         //Calibrate IMU
@@ -327,11 +351,11 @@ public class RedStone1 extends LinearOpMode {
         }
         //Determine VuMark distances
         if(vumarkSeen.equals("LEFT")){
-            vuMarkDistance = 28;
+            vuMarkDistance = 25;
         }else if (vumarkSeen.equals("RIGHT")){
             vuMarkDistance = 15;
         }else {
-            vuMarkDistance = 21;
+            vuMarkDistance = 22;
         }
         telemetry.addData("VuMark", "Finished");
         telemetry.update();
@@ -343,7 +367,7 @@ public class RedStone1 extends LinearOpMode {
         while(timer.milliseconds() < 500){
 
         }
-        intake.setLiftTargetPosition(400, 1);
+        intake.setLiftTargetPosition(500, 1);
         timer.reset();
         while(timer.milliseconds() < 500){
 
@@ -351,18 +375,18 @@ public class RedStone1 extends LinearOpMode {
         //Drive to desired VuMark target
         drive.resetEncoders();
         while(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveNoIMU(0, 0.4, true, 0);
+            drive.moveNoIMU(0, 0.6, true, 0);
             telemetry.addData("Encoder Count", encoderAverage);
             telemetry.update();
         }
         drive.softResetEncoder();
 
         //Lower lift to dispense glyph
-        lift.setTargetPosition(100);
+        lift.setTargetPosition(250);
         lift.setPower(1);
 
         //Pivot to face cryptobox
-        while(drive.moveIMU(0.5, 0.3, 0, 0, 0, 0, 0.005, 90, true, 500) && opModeIsActive()){
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, 90, true, 500) && opModeIsActive()){
             telemetry.addData("Move", "Pivot");
             telemetry.update();
         }
@@ -370,11 +394,11 @@ public class RedStone1 extends LinearOpMode {
         drive.softResetEncoder();
 
         //Drive to glyph release location
-        powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 4*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.001, 0.001, 90,
+        powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.2, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, 90,
                     false, 1000);
-            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -389,17 +413,17 @@ public class RedStone1 extends LinearOpMode {
         intake.setIntakePowerZero();
 
         //Back away from cryptobox
-        powerChange = (15*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 15*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, -90, 0.001, 0.001, 90,
+        powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.6, 0.5, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, 90,
                     false, 1000);
-            powerChange = (15*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
 
         //Pivot to glyph pit
-        while(drive.moveIMU(0.5, 0.3, 0, 0, 0, 0, 0.005, -90, true, 500) && opModeIsActive()){
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, -90, true, 500) && opModeIsActive()){
             telemetry.addData("Move", "Pivot");
             telemetry.update();
         }
@@ -412,47 +436,52 @@ public class RedStone1 extends LinearOpMode {
 
         //Drive to glyph pit and intake glyph
         intake.dispenseGlyph();
-        powerChange = (15*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 15*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, -90, 0.001, 0.001, -90,
+        powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
+        timer.reset();
+        while(floor_color.red() < RED_LINE_COLOR_VALUE && opModeIsActive() && timer.milliseconds() < 1500){
+            drive.moveIMU(0.4, 0.2, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, -90,
                     false, 1000);
-            powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
-            if(drive.averageEncoders() > 6 *COUNTS_PER_INCH){
-                intake.secureGlyph();
-            }
+            powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.softResetEncoder();
+        intake.secureGlyph();
+        while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+            drive.moveIMU(0.4, 0.2, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, -90,
+                    false, 1000);
+            powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
         timer.reset();
-        while(timer.milliseconds() < 500){
+        while(timer.milliseconds() < 1000){
 
         }
         //Drive back to cryptobox
-        powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 20*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.001, 0.001, -90,
+        powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 18*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.6, 0.5, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, -90,
                     false, 1000);
-            powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
         intake.setIntakePowerZero();
-        lift.setTargetPosition(600);
+        lift.setTargetPosition(800);
         lift.setPower(1);
 
         //Pivot to face cryptobox
-        while(drive.moveIMU(0.5, 0.3, 0, 0, 0, 0, 0.005, 90, true, 500) && opModeIsActive()){
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, 90, true, 500) && opModeIsActive()){
             telemetry.addData("Move", "Pivot");
             telemetry.update();
         }
         drive.softResetEncoder();
 
         //Drive to cryptobox
-        powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 4*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.001, 0.001, 90,
+        powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, 90,
                     false, 1000);
-            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.softResetEncoder();
         drive.setPowerZero();
@@ -469,12 +498,114 @@ public class RedStone1 extends LinearOpMode {
         //Back away from cryptobox
         powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
         while(drive.averageEncoders() < 10*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, -90, 0.001, 0.001, 90,
+            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, 90,
                     false, 1000);
             powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.softResetEncoder();
         drive.setPowerZero();
+
+        //Pivot to glyph pit
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, -90, true, 500) && opModeIsActive()){
+            telemetry.addData("Move", "Pivot");
+            telemetry.update();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+
+        //Lower lift to intake glyphs
+        lift.setTargetPosition(50);
+        lift.setPower(1);
+
+        //Slide to new column
+        if(!vumarkSeen.equals("RIGHT")){
+            powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
+                drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 180, 0.008, 0.001, -90,
+                        false, 1000);
+                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            }
+        }else{
+            powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
+                drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 0, 0.008, 0.001, -90,
+                        false, 1000);
+                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            }
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+
+        //Drive to glyph pit and intake glyph
+        intake.dispenseGlyph();
+        powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
+        timer.reset();
+        while(floor_color.red() < RED_LINE_COLOR_VALUE && opModeIsActive() && timer.milliseconds() < 1500){
+            drive.moveIMU(0.4, 0.2, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, -90,
+                    false, 1000);
+            powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.softResetEncoder();
+        intake.secureGlyph();
+        while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+            drive.moveIMU(0.4, 0.2, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, -90,
+                    false, 1000);
+            powerChange = (13*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+        timer.reset();
+        while(timer.milliseconds() < 1000){
+
+        }
+        //Drive back to cryptobox
+        powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 18*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, -90,
+                    false, 1000);
+            powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
+        intake.setIntakePowerZero();
+        lift.setTargetPosition(100);
+        lift.setPower(1);
+
+        //Pivot to face cryptobox
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, 90, true, 500) && opModeIsActive()){
+            telemetry.addData("Move", "Pivot");
+            telemetry.update();
+        }
+        drive.softResetEncoder();
+
+        //Drive to cryptobox
+        powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 7*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, 90,
+                    false, 1000);
+            powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.softResetEncoder();
+        drive.setPowerZero();
+
+        //Dispense glyph
+        intake.dispenseGlyph();
+        timer.reset();
+        while(timer.milliseconds() < 1000){
+            telemetry.addData("Intake", "Dispensing Glyph");
+            telemetry.update();
+        }
+        intake.setIntakePowerZero();
+
+        //Drive back to cryptobox
+        powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 5*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, 90,
+                    false, 1000);
+            powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
+        }
+        drive.setPowerZero();
+        drive.softResetEncoder();
 
         while (opModeIsActive()){
             telemetry.addData("Program", "Finished");

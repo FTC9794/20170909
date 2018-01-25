@@ -42,7 +42,6 @@ public class DualWheelIntake implements IGlyph {
 
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         spin.setPosition(SPIN_START);
