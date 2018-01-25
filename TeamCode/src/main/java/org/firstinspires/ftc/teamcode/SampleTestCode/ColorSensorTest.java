@@ -21,6 +21,8 @@ public class ColorSensorTest extends LinearOpMode {
         waitForStart();
         while(opModeIsActive()){
             telemetry.addData("Floor Color Red", color.red());
+            telemetry.addData("Floor Color Blue", color.blue());
+            telemetry.addData("Floor Color Hue", color.getHSV()[0]);
             telemetry.update();
         }
     }
