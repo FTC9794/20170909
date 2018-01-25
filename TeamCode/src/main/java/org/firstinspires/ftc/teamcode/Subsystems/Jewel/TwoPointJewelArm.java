@@ -60,7 +60,7 @@ public class TwoPointJewelArm implements IJewel {
 
     @Override
     public boolean knockOffJewel(String alliance) {
-        tilt(0.22);
+        tilt(0.21);
         if(alliance.equals("blue")){
             if(ballColor.equals("blue")){
                 while(this.panServo.getPosition() < 0.7){
