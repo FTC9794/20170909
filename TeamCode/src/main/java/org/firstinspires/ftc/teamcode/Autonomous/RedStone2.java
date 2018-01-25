@@ -353,7 +353,7 @@ public class RedStone2 extends LinearOpMode {
         telemetry.update();
 
         //Drive off of balancing stone
-        while(drive.averageEncoders() < 9*COUNTS_PER_INCH && opModeIsActive()){
+        while(drive.averageEncoders() < 7*COUNTS_PER_INCH && opModeIsActive()){
             drive.moveNoIMU(0, 0.4, true, 0);
             telemetry.addData("Encoder Count", encoderAverage);
             telemetry.update();
@@ -379,11 +379,11 @@ public class RedStone2 extends LinearOpMode {
         }
 
         //Drive to deposit glyph
-        powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive()){
+        powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive()){
             drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 0, 0.001, 0.001, 0,
                     false, 1000);
-            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -396,11 +396,11 @@ public class RedStone2 extends LinearOpMode {
         }
 
         //Back away from cryptobox
-        powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive()){
+        powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 5*COUNTS_PER_INCH && opModeIsActive()){
             drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 180, 0.001, 0.001, 0,
                     false, 1000);
-            powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
