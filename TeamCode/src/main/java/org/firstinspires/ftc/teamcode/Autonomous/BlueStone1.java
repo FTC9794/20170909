@@ -185,7 +185,7 @@ public class BlueStone1 extends LinearOpMode {
         color = new LynxColorRangeSensor(lynx);
         floor_color = new LynxColorRangeSensor(lynx_floor);
         jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         relic.setTiltPosition(1);
         telemetry.addData("Init", "Jewel, Relic Hardware Initialized");
         telemetry.update();

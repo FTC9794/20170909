@@ -302,7 +302,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 }
             }
 
-*/
+
             //Glyph rotation state machine
             switch(glyphRotateState){
                 case MANUAL:
