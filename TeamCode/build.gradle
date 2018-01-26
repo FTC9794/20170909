@@ -17,4 +17,6 @@ dependencies {
     compile files('src/main/java/org/firstinspires/ftc/commons-jexl3-3.1-tests.jar')
     compile files('src/main/java/org/firstinspires/ftc/commons-jexl3-3.1.jar')
     compile files('src/main/java/org/firstinspires/ftc/jsr223.jar')
+    implementation project(':openCVLibrary320')
+    implementation project(':DogeCV')
 }
