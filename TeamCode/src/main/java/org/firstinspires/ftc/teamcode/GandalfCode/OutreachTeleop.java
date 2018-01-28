@@ -267,57 +267,57 @@ public class OutreachTeleop extends LinearOpMode{
         shooterToggle = false;
         harvestToggle = false;
         //Determine which joystick and whether to use the IMU
-        String hand = "";
+        String hand = "right_noIMU";
 
         boolean allianceSelected = false;
-        String alliance = "";
-        while(!allianceSelected){
-            telemetry.addData("Blue Alliance", "Gamepad 1 Up");
-            telemetry.addData("Red Alliance", "Gamepad 1 Down");
-            if(gamepad1.dpad_up){
-                alliance = "blue";
-                allianceSelected = true;
-            }else if(gamepad1.dpad_down){
-                alliance = "red";
-                allianceSelected = true;
-            }
-            telemetry.update();
-        }
+        String alliance = "red";
+//        while(!allianceSelected){
+//            telemetry.addData("Blue Alliance", "Gamepad 1 Up");
+//            telemetry.addData("Red Alliance", "Gamepad 1 Down");
+//            if(gamepad1.dpad_up){
+//                alliance = "blue";
+//                allianceSelected = true;
+//            }else if(gamepad1.dpad_down){
+//                alliance = "red";
+//                allianceSelected = true;
+//            }
+//            telemetry.update();
+//        }
         telemetry.addData("Alliance", alliance);
         telemetry.update();
 
         while(gamepad1.dpad_down||gamepad1.dpad_up){
 
         }
-        while (pressed) {
-            telemetry.addData("handedness", "Press dpad left for lefty or dpad right for righty. Press Up for NO IMU Right, and down for NO IMU left");
-            telemetry.update();
-            if (gamepad1.dpad_left) {
-                hand = "left";
-                telemetry.addData("handedness", "lefty");
-                telemetry.update();
-                pressed = false;
-
-            } else if (gamepad1.dpad_right) {
-                hand = "right";
-                telemetry.addData("handedness", "righty");
-                telemetry.update();
-                pressed = false;
-
-            } else if (gamepad1.dpad_up) {
-                hand = "right_noIMU";
-                telemetry.addData("hand", "right no imu");
-                telemetry.update();
-                pressed = false;
-
-            } else if (gamepad1.dpad_down) {
-                hand = "left_noIMU";
-                telemetry.addData("hand", "left no imu");
-                telemetry.update();
-                pressed = false;
-
-            }
-        }
+//        while (pressed) {
+//            telemetry.addData("handedness", "Press dpad left for lefty or dpad right for righty. Press Up for NO IMU Right, and down for NO IMU left");
+//            telemetry.update();
+//            if (gamepad1.dpad_left) {
+//                hand = "left";
+//                telemetry.addData("handedness", "lefty");
+//                telemetry.update();
+//                pressed = false;
+//
+//            } else if (gamepad1.dpad_right) {
+//                hand = "right";
+//                telemetry.addData("handedness", "righty");
+//                telemetry.update();
+//                pressed = false;
+//
+//            } else if (gamepad1.dpad_up) {
+//                hand = "right_noIMU";
+//                telemetry.addData("hand", "right no imu");
+//                telemetry.update();
+//                pressed = false;
+//
+//            } else if (gamepad1.dpad_down) {
+//                hand = "left_noIMU";
+//                telemetry.addData("hand", "left no imu");
+//                telemetry.update();
+//                pressed = false;
+//
+//            }
+//        }
 
         //configure gyro sensor depending on variable
         if (hand.equals("left") || hand.equals("right")) {

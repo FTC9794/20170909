@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import java.util.Locale;
 
 /**
- * Created by Ishaan Oberoi on 10/19/2016.
+ * Created by Raashi on 1/7/2018.
  */
 
 public class MecanumDrive {
