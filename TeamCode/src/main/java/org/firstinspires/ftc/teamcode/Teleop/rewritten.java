@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
 /**
  * Created by ishaa on 1/19/2018.
  */
-@TeleOp(name = "rewritten teleop", group = "teleop")
+@TeleOp(name = "The Wizard Teleop Lefty Rewritten", group = "Teleop")
 public class rewritten extends OpMode {
     DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
@@ -60,11 +60,12 @@ public class rewritten extends OpMode {
     final double LIFT_HALF_POWER_UP = .75;
     final int LIFT_UPPER_LIMIT = 2300;
     final int GLYPH_POSITION_0 = 0;
-    final int GLYPH_POSITION_1 = 160;
-    final int GLYPH_POSITION_2 = 840;
-    final int GLYPH_POSITION_3 = 1460;
-    final int GLYPH_POSITION_4 = 2230;
+    final int GLYPH_POSITION_1 = 200;
+    final int GLYPH_POSITION_2 = 900;
+    final int GLYPH_POSITION_3 = 1600;
+    final int GLYPH_POSITION_4 = 2300;
     final int LIFT_POSITION_OFFSET = 100;
+    final int LIFT_INTAKEN_POSITION = 250;
     final int GLYPH_ROTATE_POSITION = 800;
 
     final double ANALOG_PRESSED = .2;
@@ -192,7 +193,7 @@ public class rewritten extends OpMode {
         pitch = -gamepad1.left_stick_y;
         roll = gamepad1.left_stick_x;
         pivot = gamepad1.right_stick_x;
-        if(gamepad1.left_trigger>.2){
+        if(gamepad1.right_trigger>.2){
             rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
             rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
             lf.setPower((pitch+roll+pivot)*DRIVE_LOW_SPEED);
@@ -346,6 +347,9 @@ public class rewritten extends OpMode {
             case INTAKE_MOTOR:
                 if(glyphColor1.cmDistance() < GLYPH_GRAB_DISTANCE&&intake1Time.milliseconds()>GLYPH_VISIBLE_TIME){
                     lowerIntakeState = intakeState.INTAKE_NO_MOTOR;
+                    if(!spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
+                        liftPosition = LIFT_INTAKEN_POSITION;
+                    }
                 }else if(gamepad1.right_bumper){
                     lowerIntakeState = intakeState.OUTAKE;
                     intaking = false;
@@ -395,6 +399,9 @@ public class rewritten extends OpMode {
             case INTAKE_MOTOR:
                 if(glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE&&intake2Time.milliseconds()>GLYPH_VISIBLE_TIME){
                     upperIntakeState= intakeState.INTAKE_NO_MOTOR;
+                    if(spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
+                        liftPosition = LIFT_INTAKEN_POSITION;
+                    }
                 }else if(gamepad1.right_bumper){
                     upperIntakeState = intakeState.OUTAKE;
                     intaking = false;

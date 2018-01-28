@@ -34,7 +34,7 @@ import javax.microedition.khronos.opengles.GL;
 /**
  * Created by Sarthak on 11/1/2017.
  */
-@TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
+//@TeleOp(name = "The Wizard Teleop Lefty", group = "Teleop")
 public class TheWizardTeleopLefty extends LinearOpMode {
 
     DataLogger data;
