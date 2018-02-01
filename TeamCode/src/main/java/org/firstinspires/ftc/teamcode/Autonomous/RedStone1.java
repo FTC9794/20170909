@@ -201,6 +201,7 @@ public class RedStone1 extends LinearOpMode {
         jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         relic.setTiltPosition(1);
+        relic_arm.setPosition(0);
         telemetry.addData("Init", "Jewel, Relic Hardware Initialized");
         telemetry.update();
         jewel.setPanTiltPos(0.5, 1);

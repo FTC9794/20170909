@@ -181,8 +181,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         tilt.setPosition(JEWEL_TILT_POSITION);
         relic.pickUpRelic();
         relic.setTiltPosition(1);
-        relic.setArmPosition(0.01);
-        relic.setArmPosition(0);
+        relic_arm.setPosition(0);
 
         while(opModeIsActive()){
 
