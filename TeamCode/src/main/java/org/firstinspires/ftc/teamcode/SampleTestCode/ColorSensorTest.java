@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
  * Created by Sarthak on 1/20/2018.
  */
 @TeleOp(name = "Color Sensor Value Test", group = "Test")
+@Disabled
 public class ColorSensorTest extends LinearOpMode {
     IColorSensor color;
     LynxI2cColorRangeSensor floor_color;

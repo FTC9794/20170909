@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
  * Created by ishaa on 1/28/2018.
  */
 
-@TeleOp(name = "rewritten Linear Lefty", group = "rewritten")
+@TeleOp(name = "Lefty Teleop")
 public class rewrittenLinearOpMode extends LinearOpMode {
     DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;

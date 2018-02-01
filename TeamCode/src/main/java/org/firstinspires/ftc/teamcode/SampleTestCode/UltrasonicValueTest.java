@@ -17,6 +17,7 @@ import java.util.Date;
  * Created by Sarthak on 12/31/2017.
  */
 @TeleOp(name = "Ultrasonic Value and Filter Test", group = "test")
+@Disabled
 public class UltrasonicValueTest extends LinearOpMode{
     IUltrasonic ultrasonic;
     ModernRoboticsI2cRangeSensor us;

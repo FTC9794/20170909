@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
  * Created by Sarthak on 10/15/2017.
  */
 @Autonomous(name = "TwoPointJewelArmTest", group = "Test")
+@Disabled
 public class TwoPointJewelArmTest extends LinearOpMode {
 
     LynxI2cColorRangeSensor lynx;

@@ -13,6 +13,7 @@ package org.firstinspires.ftc.teamcode.LunaCode;
         import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 @TeleOp(name="Luna Teleop", group="Pushbot")
+@Disabled
 public class LunaTeleop extends LinearOpMode {
 
     /* Declare OpMode members. */

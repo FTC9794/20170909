@@ -242,7 +242,7 @@ public class RedStone2 extends LinearOpMode {
         boolean aligned = false;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
-        while(!aligned){
+        while(!aligned&&!isStopRequested()){
             telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
             if(ultrasonic_jewel.cmUltrasonic() == 36){
                 led.turnOn();
@@ -308,7 +308,7 @@ public class RedStone2 extends LinearOpMode {
         //Move jewel to position and read color
         jewel.setPanTiltPos(0.5, 0.21);
         timer.reset();
-        while(timer.milliseconds() < 1000){
+        while(timer.milliseconds() < 1000&&opModeIsActive()){
             telemetry.addData("Jewel", "Moving to Read Position");
             telemetry.addData("Timer", timer.milliseconds());
             telemetry.update();
@@ -397,7 +397,7 @@ public class RedStone2 extends LinearOpMode {
         //Deposit glyph
         intake.dispenseGlyph();
         timer.reset();
-        while(timer.milliseconds() < 1500){
+        while(timer.milliseconds() < 1500&opModeIsActive()){
             //Wait for glyph to be scored
         }
 
@@ -564,7 +564,7 @@ public class RedStone2 extends LinearOpMode {
         //Deposit glyph
         intake.dispenseGlyph();
         timer.reset();
-        while(timer.milliseconds() < 1500){
+        while(timer.milliseconds() < 1500 && opModeIsActive()){
             //Wait for glyph to be scored
         }
 
@@ -578,11 +578,12 @@ public class RedStone2 extends LinearOpMode {
         drive.setPowerZero();
         drive.softResetEncoder();
         intake.setIntakePowerZero();
-
+        lift.setTargetPosition(0);
 
         //End of program
         while(opModeIsActive()){
             intake.setIntakePowerZero();
+            led.turnOn();
             telemetry.addData("Program", "Finished");
             telemetry.addData("VuMark Seen", vumarkSeen);
             telemetry.update();

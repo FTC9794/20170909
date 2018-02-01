@@ -241,7 +241,7 @@ public class BlueStone2 extends LinearOpMode {
         boolean aligned = false;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
-        while(!aligned){
+        while(!aligned&&!isStopRequested()){
             telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
             if(ultrasonic_jewel.cmUltrasonic() == 36){
                 led.turnOn();
@@ -307,15 +307,15 @@ public class BlueStone2 extends LinearOpMode {
         //Move jewel to position and read color
         jewel.setPanTiltPos(0.5, 0.21);
         timer.reset();
-        while(timer.milliseconds() < 1000){
+        while(timer.milliseconds() < 1000&&opModeIsActive()){
             telemetry.addData("Jewel", "Moving to Read Position");
             telemetry.addData("Timer", timer.milliseconds());
             telemetry.update();
         }
         jewel.readColor(5);
-        intake.setLiftTargetPosition(500, 1);
+        intake.setLiftTargetPosition(700, 1);
         //Knock off jewel
-        jewel.knockOffJewel("red");
+        jewel.knockOffJewel("blue");
         jewel.setPanTiltPos(0.5, 1);
         telemetry.addData("Jewel", "Done");
 
@@ -347,14 +347,17 @@ public class BlueStone2 extends LinearOpMode {
         }
         //Determine VuMark distances
         if(vumarkSeen.equals("LEFT")){
-            vuMarkDistance = 20;
-        }else if (vumarkSeen.equals("RIGHT")){
             vuMarkDistance = 6;
+        }else if (vumarkSeen.equals("RIGHT")){
+            vuMarkDistance = 20;
         }else {
-            vuMarkDistance = 13;
+            vuMarkDistance = 12;
         }
         telemetry.addData("VuMark", "Finished");
         telemetry.update();
+
+        relic.setArmPosition(0.5);
+        relic.setArmPosition(0);
 
         //Drive off of balancing stone
         powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
@@ -404,7 +407,7 @@ public class BlueStone2 extends LinearOpMode {
         //Deposit glyph
         intake.dispenseGlyph();
         timer.reset();
-        while(timer.milliseconds() < 1500){
+        while(timer.milliseconds() < 1500&&opModeIsActive()){
             //Wait for glyph to be scored
         }
 
@@ -420,11 +423,11 @@ public class BlueStone2 extends LinearOpMode {
         intake.setIntakePowerZero();
 
         //Slide towards middle of the field
-        powerChange = ((27-vuMarkDistance)*COUNTS_PER_INCH - drive.averageEncoders());
-        while(drive.averageEncoders() < (27-vuMarkDistance)*COUNTS_PER_INCH && opModeIsActive()){
+        powerChange = ((24-vuMarkDistance)*COUNTS_PER_INCH - drive.averageEncoders());
+        while(drive.averageEncoders() < (24-vuMarkDistance)*COUNTS_PER_INCH && opModeIsActive()){
             drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -90, 0.008, 0.001, 180,
                     false, 1000);
-            powerChange = ((27-vuMarkDistance)*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = ((24-vuMarkDistance)*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -433,7 +436,7 @@ public class BlueStone2 extends LinearOpMode {
         lift.setPower(1);
 
         //Pivot to face glyph pit
-        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, -45, true, 0) && opModeIsActive()){
+        while(drive.moveIMU(0.5, 0.2, 0, 0, 0, 0, 0.005, -35, true, 0) && opModeIsActive()){
             telemetry.addData("Move", "Pivot");
             telemetry.update();
         }
@@ -443,7 +446,7 @@ public class BlueStone2 extends LinearOpMode {
         //Slide to pit
         powerChange = (24*COUNTS_PER_INCH - drive.averageEncoders());
         while(drive.averageEncoders() < 24*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -15, 0.03, 0.001, -45,
+            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 10, 0.03, 0.001, -35,
                     false, 1000);
             powerChange = (24*COUNTS_PER_INCH) - drive.averageEncoders();
         }
@@ -454,12 +457,12 @@ public class BlueStone2 extends LinearOpMode {
 
 
         //Move into pit
-        powerChange = (7*COUNTS_PER_INCH - drive.averageEncoders());
+        powerChange = (9*COUNTS_PER_INCH - drive.averageEncoders());
         timer.reset();
-        while(drive.averageEncoders() < 7*COUNTS_PER_INCH && opModeIsActive() && timer.seconds() < 2000){
-            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -45, .02, 0.001, -45,
+        while(drive.averageEncoders() < 9*COUNTS_PER_INCH && opModeIsActive() && timer.seconds() < 2000){
+            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -35, .02, 0.001, -35,
                     false, 1000);
-            powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (9*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -475,7 +478,7 @@ public class BlueStone2 extends LinearOpMode {
             timer.reset();
             powerChange = (6*COUNTS_PER_INCH - drive.averageEncoders());
             while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
-                drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -45, .02, 0.001, -45,
+                drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -35, .02, 0.001, -35,
                         false, 1000);
                 powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
             }
@@ -484,7 +487,7 @@ public class BlueStone2 extends LinearOpMode {
             drive.softResetEncoder();
             timer.reset();
 
-            while(drive.moveIMU(0.4, 0.3, 0, 0, 0, 0, .03, -70, true, 0) && opModeIsActive()){
+            while(drive.moveIMU(0.4, 0.3, 0, 0, 0, 0, .03, -50, true, 0) && opModeIsActive()){
                 telemetry.addData("Move", "Pivot");
                 telemetry.update();
             }
@@ -492,14 +495,14 @@ public class BlueStone2 extends LinearOpMode {
                 telemetry.addData("Move", "Pivot");
                 telemetry.update();
             }
-            while(drive.moveIMU(.4, 0.3, 0, 0, 0, 0, .03, -45, true, 0) && opModeIsActive()){
+            while(drive.moveIMU(.4, 0.3, 0, 0, 0, 0, .03, -35, true, 0) && opModeIsActive()){
                 telemetry.addData("Move", "Pivot");
                 telemetry.update();
             }
         }
         drive.setPowerZero();
         drive.softResetEncoder();
-        if(vumarkSeen.equals("LEFT")){
+        if(vumarkSeen.equals("RIGHT")){
             lift.setTargetPosition(900);
         }else{
             lift.setTargetPosition(150);
@@ -511,16 +514,16 @@ public class BlueStone2 extends LinearOpMode {
 
         //Drive back to cryptobox
         if(additionalDistance){
-            powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
-            while(drive.averageEncoders()<12*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1500){
-                drive.moveIMU(.4, 0.15, powerChange, .04, 135, .04, 0.001, -45,
+            powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+            while(drive.averageEncoders()<10*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1500){
+                drive.moveIMU(.4, 0.15, powerChange, .04, 145, .04, 0.001, -35,
                         false, 1000);
-                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
             }
         }else{
-            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1500){
-                drive.moveIMU(.4, 0.15, powerChange, .07, 135, .04, 0.001, -45,
+                drive.moveIMU(.4, 0.15, powerChange, .07, 145, .04, 0.001, -35,
                         false, 1000);
                 powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
             }
@@ -528,12 +531,12 @@ public class BlueStone2 extends LinearOpMode {
         drive.setPowerZero();
         drive.softResetEncoder();
 
-        //Slide away from
-        powerChange = (24*COUNTS_PER_INCH - drive.averageEncoders());
-        while(drive.averageEncoders() < 24*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 170, 0.03, 0.001, -45,
+        //Slide away from pit
+        powerChange = (22*COUNTS_PER_INCH - drive.averageEncoders());
+        while(drive.averageEncoders() < 22*COUNTS_PER_INCH && opModeIsActive()){
+            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, -170, 0.005, 0.001, -35,
                     false, 1000);
-            powerChange = (24*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (22*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -549,7 +552,7 @@ public class BlueStone2 extends LinearOpMode {
         //Slide to cryptobox
         powerChange = (6*COUNTS_PER_INCH - drive.averageEncoders());
         while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
-            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 90, 0.03, 0.001, 180,
+            drive.moveIMU(0.7, 0.5, powerChange, POWER_CHANGE_GAIN, 90, 0.008, 0.001, 180,
                     false, 1000);
             powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
         }
@@ -557,13 +560,13 @@ public class BlueStone2 extends LinearOpMode {
         drive.softResetEncoder();
 
 
-        //Slide to cryptobox
+        //Go to deposit glyph
         timer.reset();
-        powerChange = (5*COUNTS_PER_INCH - drive.averageEncoders());
-        while(drive.averageEncoders() < 5*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
+        powerChange = (7*COUNTS_PER_INCH - drive.averageEncoders());
+        while(drive.averageEncoders() < 7*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
             drive.moveIMU(0.3, 0.1, powerChange, POWER_CHANGE_GAIN, 180, 0.03, 0.001, 180,
                     false, 1000);
-            powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (7*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
@@ -571,7 +574,7 @@ public class BlueStone2 extends LinearOpMode {
         //Deposit glyph
         intake.dispenseGlyph();
         timer.reset();
-        while(timer.milliseconds() < 1500){
+        while(timer.milliseconds() < 1500&&opModeIsActive()){
             //Wait for glyph to be scored
         }
 
@@ -585,11 +588,12 @@ public class BlueStone2 extends LinearOpMode {
         drive.setPowerZero();
         drive.softResetEncoder();
         intake.setIntakePowerZero();
-
+        lift.setTargetPosition(0);
 
         //End of program
         while(opModeIsActive()){
             intake.setIntakePowerZero();
+            led.turnOn();
             telemetry.addData("Program", "Finished");
             telemetry.addData("VuMark Seen", vumarkSeen);
             telemetry.update();

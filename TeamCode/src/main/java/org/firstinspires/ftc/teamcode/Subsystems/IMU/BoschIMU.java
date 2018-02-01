@@ -41,9 +41,12 @@ public class BoschIMU implements IIMU {
 
     @Override
     public double getZAngle(double desiredAngle) {
-        double angle = this.getZAngle();
-        int multiplier = (int)Math.floor((angle-desiredAngle)/-180);
-        angle = angle+(360*multiplier);
+        double angle = getZAngle();
+        if(angle<desiredAngle-180){
+            angle+=360;
+        }else if(angle>desiredAngle+180){
+            angle-=360;
+        }
         return angle;
     }
 

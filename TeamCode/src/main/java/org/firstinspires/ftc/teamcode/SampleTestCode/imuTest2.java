@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 @Autonomous(name = "IMU Test", group = "Sensor")
-
+@Disabled
 public class imuTest2 extends LinearOpMode{
         //Create IMU Object
         BNO055IMU imu;

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
  * Created by ishaa on 1/19/2018.
  */
 @TeleOp(name = "The Wizard Teleop Lefty Rewritten", group = "Teleop")
+@Disabled
 public class rewritten extends OpMode {
     DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;

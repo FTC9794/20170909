@@ -224,7 +224,7 @@ public class OmniDirectionalDrive implements IDrivetrain {
         //measure the gyro sensor
         //get gyro sensor value
 
-        double currentAngle = imu.getZAngle();
+        double currentAngle = imu.getZAngle(angle);
 
         double difference = (currentAngle - angle);
 
@@ -331,19 +331,10 @@ public class OmniDirectionalDrive implements IDrivetrain {
         data.addField((float)powerPercent);
         data.addField((float)powerGain);
         data.addField((float)oGain);
-        double currentAngle = imu.getZAngle();
+        double currentAngle = imu.getZAngle(orientationAngle);
         data.addField((float)currentAngle);
         boolean fixAngle = true;
 
-        while(fixAngle){
-            if(currentAngle>orientationAngle+180){
-                currentAngle = currentAngle-360;
-            }else if(currentAngle<orientationAngle-180){
-                currentAngle = currentAngle+360;
-            }else{
-                fixAngle = false;
-            }
-        }
         data.addField((float)currentAngle);
         telemetry.addData("imu", currentAngle);
         moveAngle = moveAngle - orientationAngle;

@@ -27,6 +27,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 
 
 @Autonomous(name = "IMU Java", group = "Sensor")
+@Disabled
 public class imuTest {
 
     public class IMU_Test extends LinearOpMode

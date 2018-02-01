@@ -250,7 +250,7 @@ public class RedStone1 extends LinearOpMode {
         boolean aligned = false;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
-        while(!aligned){
+        while(!aligned&&!isStopRequested()){
             telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
             telemetry.addData("Back US", ultrasonic_back.cmUltrasonic());
             if(ultrasonic_back.cmUltrasonic() == 37 && ultrasonic_jewel.cmUltrasonic() == 36){

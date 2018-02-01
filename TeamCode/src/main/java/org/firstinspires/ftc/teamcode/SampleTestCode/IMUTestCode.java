@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
  * Created by Sarthak on 1/6/2018.
  */
 @TeleOp(name = "IMU Discontinuity Test", group = "Test")
+@Disabled
 public class IMUTestCode extends LinearOpMode{
     IIMU imu;
     @Override

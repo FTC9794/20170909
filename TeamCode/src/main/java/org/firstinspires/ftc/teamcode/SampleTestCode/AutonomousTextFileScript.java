@@ -4,6 +4,7 @@ import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -57,6 +58,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
  * Created by Sarthak on 10/22/2017.
  */
 @Autonomous(name = "Autonomous Text File Script", group = "Test")
+@Disabled
 public class AutonomousTextFileScript extends LinearOpMode{
 
     Servo pan, tilt;

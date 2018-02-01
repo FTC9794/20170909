@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
  * Created by Sarthak on 11/1/2017.
  */
 @TeleOp(name = "The Wizard Teleop State Machine", group = "Teleop")
+@Disabled
 public class TheWizardTeleopStateMachine extends LinearOpMode {
     ElapsedTime rotateTime;
 
