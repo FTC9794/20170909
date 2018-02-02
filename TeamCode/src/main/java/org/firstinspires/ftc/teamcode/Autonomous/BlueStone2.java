@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Created by Sarthak on 1/24/2018.
  */
-@Autonomous(name = "Blue Stone 2 Java", group = "Autonomous")
+@Autonomous(name = "Blue Stone 2 Java", group = "Stone 2 Autonomous")
 public class BlueStone2 extends LinearOpMode {
 
     BNO055IMU boschIMU;
@@ -314,7 +314,7 @@ public class BlueStone2 extends LinearOpMode {
             telemetry.update();
         }
         jewel.readColor(5);
-        intake.setLiftTargetPosition(700, 1);
+        intake.setLiftTargetPosition(800, 1);
         //Knock off jewel
         jewel.knockOffJewel("blue");
         jewel.setPanTiltPos(0.5, 1);

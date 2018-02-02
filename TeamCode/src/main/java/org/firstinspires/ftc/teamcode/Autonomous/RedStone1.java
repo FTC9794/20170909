@@ -47,7 +47,7 @@ import java.util.List;
 /**
  * Created by Sarthak on 1/19/2018.
  */
-@Autonomous(name = "Red Stone1 Java", group = "Autonomous")
+@Autonomous(name = "Red Stone1 Java", group = "Stone 1 Autonomous")
 public class RedStone1 extends LinearOpMode {
 
 
@@ -325,7 +325,7 @@ public class RedStone1 extends LinearOpMode {
             telemetry.update();
         }
         jewel.readColor(5);
-        intake.setLiftTargetPosition(500, 1);
+        intake.setLiftTargetPosition(700, 1);
 
         //Knock off jewel
         jewel.knockOffJewel("red");
@@ -392,12 +392,12 @@ public class RedStone1 extends LinearOpMode {
         drive.softResetEncoder();
 
         //Drive to glyph release location
-        powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+        powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
         timer.reset();
-        while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+        while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
             drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 90,
                     false, 1000);
-            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
         }
         drive.setPowerZero();
         drive.softResetEncoder();
