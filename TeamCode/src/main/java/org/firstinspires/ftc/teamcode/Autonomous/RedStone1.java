@@ -364,7 +364,7 @@ public class RedStone1 extends LinearOpMode {
         }else if (vumarkSeen.equals("RIGHT")){
             vuMarkDistance = 18;
         }else {
-            vuMarkDistance = 25;
+            vuMarkDistance = 26;
         }
         telemetry.addData("VuMark", "Finished");
         telemetry.update();
@@ -576,14 +576,14 @@ public class RedStone1 extends LinearOpMode {
 
         //Slide to new column
         if(!vumarkSeen.equals("RIGHT")){
-            powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
                 drive.moveIMU(1, 1, powerChange, .125, 180, .02, 0.001, -90,
                         false, 1000);
                 powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
             }
         }else{
-            powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
                 drive.moveIMU(1, 1, powerChange, .125, 0, .02, 0.001, -90,
                         false, 1000);
