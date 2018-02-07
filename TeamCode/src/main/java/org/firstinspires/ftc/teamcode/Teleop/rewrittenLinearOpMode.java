@@ -52,9 +52,11 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     glyphRotateStates rotateState;
     boolean yPressed;
     boolean aPressed;
+    boolean xPressed;
 
     boolean spined = false;
     boolean rotateLower = false;
+    boolean clawClosed = true;
 
     final double LIFT_POWER = 1;
     final double LIFT_HALF_POWER_DOWN = .1;
@@ -515,20 +517,25 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
 
-            //Claw servo controls
-            if (gamepad2.dpad_left) {
-                relic.pickUpRelic();
-            } else if (gamepad2.dpad_right) {
-                relic.releaseRelic();
+            if(gamepad2.x&&!xPressed){
+                if(clawClosed){
+                    relic.releaseRelic();
+                }else{
+                    relic.pickUpRelic();
+                }
+                xPressed = true;
+            }else if(!gamepad2.x){
+                xPressed = false;
             }
-            if(gamepad2.x){
+
+            if(gamepad2.dpad_left){
                 relic.setArmPosition(RELIC_ARM_GRAB_POS);
             }else if(gamepad1.a){
                 relic.setArmPosition(RELIC_ARM_ORIGIN);
                 relic.pickUpRelic();
                 relic.setTiltPosition(1);
             }
-            if(gamepad2.b){
+            if(gamepad2.dpad_right){
                 relic.setTiltPosition(0.6);
                 relic.setArmPosition(0.6);
             }
