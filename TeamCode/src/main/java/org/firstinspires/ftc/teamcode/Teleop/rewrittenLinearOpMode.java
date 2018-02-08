@@ -332,7 +332,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             }
             switch(lowerIntakeState){
                 case NOTHING:
-                    if(gamepad1.right_bumper){
+                    if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
                         lowerIntakeState = rewritten.intakeState.OUTAKE;
                     }else if (intaking) {
                         lowerIntakeState = rewritten.intakeState.INTAKE_MOTOR;
@@ -348,7 +348,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         if(!spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
                             liftPosition = LIFT_INTAKEN_POSITION;
                         }
-                    }else if(gamepad1.right_bumper){
+                    }else if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
                         lowerIntakeState = rewritten.intakeState.OUTAKE;
                         intaking = false;
                     }else if(!intaking){
@@ -364,7 +364,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     if(glyphColor1.cmDistance()>GLYPH_GRAB_DISTANCE){
                         lowerIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                         intake1Time.reset();
-                    }else if(gamepad1.right_bumper){
+                    }else if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
                         lowerIntakeState = rewritten.intakeState.OUTAKE;
                         intaking = false;
                     }else if(!intaking){
@@ -374,7 +374,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     }
                     break;
                 case OUTAKE:
-                    if(!gamepad1.right_bumper){
+                    if(!gamepad1.right_bumper&&!(!spined&&gamepad1.dpad_down)&&!(spined&&gamepad1.dpad_up)){
                         lowerIntakeState = rewritten.intakeState.NOTHING;
                     }else{
                         bottomIntake.dispenseGlyph();
@@ -384,7 +384,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             switch(upperIntakeState){
                 case NOTHING:
-                    if(gamepad1.right_bumper){
+                    if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
                         upperIntakeState = rewritten.intakeState.OUTAKE;
                     }else if (intaking) {
                         upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
@@ -400,7 +400,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         if(spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
                             liftPosition = LIFT_INTAKEN_POSITION;
                         }
-                    }else if(gamepad1.right_bumper){
+                    }else if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
                         upperIntakeState = rewritten.intakeState.OUTAKE;
                         intaking = false;
                     }else if(!intaking){
@@ -416,7 +416,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     if(glyphColor2.cmDistance()>GLYPH_GRAB_DISTANCE){
                         upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                         intake2Time.reset();
-                    }else if(gamepad1.right_bumper){
+                    }else if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
                         upperIntakeState = rewritten.intakeState.OUTAKE;
                         intaking = false;
                     }else if(!intaking){
@@ -426,7 +426,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     }
                     break;
                 case OUTAKE:
-                    if(!gamepad1.right_bumper){
+                    if(!gamepad1.right_bumper&&!(spined&&gamepad1.dpad_down)&&!(!spined&&gamepad1.dpad_up)){
                         upperIntakeState = rewritten.intakeState.NOTHING;
                     }else{
                         topIntake.dispenseGlyph();
@@ -523,6 +523,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 }else{
                     relic.pickUpRelic();
                 }
+                clawClosed=!clawClosed;
                 xPressed = true;
             }else if(!gamepad2.x){
                 xPressed = false;
