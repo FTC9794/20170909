@@ -125,6 +125,7 @@ public class rewrittenLinearOpModeRighty extends LinearOpMode {
         relic_claw = hardwareMap.servo.get("relic_claw");
         relic_tilt = hardwareMap.servo.get("relic_tilt");
 
+        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
@@ -550,7 +551,10 @@ public class rewrittenLinearOpModeRighty extends LinearOpMode {
                 relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
             }
 
+            telemetry.addData("Lift Position", lift.getCurrentPosition());
+            telemetry.update();
         }
+
 
     }
 }
