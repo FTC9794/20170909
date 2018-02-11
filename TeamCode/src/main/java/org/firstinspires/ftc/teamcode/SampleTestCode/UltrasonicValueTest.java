@@ -17,16 +17,16 @@ import java.util.Date;
  * Created by Sarthak on 12/31/2017.
  */
 @TeleOp(name = "Ultrasonic Value and Filter Test", group = "test")
-@Disabled
 public class UltrasonicValueTest extends LinearOpMode{
     IUltrasonic ultrasonic;
-    ModernRoboticsI2cRangeSensor us;
+    ModernRoboticsI2cRangeSensor us, front;
     DataLogger data;
     Date date;
 
     @Override
     public void runOpMode() throws InterruptedException {
         us = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
+        front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("front_us");
         ultrasonic = new MRRangeSensor(us);
         date = new Date();
         data = new DataLogger(date.toString() + "US Filter Test");
@@ -37,6 +37,7 @@ public class UltrasonicValueTest extends LinearOpMode{
 
         while(opModeIsActive()){
             telemetry.addData("Raw US", us.cmUltrasonic());
+            telemetry.addData("Raw Front US", front.cmUltrasonic());
             telemetry.addData("Filtered US Value", ultrasonic.cmDistance());
             telemetry.update();
             data.addField((float) us.cmUltrasonic());

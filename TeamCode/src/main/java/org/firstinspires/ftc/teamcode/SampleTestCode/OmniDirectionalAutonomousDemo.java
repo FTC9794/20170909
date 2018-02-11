@@ -64,6 +64,7 @@ public class OmniDirectionalAutonomousDemo extends LinearOpMode {
     OmniDirectionalDrive drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
+    ModernRoboticsI2cRangeSensor ultrasonic_front;
     DcMotor leds;
 
     ElapsedTime timer;
@@ -203,30 +204,51 @@ public class OmniDirectionalAutonomousDemo extends LinearOpMode {
         telemetry.update();
         led.setLEDPower(0.5);
 
+        ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("front_us");
+
         Date day = new Date();
         DataLogger data = new DataLogger(day.toString() + " OmniDriveTest");
         data.addField("Color Sensor Red Value");
         data.addField("Color Sensor Blue Value");
         data.addField("Color Sensor Hue");
+        data.addField("Front US");
         data.newLine();
 
         waitForStart();
+        led.turnOff();
         drive.softResetEncoder();
 
         timer.reset();
         //go into the cryptobox
         powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders()<20*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<3000){
-            drive.moveIMU(.7, 0.35, powerChange, .035, -90, .02, 0.001, -90,
+        while(floor_color.getHSV()[0] > 25 &&opModeIsActive()&&timer.milliseconds()<3000){
+            drive.moveIMU(.5, 0.35, powerChange, .035, 0, .02, 0.001, 0,
                     false, 1000);
             powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
             data.addField(floor_color.red());
             data.addField(floor_color.blue());
             data.addField(floor_color.getHSV()[0]);
             data.newLine();
+            if(floor_color.getHSV()[0] < 25){
+                led.turnOn();
+            }
         }
         drive.setPowerZero();
         timer.reset();
+        /*powerChange = (30*COUNTS_PER_INCH) - drive.averageEncoders();
+        while(drive.averageEncoders() < 30*COUNTS_PER_INCH &&opModeIsActive()){
+            drive.moveIMU(.375, 0.375, powerChange, .035, -90, .02, 0.001, 0,
+                    false, 1000);
+            powerChange = (30*COUNTS_PER_INCH) - drive.averageEncoders();
+            data.addField(floor_color.red());
+            data.addField(floor_color.blue());
+            data.addField(floor_color.getHSV()[0]);
+            data.addField((float) ultrasonic_front.cmUltrasonic());
+            data.newLine();
+        }
+        drive.setPowerZero();
+        timer.reset();*/
+
 
         while(opModeIsActive()){
             telemetry.addData("Distance Traveled", drive.averageEncoders()/COUNTS_PER_INCH);

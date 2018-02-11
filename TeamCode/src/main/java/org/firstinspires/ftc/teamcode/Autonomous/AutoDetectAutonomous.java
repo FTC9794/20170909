@@ -102,6 +102,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
     final double LIFT_POWER_UP = 1;
     final double LIFT_POWER_DOWN = -1;
 
+    private final double INTAKE_SPPED = 0.74;
+    private final double OUTTAKE_SPEED = -0.74;
+
     boolean additionalDistance = false;
 
 
@@ -212,6 +215,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
         telemetry.addData("Init", "Initialized Intake System");
         telemetry.update();
 
+
+
+
         //create array list of motors
         motors = new ArrayList<>();
         motors.add(rf);
@@ -222,52 +228,95 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         leds = hardwareMap.dcMotor.get("leds");
         led = new LED(leds);
-        /*boolean aligned = false;
-        ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
-        jewel_us = new MRRangeSensor(ultrasonic_jewel);
-        while(!aligned){
-            telemetry.addData("Jewel Ultrasonic", ultrasonic_jewel.cmUltrasonic());
-            if(ultrasonic_back.cmUltrasonic() == 37){
-                telemetry.addData("Alinged", "True");
-                led.turnOn();
-            }else{
-                telemetry.addData("Aligned", "False");
-                led.turnOff();
-            }
-            telemetry.update();
-            if(isStopRequested()){
-                aligned = true;
-            }else if(gamepad1.a || gamepad2.a){
-                aligned = true;
-            }
-            telemetry.update();
-        }*/
 
-        boolean aligned = false;
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
-        ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("front_us");
+        ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("bottom_front_us");
 
-        while(!aligned&&!isStopRequested()){
-            telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
-            telemetry.addData("Back US", ultrasonic_back.cmUltrasonic());
-            if(ultrasonic_back.cmUltrasonic() == 37 && ultrasonic_jewel.cmUltrasonic() == 36){
+        boolean selected = false;
+        boolean aligned = false;
+        String autoProgram = "";
+        while(!selected&&!isStopRequested()){
+            //telemetry.addData("Floor Red", floor_color.red());
+            //telemetry.addData("Floor Blue", floor_color.blue());
+            //telemetry.addData("Floor HSV", floor_color.getHSV()[0]);
+            telemetry.addData("Auto Program Selected", autoProgram);
+
+            if(isStopRequested()){
+                selected = true;
+            }
+            if (gamepad1.b || gamepad2.b){
+                selected = true;
+            }
+            if(aligned){
                 led.turnOn();
             }else{
-                telemetry.addData("Aligned", "False");
                 led.turnOff();
             }
-            telemetry.update();
-            if(isStopRequested()){
+
+            double jewelValue = ultrasonic_jewel.cmUltrasonic();
+            double backValue = ultrasonic_back.cmUltrasonic();
+            double frontValue = ultrasonic_front.cmUltrasonic();
+
+            telemetry.addData("Jewel US", jewelValue);
+            telemetry.addData("Back US", backValue);
+            telemetry.addData("Front US", frontValue);
+            telemetry.addData("Aligned", aligned);
+
+            if(jewelValue != 255 && backValue != 255){
+                if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
+                    if(frontValue > 60 && backValue <= 40){
+                        if(jewelValue == 36 && backValue == 37) {
+                            autoProgram = "RedStone1";
+                            aligned = true;
+                        }else{
+                            autoProgram = "RedStone1";
+                            aligned = false;
+                        }
+                    }
+                    if(frontValue > 60 && backValue > 90){
+                        if(jewelValue == 36 && frontValue == 93){
+                            aligned = true;
+                            autoProgram = "RedStone2";
+                        }else{
+                            autoProgram = "RedStone2";
+                            aligned = false;
+                        }
+
+                    }
+                }else if (floor_color.getHSV()[0] > 200){
+                    if(frontValue < 50 && backValue > 60){
+                        if(jewelValue == 36 && frontValue == 38){
+                            autoProgram = "BlueStone1";
+                            aligned = true;
+                        }else{
+                            autoProgram = "BlueStone1";
+                            aligned = false;
+                        }
+                    }
+                    if(frontValue > 100 && (backValue > 85 && backValue < 150)){
+                        if(jewelValue == 36 && backValue == 93){
+                            autoProgram = "BlueStone2";
+                            aligned = true;
+                        }else{
+                            autoProgram = "BlueStone2";
+                            aligned = false;
+                        }
+                    }
+                }
+            }
+
+            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93){
                 aligned = true;
-            }else if(gamepad1.a || gamepad2.a){
+                led.turnOn();
+            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93){
                 aligned = true;
+                led.turnOn();
+            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2")){
+                aligned = false;
             }
             telemetry.update();
         }
-
-        led.turnOff();
-        telemetry.update();
 
         //set motor modes and zero power behavior
         for (DcMotor motor : motors) {
@@ -298,39 +347,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
         telemetry.addData("Init", "Timer Initialized");
         telemetry.update();
 
-        boolean selected = false;
-        String autoProgram = "";
-        while(!selected&&!isStopRequested()){
-            telemetry.addData("Jewel US", ultrasonic_jewel.cmUltrasonic());
-            telemetry.addData("Back US", ultrasonic_back.cmUltrasonic());
-            telemetry.addData("Front US", ultrasonic_front.cmUltrasonic());
-            telemetry.addData("Floor Red", floor_color.red());
-            telemetry.addData("Floor Blue", floor_color.blue());
-            telemetry.addData("Floor HSV", floor_color.getHSV()[0]);
-            telemetry.addData("Auto Program Selected", autoProgram);
-            double jewelValue = ultrasonic_jewel.cmUltrasonic();
-            double backValue = ultrasonic_back.cmUltrasonic();
-            double frontValue = ultrasonic_front.cmUltrasonic();
-            if(jewelValue != 255 && backValue != 255){
-                if(jewelValue <= 37 && backValue < 39 && floor_color.red() > 50){
-                    autoProgram = "RedStone1";
-                }else if (jewelValue <= 37 && frontValue > 85 && floor_color.red() > 50){
-                    autoProgram = "RedStone2";
-                }else if(jewelValue <= 37 && backValue > 90 && backValue < 150 && floor_color.getHSV()[0] > 200){
-                    autoProgram = "BlueStone2";
-                }else if(jewelValue <= 37 && frontValue < 45 && floor_color.getHSV()[0] > 200){
-                    autoProgram = "BlueStone1";
-                }
-            }
-            if(isStopRequested()){
-                selected = true;
-            }else if (gamepad1.b || gamepad2.b){
-                selected = true;
-            }
-            telemetry.update();
-        }
-
-        led.setLEDPower(0.5);
+        telemetry.addData("Init", "Finished");
+        telemetry.update();
+        led.setLEDPower(0.2);
         waitForStart();
 
         if(autoProgram.equals("RedStone1")){
@@ -391,9 +410,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             //Determine VuMark distances
             if(vumarkSeen.equals("LEFT")){
-                vuMarkDistance = 32;
+                vuMarkDistance = 33;
             }else if (vumarkSeen.equals("RIGHT")){
-                vuMarkDistance = 18;
+                vuMarkDistance = 17;
             }else {
                 vuMarkDistance = 26;
             }
@@ -421,20 +440,27 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             drive.setPowerZero();
             drive.softResetEncoder();
-
-            //Drive to glyph release location
-            powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
-            while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+            while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
                 drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 90,
                         false, 1000);
-                powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.setPowerZero();
             drive.softResetEncoder();
 
             //Outtake glyph into cryptobox
-            intake.dispenseGlyph();
+            //intake.dispenseGlyph();
+            if(vumarkSeen.equals("CENTER")){
+                intake.dispenseGlyph();
+            }else if(vumarkSeen.equals("LEFT")){
+                intake.setIntakePower(-0.25, OUTTAKE_SPEED);
+            }else if(vumarkSeen.equals("RIGHT")){
+                intake.setIntakePower(OUTTAKE_SPEED, -0.25);
+            }else{
+                intake.dispenseGlyph();
+            }
             timer.reset();
             while(timer.milliseconds() < 250 && opModeIsActive()){
                 telemetry.addData("Intake", "Dispensing Glyph");

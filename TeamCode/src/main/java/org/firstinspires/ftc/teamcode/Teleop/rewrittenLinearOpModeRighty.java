@@ -21,8 +21,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
  * Created by ishaa on 1/28/2018.
  */
 
-@TeleOp(name = "Lefty Teleop")
-public class rewrittenLinearOpMode extends LinearOpMode {
+@TeleOp(name = "Righty Teleop")
+public class rewrittenLinearOpModeRighty extends LinearOpMode {
     DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
     Servo spin, pan, tilt, relic_claw, relic_arm, relic_tilt;
@@ -125,7 +125,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         relic_claw = hardwareMap.servo.get("relic_claw");
         relic_tilt = hardwareMap.servo.get("relic_tilt");
 
-        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
@@ -189,9 +188,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         while(opModeIsActive()){
 
 
-            pitch = -gamepad1.left_stick_y;
-            roll = gamepad1.left_stick_x;
-            pivot = gamepad1.right_stick_x;
+            pitch = -gamepad1.right_stick_y;
+            roll = gamepad1.right_stick_x;
+            pivot = gamepad1.left_stick_x;
             if(gamepad1.right_trigger>.2){
                 rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
                 rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
@@ -551,10 +550,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
             }
 
-            telemetry.addData("Lift Position", lift.getCurrentPosition());
-            telemetry.update();
         }
-
 
     }
 }

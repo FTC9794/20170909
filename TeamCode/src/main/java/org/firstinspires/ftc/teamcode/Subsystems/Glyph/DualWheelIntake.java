@@ -42,6 +42,7 @@ public class DualWheelIntake implements IGlyph {
 
         lift.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         spin.setPosition(SPIN_START);
@@ -79,11 +80,11 @@ public class DualWheelIntake implements IGlyph {
         return true;
     }
 
-    public boolean setIntakePower(double power1, double power2){
-        rightWheel1.setPower(power1);
-        rightWheel2.setPower(power2);
-        leftWheel1.setPower(power1);
-        leftWheel2.setPower(power2);
+    public boolean setIntakePower(double leftPower, double rightPower){
+        rightWheel1.setPower(rightPower);
+        rightWheel2.setPower(rightPower);
+        leftWheel1.setPower(leftPower);
+        leftWheel2.setPower(leftPower);
         return true;
     }
 
