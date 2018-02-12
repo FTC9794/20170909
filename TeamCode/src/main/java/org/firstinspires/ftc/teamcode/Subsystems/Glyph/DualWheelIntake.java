@@ -23,7 +23,7 @@ public class DualWheelIntake implements IGlyph {
 
     private final double INTAKE_SPPED = 0.74;
     private final double OUTTAKE_SPEED = -0.74;
-    final double SPIN_START = 1;
+    final double SPIN_START = 0.825;
     final double SPIN_ROTATED = 0;
 
     boolean spinAtOrigin = true;

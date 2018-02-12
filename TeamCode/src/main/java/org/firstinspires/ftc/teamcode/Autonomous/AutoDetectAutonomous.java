@@ -173,7 +173,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
         lynx_floor = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
         bottomGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
-        topGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glypColor2");
+        topGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
         pan = hardwareMap.servo.get("jewel_pan");
         tilt = hardwareMap.servo.get("jewel_tilt");
 
@@ -208,17 +208,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
         jewel.setPanTiltPos(0.5, 1);
         telemetry.addData("Init", "Jewel Servos Set");
         telemetry.update();
-
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
-        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        telemetry.addData("Init", "Initialized Intake System");
-        telemetry.update();
-
-
 
 
         //create array list of motors
@@ -322,6 +311,16 @@ public class AutoDetectAutonomous extends LinearOpMode {
             telemetry.update();
         }
 
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
+        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        telemetry.addData("Init", "Initialized Intake System");
+        telemetry.update();
+
+
         //set motor modes and zero power behavior
         for (DcMotor motor : motors) {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -416,11 +415,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             //Determine VuMark distances
             if(vumarkSeen.equals("LEFT")){
-                vuMarkDistance = 33;
+                vuMarkDistance = 34;
             }else if (vumarkSeen.equals("RIGHT")){
-                vuMarkDistance = 17;
+                vuMarkDistance = 15;
             }else {
-                vuMarkDistance = 26;
+                vuMarkDistance = 22;
             }
             telemetry.addData("VuMark", "Finished");
             telemetry.update();
@@ -437,29 +436,47 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder();
 
             //Lower lift to dispense glyph
-            lift.setTargetPosition(250);
+            lift.setTargetPosition(370);
             lift.setPower(1);
 
             //Pivot to face cryptobox
-            while(drive.moveIMU(.7, 0.2, 0, 0, 0, 0, .008, 90, true, 500) && opModeIsActive()){
-                telemetry.addData("Move", "Pivot");
-                telemetry.update();
+            if(vumarkSeen.equals("CENTER") || vumarkSeen.equals("")) {
+                while (drive.moveIMU(.7, 0.2, 0, 0, 0, 0, .008, 75, true, 500) && opModeIsActive()) {
+                    telemetry.addData("Move", "Pivot");
+                    telemetry.update();
+                    drive.setPowerZero();
+                    drive.softResetEncoder();
+                    powerChange = (2.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                    timer.reset();
+                    while(drive.averageEncoders() < 2.5*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+                        drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 75,
+                                false, 1000);
+                        powerChange = (2.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                    }
+                    drive.setPowerZero();
+                    drive.softResetEncoder();
+                }
+            }else{
+                while (drive.moveIMU(.7, 0.2, 0, 0, 0, 0, .008, 90, true, 500) && opModeIsActive()) {
+                    telemetry.addData("Move", "Pivot");
+                    telemetry.update();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
+                powerChange = (2.25*COUNTS_PER_INCH) - drive.averageEncoders();
+                timer.reset();
+                while(drive.averageEncoders() < 2.25*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+                    drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 90,
+                            false, 1000);
+                    powerChange = (2.25*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
             }
-            drive.setPowerZero();
-            drive.softResetEncoder();
-            powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
-            timer.reset();
-            while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
-                drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 90,
-                        false, 1000);
-                powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
-            }
-            drive.setPowerZero();
-            drive.softResetEncoder();
 
             //Outtake glyph into cryptobox
             //intake.dispenseGlyph();
-            if(vumarkSeen.equals("CENTER")){
+            if(vumarkSeen.equals("CENTER") || vumarkSeen.equals("")){
                 intake.dispenseGlyph();
             }else if(vumarkSeen.equals("LEFT")){
                 intake.setIntakePower(REDUCED_OUTTAKE_SPEED, OUTTAKE_SPEED);
@@ -469,7 +486,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 intake.dispenseGlyph();
             }
             timer.reset();
-            while(timer.milliseconds() < 250 && opModeIsActive()){
+            while(timer.milliseconds() < 1000 && opModeIsActive()){
                 telemetry.addData("Intake", "Dispensing Glyph");
                 telemetry.update();
             }
@@ -483,6 +500,19 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
             drive.softResetEncoder();
             intake.setIntakePowerZero();
+
+            powerChange = (3.5*COUNTS_PER_INCH) - drive.averageEncoders();
+            if(vumarkSeen.equals("CENTER") || vumarkSeen.equals("")){
+                //Back away from cryptobox
+                powerChange = (3.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 4*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .075, 0, 0.008, 0.001, 90,
+                            false, 1000);
+                    powerChange = (3.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
+            }
 
             //Pivot to glyph pit
             while(drive.moveIMU(0.5, 0.3, 0, 0, 0, 0, 0.005, -90, true, 150) && opModeIsActive()){
@@ -501,7 +531,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
 
-            //go into the cryptobox
+            //go into the pit
             while(drive.averageEncoders()<20*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<1000){
                 drive.moveIMU(.7, 0.35, powerChange, .035, -90, .02, 0.001, -90,
                         false, 1000);
@@ -551,7 +581,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(875);
+            lift.setTargetPosition(915);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -603,12 +633,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 intake.setIntakePowerZero();
 
                 //Drive to cryptobox
-                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (11.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 timer.reset();
-                while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
+                while(drive.averageEncoders() < 11.5*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
                     drive.moveIMU(.7, 0.1, powerChange, .045, 90, 0.008, .043, 90,
                             false, 1000);
-                    powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (11.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
                 drive.softResetEncoder();
                 drive.setPowerZero();
@@ -616,7 +646,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 //Dispense glyph
                 intake.dispenseGlyph();
                 timer.reset();
-                while(timer.milliseconds() < 250  && opModeIsActive()){
+                while(timer.milliseconds() < 500  && opModeIsActive()){
                     telemetry.addData("Intake", "Dispensing Glyph");
                     telemetry.update();
                 }
@@ -644,21 +674,29 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 drive.setPowerZero();
                 drive.softResetEncoder();
 
+            }else{
+                //Lower lift to intake glyphs
+                lift.setTargetPosition(5);
+                lift.setPower(1);
+                timer.reset();
+                while(timer.milliseconds() < 250 && opModeIsActive()){
+
+                }
             }
             //Slide to new column
             if(!vumarkSeen.equals("RIGHT")){
-                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 180, .02, 0.001, -90,
                             false, 1000);
                     powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }else{
-                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 0, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }
             drive.setPowerZero();
@@ -718,7 +756,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(150);
+            lift.setTargetPosition(350);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -741,9 +779,20 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }
-
+            lift.setTargetPosition(450);
+            lift.setPower(1);
             drive.softResetEncoder();
             led.setLEDPower(0);
+
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) < 7 || topGlyphColor.getDistance(DistanceUnit.CM) < 7){
+                hasGlyph = true;
+            }else{
+                hasGlyph = false;
+            }
+
+            if(!hasGlyph){
+                while(opModeIsActive());
+            }
 
             //go back faster
             powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
@@ -777,13 +826,20 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
 
             //Dispense glyph
-            intake.dispenseGlyph();
+            if(vumarkSeen.equals("CENTER") || vumarkSeen.equals("")){
+                intake.setIntakePower(OUTTAKE_SPEED, REDUCED_OUTTAKE_SPEED);
+            }else if(vumarkSeen.equals("LEFT")){
+                intake.dispenseGlyph();
+            }else if(vumarkSeen.equals("RIGHT")){
+                intake.dispenseGlyph();
+            }else{
+                intake.dispenseGlyph();
+            }
             timer.reset();
-            while(timer.milliseconds() < 250  && opModeIsActive()){
+            while(timer.milliseconds() < 1000 && opModeIsActive()){
                 telemetry.addData("Intake", "Dispensing Glyph");
                 telemetry.update();
             }
-
             //Back away from cryptobox
             powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders() < 4*COUNTS_PER_INCH && opModeIsActive()){

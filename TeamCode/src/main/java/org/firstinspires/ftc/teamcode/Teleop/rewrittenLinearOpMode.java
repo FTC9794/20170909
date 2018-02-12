@@ -78,7 +78,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double GLYPH_GRAB_DISTANCE = 5.6;
     final double GLYPH_VISIBLE_TIME = 250;
 
-    final double SPIN_NORMAL_POSITION = 1;
+    final double SPIN_NORMAL_POSITION = .825;
     final double SPIN_SPUN_POSITION = 0;
     final double ROTATE_TIME = 750;
 
