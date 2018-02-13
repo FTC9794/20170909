@@ -226,6 +226,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("bottom_front_us");
 
         boolean selected = false;
+        boolean selecting = true;
         boolean aligned = false;
         String autoProgram = "";
         while(!selected&&!isStopRequested()){
@@ -254,8 +255,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             telemetry.addData("Back US", backValue);
             telemetry.addData("Front US", frontValue);
             telemetry.addData("Aligned", aligned);
+            telemetry.addData("Red Stone 1", "DPad-Up");
+            telemetry.addData("Red Stone 2", "DPad-Left");
+            telemetry.addData("Blue Stone 1", "DPad-Down");
+            telemetry.addData("Blue Stone 2", "DPad-Right");
 
-            if(jewelValue != 255 && backValue != 255){
+            if(jewelValue != 255 && backValue != 255 && selecting){
                 if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
                     if(frontValue > 60 && backValue <= 40){
                         if(jewelValue == 36 && backValue == 37) {
@@ -298,19 +303,36 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
 
-            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93){
+            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93 && selecting){
                 aligned = true;
                 led.turnOn();
-            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93){
+            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93 && selecting){
                 aligned = true;
                 led.turnOn();
-            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2")){
+            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2") && selecting){
                 aligned = false;
                 led.turnOff();
             }
+
+            if(gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.dpad_right || gamepad1.dpad_left){
+                selecting = false;
+                if(gamepad1.dpad_up){
+                    autoProgram = "RedStone1";
+                    selected = true;
+                }else if(gamepad1.dpad_left){
+                    autoProgram = "RedStone2";
+                    selected = true;
+                }else if(gamepad1.dpad_down){
+                    autoProgram = "BlueStone1";
+                    selected = true;
+                }else if(gamepad1.dpad_right){
+                    autoProgram = "BlueStone2";
+                    selected = true;
+                }
+            }
             telemetry.update();
         }
-
+        led.turnOff();
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -352,6 +374,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         telemetry.update();
 
         telemetry.addData("Init", "Finished");
+        telemetry.addData("Auto Program Selected", autoProgram);
         telemetry.update();
         led.setLEDPower(0.2);
         waitForStart();
