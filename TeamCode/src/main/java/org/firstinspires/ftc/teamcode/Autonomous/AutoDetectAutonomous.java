@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.DataLogger;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
@@ -68,7 +69,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     OmniDirectionalDrive drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
-    ModernRoboticsI2cRangeSensor ultrasonic_front;
+    ModernRoboticsI2cRangeSensor ultrasonic_front, ultrasonic_front_top;
     DcMotor leds;
 
     ElapsedTime timer;
@@ -224,6 +225,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
         ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
         ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("bottom_front_us");
+        ultrasonic_front_top = (ModernRoboticsI2cRangeSensor) hardwareMap.get("top_front_us");
 
         boolean selected = false;
         boolean selecting = true;
@@ -250,17 +252,16 @@ public class AutoDetectAutonomous extends LinearOpMode {
             double jewelValue = ultrasonic_jewel.cmUltrasonic();
             double backValue = ultrasonic_back.cmUltrasonic();
             double frontValue = ultrasonic_front.cmUltrasonic();
-
+            telemetry.addData("Jewel US", jewelValue);
+            telemetry.addData("Back US", backValue);
+            telemetry.addData("Front US", frontValue);
+            telemetry.addData("Aligned", aligned);
             telemetry.addData("Red Stone 1", "DPad-Up");
             telemetry.addData("Red Stone 2", "DPad-Left");
             telemetry.addData("Blue Stone 1", "DPad-Down");
             telemetry.addData("Blue Stone 2", "DPad-Right");
 
-            if(jewelValue != 255 && backValue != 255 && frontValue != 255 && selecting){
-                telemetry.addData("Jewel US", jewelValue);
-                telemetry.addData("Back US", backValue);
-                telemetry.addData("Front US", frontValue);
-                telemetry.addData("Aligned", aligned);
+            if(jewelValue != 255 && backValue != 255 && selecting){
 
                 if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
                     if(frontValue > 60 && backValue <= 40){
@@ -331,7 +332,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     selected = true;
                 }
             }
-            telemetry.update();
+            if(backValue==255 || jewelValue == 255){
+
+            }else{
+                telemetry.update();
+            }
         }
         led.turnOff();
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -439,7 +444,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             //Determine VuMark distances
             if(vumarkSeen.equals("LEFT")){
-                vuMarkDistance = 32.5;
+                vuMarkDistance = 34.5;
             }else if (vumarkSeen.equals("RIGHT")){
                 vuMarkDistance = 15;
             }else {
@@ -450,11 +455,22 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Drive to desired VuMark target
             drive.resetEncoders();
+            DataLogger dataUS = new DataLogger("Ultrasonic Values");
+            dataUS.addField("Front Top US");
+            dataUS.addField("Front Bottom US");
+            dataUS.addField("Back US");
+            dataUS.addField("Jewel US");
+            dataUS.newLine();
             powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH && opModeIsActive()){
                 drive.moveIMU(0.7, 0.3, powerChange, .15, 0, .008, 0.001, 0,
                         false, 1000);
                 powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.averageEncoders();
+                dataUS.addField((float) ultrasonic_front_top.cmUltrasonic());
+                dataUS.addField((float) ultrasonic_front.cmUltrasonic());
+                dataUS.addField((float) ultrasonic_back.cmUltrasonic());
+                dataUS.addField((float) ultrasonic_jewel.cmUltrasonic());
+                dataUS.newLine();
             }
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -477,6 +493,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 75,
                             false, 1000);
                     powerChange = (1.75*COUNTS_PER_INCH) - drive.averageEncoders();
+                    dataUS.addField((float) ultrasonic_front_top.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_front.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_back.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_jewel.cmUltrasonic());
+                    dataUS.newLine();
                 }
                 drive.setPowerZero();
                 drive.softResetEncoder();
@@ -487,12 +508,17 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
                 drive.setPowerZero();
                 drive.softResetEncoder();
-                powerChange = (1.75*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
                 timer.reset();
-                while(drive.averageEncoders() < 1.75*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
+                while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 1000){
                     drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 90,
                             false, 1000);
-                    powerChange = (1.75*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+                    dataUS.addField((float) ultrasonic_front_top.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_front.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_back.cmUltrasonic());
+                    dataUS.addField((float) ultrasonic_jewel.cmUltrasonic());
+                    dataUS.newLine();
                 }
                 drive.setPowerZero();
                 drive.softResetEncoder();
@@ -515,11 +541,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 telemetry.update();
             }
             //Back away from cryptobox
-            powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
-            while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+            powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
+            while(drive.averageEncoders() < 5*COUNTS_PER_INCH && opModeIsActive()){
                 drive.moveIMU(0.6, 0.5, powerChange, .075, -90, 0.008, 0.001, 90,
                         false, 1000);
-                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -660,7 +686,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 powerChange = (11.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 timer.reset();
                 while(drive.averageEncoders() < 11.5*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
-                    drive.moveIMU(.7, 0.1, powerChange, .045, 90, 0.008, .043, 90,
+                    drive.moveIMU(.7, 0.1, powerChange, .045, 90, 0.015, .043, 90,
                             false, 1000);
                     powerChange = (11.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
@@ -678,7 +704,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 //Back away from cryptobox
                 powerChange = (11 *COUNTS_PER_INCH) - drive.averageEncoders();
                 while(drive.averageEncoders() < 11*COUNTS_PER_INCH && opModeIsActive()){
-                    drive.moveIMU(0.3, 0.1, powerChange, .03, -90, 0.008, 0.001, 90,
+                    drive.moveIMU(0.3, 0.1, powerChange, .03, -90, 0.015, 0.001, 90,
                             false, 1000);
                     powerChange = (11*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
@@ -709,18 +735,18 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             //Slide to new column
             if(!vumarkSeen.equals("RIGHT")){
-                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 5.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 180, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }else{
-                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 5.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 0, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }
             drive.setPowerZero();
