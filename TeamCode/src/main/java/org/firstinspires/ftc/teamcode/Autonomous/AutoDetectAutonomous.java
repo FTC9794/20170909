@@ -714,18 +714,18 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Slide to new column
             drive.softResetEncoder();
             if(!vumarkSeen.equals("RIGHT")){
-                powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 5.5*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 6.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 180, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }else{
-                powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 5.5*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 6.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 0, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (5.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }
             drive.setPowerZero();
@@ -734,7 +734,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //turn in intake
             intake.secureGlyph();
 
-            //go into glyph pit depending on whether the robot went back to the cryptobox
+            //go into glyph pit  at 14 inches
 
             powerChange = (14*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
@@ -833,7 +833,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder();
             led.setLEDPower(0);
 
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM) < 7 || topGlyphColor.getDistance(DistanceUnit.CM) < 7){
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) < 6 || topGlyphColor.getDistance(DistanceUnit.CM) < 6){
                 hasGlyph = true;
             }else{
                 hasGlyph = false;
@@ -942,7 +942,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             timer.reset();
 
 
-            //Drive to deposit glyph
+            //Drive to park zone
             timer.reset();
             powerChange = (5*COUNTS_PER_INCH) - drive.averageEncoders();
             while(drive.averageEncoders() < 5*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
@@ -1184,12 +1184,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder();
 
             //Drive to glyph release location
-            powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
-            while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 3000){
+            while(drive.averageEncoders() < 4*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 3000){
                 drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 105,
                         false, 1000);
-                powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -1251,7 +1251,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.setPowerZero();
-            drive.softResetEncoder();
             timer.reset();
 
             //wait for glyphs to come in robot
@@ -1267,12 +1266,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //Go get farther into glyph pit if glyph is not in the bottom
+
             if (additionalDistance) {
                 timer.reset();
-                while(drive.averageEncoders()<4*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<2000){
+                powerChange = (24*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders()<24*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<2000){
                     drive.moveIMU(.7, .7, powerChange, .075, -90, 0.008, 0.001, -90,
                             false, 1000);
-                    powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (24*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
                 drive.setPowerZero();
                 drive.softResetEncoder();
@@ -1300,38 +1301,45 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
             drive.softResetEncoder();
             timer.reset();
+            //Drive back to cryptobox at 12 or 16 inches
 
-            //Drive back to cryptobox
-            powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
             if(additionalDistance){
-                while(drive.averageEncoders()<10*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 3000){
                     drive.moveIMU(.4, 0.15, powerChange, .04, 90, .04, 0.001, -90,
                             false, 1000);
-                    powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+
                 }
+                powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 16*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .04, 0.001, -90,
+                            false, 1000);
+                    powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+
             }else{
-                while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 2000){
                     drive.moveIMU(.4, 0.15, powerChange, .07, 90, .04, 0.001, -90,
                             false, 1000);
                     powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
+                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .04, 0.001, -90,
+                            false, 1000);
+                    powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+
             }
 
-            drive.softResetEncoder();
-            led.setLEDPower(0);
-            //go back faster
-            powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
-            while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive()){
-                drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .008, 0.001, -90,
-                        false, 1000);
-                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
-            }
             drive.setPowerZero();
             drive.softResetEncoder();
 
             //Check if we have glyph
             boolean hasGlyph;
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM) < 7 || topGlyphColor.getDistance(DistanceUnit.CM) < 7){
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) < 6 || topGlyphColor.getDistance(DistanceUnit.CM) < 6){
                 hasGlyph = true;
             }else{
                 hasGlyph = false;
@@ -1347,12 +1355,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 intake.setIntakePowerZero();
 
                 //Drive to cryptobox
-                powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
                 timer.reset();
-                while(drive.averageEncoders() < 3*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
+                while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
                     drive.moveIMU(.7, 0.1, powerChange, .045, 90, 0.008, .043, 90,
                             false, 1000);
-                    powerChange = (3*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
                 drive.softResetEncoder();
                 drive.setPowerZero();
@@ -1366,11 +1374,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
 
                 //Back away from cryptobox
-                powerChange = (11 *COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 11*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (12 *COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(0.3, 0.1, powerChange, .03, -90, 0.008, 0.001, 90,
                             false, 1000);
-                    powerChange = (11*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
                 drive.softResetEncoder();
                 drive.setPowerZero();
@@ -1399,35 +1407,34 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Slide to new column
             if(!vumarkSeen.equals("RIGHT")){
-                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 7*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 6.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 180, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }else{
-                powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 8*COUNTS_PER_INCH && opModeIsActive()){
+                powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 6.5*COUNTS_PER_INCH && opModeIsActive()){
                     drive.moveIMU(1, 1, powerChange, .125, 0, .02, 0.001, -90,
                             false, 1000);
-                    powerChange = (8*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6.5*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
             }
             drive.setPowerZero();
             drive.softResetEncoder();
             //Drive to glyph pit and intake glyph
             intake.secureGlyph();
-            powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (14*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
 
             //go into the cryptobox
-            while(drive.averageEncoders()<20*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<5000){
+            while(drive.averageEncoders()<14*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<5000){
                 drive.moveIMU(.7, 0.35, powerChange, .035, -90, .02, 0.001, -90,
                         false, 1000);
-                powerChange = (20*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (14*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.setPowerZero();
-            drive.softResetEncoder();
             timer.reset();
 
             //wait for glyphs to come in robot
@@ -1444,10 +1451,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Go get farther into cryptobox if glyph is not in the bottom
             if (additionalDistance) {
-                while(drive.averageEncoders()<4*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<2000){
+                powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders()<18*COUNTS_PER_INCH&&opModeIsActive()&&timer.milliseconds()<2000){
                     drive.moveIMU(.3, .25, powerChange, .075, -90, 0.008, 0.001, -90,
                             false, 1000);
-                    powerChange = (4*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (18*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
                 drive.setPowerZero();
                 drive.softResetEncoder();
@@ -1479,12 +1487,21 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Drive back to cryptobox
 
             if(additionalDistance){
-                powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders()<10*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
+                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
                     drive.moveIMU(.4, 0.15, powerChange, .04, 90, .04, 0.001, -90,
                             false, 1000);
-                    powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
+                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
+                //go back faster
+                powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 16*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .1, .008, -90,
+                            false, 1000);
+                    powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
             }else{
                 powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 while(drive.averageEncoders()<6*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 3000){
@@ -1492,32 +1509,32 @@ public class AutoDetectAutonomous extends LinearOpMode {
                             false, 1000);
                     powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
                 }
+                //go back faster
+                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .1, .008, -90,
+                            false, 1000);
+                    powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
             }
 
             drive.softResetEncoder();
             led.setLEDPower(0);
-            if (hasGlyph){
-                //go back faster
-                powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 6*COUNTS_PER_INCH && opModeIsActive()){
-                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .1, .008, -90,
-                            false, 1000);
-                    powerChange = (6*COUNTS_PER_INCH) - drive.averageEncoders();
-                }
-                drive.setPowerZero();
-                drive.softResetEncoder();
-            }else {
-                //go back faster
-                powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
-                while(drive.averageEncoders() < 10*COUNTS_PER_INCH && opModeIsActive()){
-                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .1, .008, -90,
-                            false, 1000);
-                    powerChange = (10*COUNTS_PER_INCH) - drive.averageEncoders();
-                }
-                drive.setPowerZero();
-                drive.softResetEncoder();
-            }
 
+            if (bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 && topGlyphColor.getDistance(DistanceUnit.CM)>6){
+                //go back faster
+                powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+                while(drive.averageEncoders() < 2*COUNTS_PER_INCH && opModeIsActive()){
+                    drive.moveIMU(0.6, 0.5, powerChange, .01, 90, .1, .008, -90,
+                            false, 1000);
+                    powerChange = (2*COUNTS_PER_INCH) - drive.averageEncoders();
+                }
+                drive.setPowerZero();
+                drive.softResetEncoder();
+                while(opModeIsActive());
+            }
 
 
             //Pivot to face cryptobox
@@ -1529,12 +1546,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             intake.setIntakePowerZero();
 
             //Drive to cryptobox
-            powerChange = (14*COUNTS_PER_INCH) - drive.averageEncoders();
+            powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
             timer.reset();
-            while(drive.averageEncoders() < 14*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
+            while(drive.averageEncoders() < 12*COUNTS_PER_INCH && opModeIsActive() && timer.milliseconds() < 4000){
                 drive.moveIMU(.7, 0.1, powerChange, .4375, 90, 0.008, .008, 90,
                         false, 1000);
-                powerChange = (14*COUNTS_PER_INCH) - drive.averageEncoders();
+                powerChange = (12*COUNTS_PER_INCH) - drive.averageEncoders();
             }
             drive.softResetEncoder();
             drive.setPowerZero();
