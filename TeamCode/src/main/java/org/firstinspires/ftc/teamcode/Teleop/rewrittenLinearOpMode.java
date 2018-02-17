@@ -63,9 +63,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double LIFT_HALF_POWER_UP = .75;
     final int LIFT_UPPER_LIMIT = 2300;
     final int GLYPH_POSITION_0 = 0;
-    final int GLYPH_POSITION_1 = 200;
-    final int GLYPH_POSITION_2 = 900;
-    final int GLYPH_POSITION_3 = 1600;
+    final int GLYPH_POSITION_1 = 250;
+    final int GLYPH_POSITION_2 = 950;
+    final int GLYPH_POSITION_3 = 1650;
     final int GLYPH_POSITION_4 = 2300;
     final int LIFT_POSITION_OFFSET = 100;
     final int LIFT_INTAKEN_POSITION = 250;
@@ -537,7 +537,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 relic.pickUpRelic();
                 relic.setTiltPosition(1);
             }
-            if(gamepad2.dpad_right){
+            if(gamepad2.b){
                 relic.setTiltPosition(0.6);
                 relic.setArmPosition(0.6);
             }
