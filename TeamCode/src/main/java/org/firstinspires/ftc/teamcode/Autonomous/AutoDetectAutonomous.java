@@ -45,7 +45,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     BNO055IMU boschIMU;
     DualWheelIntake intake;
     ClawThreePoint relic;
-    IColorSensor color;
+    IColorSensor jewelColor;
     IColorSensor floor_color;
     TwoPointJewelArm jewel;
     IUltrasonic jewel_us;
@@ -66,7 +66,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     DcMotor relic_extension;
     Servo relic_claw, relic_arm, relic_tilt;
     DigitalChannel glyphLimit;
-    LynxI2cColorRangeSensor lynx, lynx_floor, bottomGlyphColor, topGlyphColor;
+    LynxI2cColorRangeSensor jewel_color, bottom_color, bottomGlyphColor, topGlyphColor;
     IIMU imu;
     OmniDirectionalDrive drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
@@ -124,11 +124,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //Construct Objects
         drive = new OmniDirectionalDrive(motors, imu, telemetry);
-        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
+        jewelColor = new LynxColorRangeSensor(jewel_color);
+        jewel = new TwoPointJewelArm(pan, tilt, jewelColor, telemetry);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
-        color = new LynxColorRangeSensor(lynx);
-        floor_color = new LynxColorRangeSensor(lynx_floor);
+        floor_color = new LynxColorRangeSensor(bottom_color);
         led = new LED(leds);
 
         //Init timers
@@ -212,16 +212,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }else {
                 vuMarkDistance = 20;
             }
-
-            // Start logging the ultrasonic Sensors
-            /* DataLogger dataUS = new DataLogger("Ultrasonic Values");
-            dataUS.addField("Front Top US");
-            dataUS.addField("Front Bottom US");
-            dataUS.addField("Back US");
-            dataUS.addField("Jewel US");
-            dataUS.newLine(); */
-
-
             //Drive to desired VuMark target
             //FIRST motion moving off the stone
             drive.resetEncoders();
@@ -230,11 +220,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 drive.moveIMU(0.7, 0.3, powerChange, .15, 0, .008, 0.001, 0,
                         false, 1000);
                 powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.averageEncoders();
-                /* dataUS.addField((float) ultrasonic_front_top.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_front.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_back.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_jewel.cmUltrasonic());
-                dataUS.newLine(); */
             }
             drive.setPowerZero();
             drive.softResetEncoder(); // Do we need this????
@@ -256,11 +241,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 drive.moveIMU(0.3, 0.2, powerChange, .15, 90, .008, 0.001, 75,
                         false, 1000);
                 powerChange = (2.5*COUNTS_PER_INCH) - drive.averageEncoders();
-                /* dataUS.addField((float) ultrasonic_front_top.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_front.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_back.cmUltrasonic());
-                dataUS.addField((float) ultrasonic_jewel.cmUltrasonic());
-                dataUS.newLine();*/
             }
             drive.setPowerZero();
 
@@ -1653,8 +1633,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
         tilt = hardwareMap.servo.get("jewel_tilt");
 
         //Hardware Map Color Sensors
-        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
-        lynx_floor = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
+        jewel_color = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
+        bottom_color = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
         bottomGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
         topGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
 
@@ -1685,6 +1665,10 @@ public class AutoDetectAutonomous extends LinearOpMode {
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        //Set servo behaviors
+        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Set Servo Init Positions
         relic.setTiltPosition(1);
