@@ -54,6 +54,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
 
     VuforiaLocalizer vuforia;
+    VuforiaTrackables relicTrackables;
+    VuforiaTrackable relicTemplate;
 
     Servo pan, tilt;
     CRServo rightWheel1, rightWheel2, leftWheel1, leftWheel2;
@@ -110,287 +112,50 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
     boolean additionalDistance = false;
 
+    String autoProgram = "";
 
     @Override
     public void runOpMode() throws InterruptedException {
-        telemetry.addData("Init", "Starting Vuforia");
-        telemetry.update();
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        initVuforia();
+        initHardwareMap();
+        autoSelectAlignment();
+        setMotorBehaviors();
+        initIMU();
 
-        // OR...  Do Not Activate the Camera Monitor View, to save power
-        // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        /*
-         * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
-         * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
-         * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
-         * web site at https://developer.vuforia.com/license-manager.
-         *
-         * Vuforia license keys are always 380 characters long, and look as if they contain mostly
-         * random data. As an example, here is a example of a fragment of a valid key:
-         *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
-         * Once you've obtained a license key, copy the string from the Vuforia web site
-         * and paste it in to your code onthe next line, between the double quotes.
-         */
-        parameters.vuforiaLicenseKey = "ATXxmRr/////AAAAGdfeAuU6SEoFkpmhG616inkbnBHHQ/Ti5DMPAVykTBdmQS8ImGtoIBRRuboa+oIyuvQW1nIychXXxROjGLssEzSFF8yOYE36GqhVtRfI6lw8/HAoJpO1XgIF5Gy1vPx4KFPNInK6CJdZomYyWV8rGnb7ceLJ9Z+g0sl+VcVPKl5DAI84K+06pEZnw+Em7sThhzyzj2p4QbPhXh7fEtNGhFCqey9rcg3h9RfNebyWvJW9z7mGkaJljZy1x3lK7viLbFKyFcAaspZZi1+JzUmeuXxV0r+8hrCgFLPsvKQHlnYumazP9FEtm/FjCpRFF23Et77325/vuD2LRSPzve9ef4zqe6MivrLs9s8lUgd7Eo9W";
-
-        /*
-         * We also indicate which camera on the RC that we wish to use.
-         * Here we chose the back (HiRes) camera (for greater range), but
-         * for a competition robot, the front camera might be more convenient.
-         */
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
-        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-
-        /**
-         * Load the data set containing the VuMarks for Relic Recovery. There's only one trackable
-         * in this data set: all three of the VuMarks in the game were created from this one template,
-         * but differ in their instance id information.
-         * @see VuMarkInstanceId
-         */
-        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-        VuforiaTrackable relicTemplate = relicTrackables.get(0);
-        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
-
-        telemetry.addData("Init", "Finished Starting Vuforia");
-        telemetry.update();
-
-        //initialize Right Motors
-        rf = hardwareMap.dcMotor.get("right_front");
-        rb = hardwareMap.dcMotor.get("right_back");
-
-        //initialize left motors
-        lf = hardwareMap.dcMotor.get("left_front");
-        lb = hardwareMap.dcMotor.get("left_back");
-        rf.setDirection(DcMotorSimple.Direction.REVERSE);
-        rb.setDirection(DcMotorSimple.Direction.REVERSE);
-        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift = hardwareMap.dcMotor.get("glyph_lift");
-
-        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
-        lynx_floor = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
-        bottomGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
-        topGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
-        pan = hardwareMap.servo.get("jewel_pan");
-        tilt = hardwareMap.servo.get("jewel_tilt");
-
-        rightWheel1 = hardwareMap.crservo.get("right_glyph1");
-        leftWheel1 = hardwareMap.crservo.get("left_glyph1");
-        //leftWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
-        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
-
-        spin = hardwareMap.servo.get("spin_grip");
-
-        relic_extension = hardwareMap.dcMotor.get("relic_extension");
-        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
-        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        relic_arm = hardwareMap.servo.get("relic_arm");
-        relic_claw = hardwareMap.servo.get("relic_claw");
-        relic_tilt = hardwareMap.servo.get("relic_tilt");
-
-
+        //Construct Objects
+        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
+        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
+        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         color = new LynxColorRangeSensor(lynx);
         floor_color = new LynxColorRangeSensor(lynx_floor);
-        jewel = new TwoPointJewelArm(pan, tilt, color, telemetry);
-        relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
-        relic.setTiltPosition(1);
-        relic_arm.setPosition(0);
-        telemetry.addData("Init", "Jewel, Relic Hardware Initialized");
-        telemetry.update();
-        jewel.setPanTiltPos(0.5, 1);
-        telemetry.addData("Init", "Jewel Servos Set");
-        telemetry.update();
-
-
-        //create array list of motors
-        motors = new ArrayList<>();
-        motors.add(rf);
-        motors.add(rb);
-        motors.add(lf);
-        motors.add(lb);
-
-
-        leds = hardwareMap.dcMotor.get("leds");
         led = new LED(leds);
 
-        ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
-        ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
-        ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("bottom_front_us");
-        ultrasonic_front_top = (ModernRoboticsI2cRangeSensor) hardwareMap.get("top_front_us");
-
-        boolean selected = false;
-        boolean selecting = true;
-        boolean aligned = false;
-        String autoProgram = "";
-        while(!selected&&!isStopRequested()){
-            //telemetry.addData("Floor Red", floor_color.red());
-            //telemetry.addData("Floor Blue", floor_color.blue());
-            //telemetry.addData("Floor HSV", floor_color.getHSV()[0]);
-            telemetry.addData("Auto Program Selected", autoProgram);
-
-            if(isStopRequested()){
-                selected = true;
-            }
-            if (gamepad1.b || gamepad2.b){
-                selected = true;
-            }
-            if(aligned){
-                led.turnOn();
-            }else{
-                led.turnOff();
-            }
-
-            double jewelValue = ultrasonic_jewel.cmUltrasonic();
-            double backValue = ultrasonic_back.cmUltrasonic();
-            double frontValue = ultrasonic_front.cmUltrasonic();
-            telemetry.addData("Jewel US", jewelValue);
-            telemetry.addData("Back US", backValue);
-            telemetry.addData("Front US", frontValue);
-            telemetry.addData("Aligned", aligned);
-            telemetry.addData("Red Stone 1", "DPad-Up");
-            telemetry.addData("Red Stone 2", "DPad-Left");
-            telemetry.addData("Blue Stone 1", "DPad-Down");
-            telemetry.addData("Blue Stone 2", "DPad-Right");
-
-            if(jewelValue != 255 && backValue != 255 && selecting){
-
-                if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
-                    if(frontValue > 60 && backValue <= 40){
-                        if(jewelValue == 36 && backValue == 37) {
-                            autoProgram = "RedStone1";
-                            aligned = true;
-                        }else{
-                            autoProgram = "RedStone1";
-                            aligned = false;
-                        }
-                    }
-                    if(frontValue > 60 && backValue > 90){
-                        if(jewelValue == 36 && frontValue == 93){
-                            aligned = true;
-                            autoProgram = "RedStone2";
-                        }else{
-                            autoProgram = "RedStone2";
-                            aligned = false;
-                        }
-
-                    }
-                }else if (floor_color.getHSV()[0] > 200){
-                    if(frontValue < 50 && backValue > 60){
-                        if(jewelValue == 36 && frontValue == 38){
-                            autoProgram = "BlueStone1";
-                            aligned = true;
-                        }else{
-                            autoProgram = "BlueStone1";
-                            aligned = false;
-                        }
-                    }
-                    if(frontValue > 100 && (backValue > 85 && backValue < 150)){
-                        if(jewelValue == 36 && backValue == 93){
-                            autoProgram = "BlueStone2";
-                            aligned = true;
-                        }else{
-                            autoProgram = "BlueStone2";
-                            aligned = false;
-                        }
-                    }
-                }
-            }
-
-            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93 && selecting){
-                aligned = true;
-                led.turnOn();
-            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93 && selecting){
-                aligned = true;
-                led.turnOn();
-            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2") && selecting){
-                aligned = false;
-                led.turnOff();
-            }
-
-            if(gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.dpad_right || gamepad1.dpad_left){
-                selecting = false;
-                if(gamepad1.dpad_up){
-                    autoProgram = "RedStone1";
-                    selected = true;
-                }else if(gamepad1.dpad_left){
-                    autoProgram = "RedStone2";
-                    selected = true;
-                }else if(gamepad1.dpad_down){
-                    autoProgram = "BlueStone1";
-                    selected = true;
-                }else if(gamepad1.dpad_right){
-                    autoProgram = "BlueStone2";
-                    selected = true;
-                }
-            }
-            if(backValue==255 || jewelValue == 255){
-
-            }else{
-                telemetry.update();
-            }
-        }
-        led.turnOff();
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
-        intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        telemetry.addData("Init", "Initialized Intake System");
-        telemetry.update();
-
-
-        //set motor modes and zero power behavior
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-        telemetry.addData("Init", "Set Drivetrain mode");
-        telemetry.update();
-
-        //Calibrate IMU
-        telemetry.addData("Init", "IMU Calibrating");
-        telemetry.update();
-        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
-        imu = new BoschIMU(boschIMU);
-        imu.initialize();
-        imu.setOffset(0);
-        telemetry.addData("Init", "IMU Instantiated");
-        telemetry.update();
-
-        //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
-        drive.resetEncoders();
-        telemetry.addData("Init", "Drivetrain and IMU Initialized");
-        telemetry.update();
-
-        //Finish init
+        //Init timers
         timer = new ElapsedTime();
         gameTime = new ElapsedTime();
         telemetry.addData("Init", "Timer Initialized");
         telemetry.update();
 
+        //Finish init
         telemetry.addData("Init", "Finished");
         telemetry.addData("Auto Program Selected", autoProgram);
         telemetry.update();
         led.setLEDPower(0.2);
+        //Wait for program to start
         waitForStart();
-        gameTime.reset();
+/*
+**************************************************************************************************************************************
+***********************************************     OPMODE RUNS HERE     *************************************************************
+***************************************************************************************************************************************
+ */
+
 
         //Reset counters, timers, and activate Vuforia
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         led.turnOff();
         relicTrackables.activate();
         timer.reset();
+        gameTime.reset();
         //Reset drive encoders
         drive.resetEncoders();
 
@@ -1837,5 +1602,220 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         }
 
+    }
+
+    public void initVuforia(){
+        telemetry.addData("Init", "Starting Vuforia");
+        telemetry.update();
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        parameters.vuforiaLicenseKey = "ATXxmRr/////AAAAGdfeAuU6SEoFkpmhG616inkbnBHHQ/Ti5DMPAVykTBdmQS8ImGtoIBRRuboa+oIyuvQW1nIychXXxROjGLssEzSFF8yOYE36GqhVtRfI6lw8/HAoJpO1XgIF5Gy1vPx4KFPNInK6CJdZomYyWV8rGnb7ceLJ9Z+g0sl+VcVPKl5DAI84K+06pEZnw+Em7sThhzyzj2p4QbPhXh7fEtNGhFCqey9rcg3h9RfNebyWvJW9z7mGkaJljZy1x3lK7viLbFKyFcAaspZZi1+JzUmeuXxV0r+8hrCgFLPsvKQHlnYumazP9FEtm/FjCpRFF23Et77325/vuD2LRSPzve9ef4zqe6MivrLs9s8lUgd7Eo9W";
+
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+        telemetry.addData("Init", "Finished Starting Vuforia");
+        telemetry.update();
+    }
+
+    public void initHardwareMap(){
+        //Group drive motors in Array List
+        motors = new ArrayList<>();
+        motors.add(rf);
+        motors.add(rb);
+        motors.add(lf);
+        motors.add(lb);
+
+        //Hardware Map Motors
+        rf = hardwareMap.dcMotor.get("right_front");
+        rb = hardwareMap.dcMotor.get("right_back");
+        lf = hardwareMap.dcMotor.get("left_front");
+        lb = hardwareMap.dcMotor.get("left_back");
+        lift = hardwareMap.dcMotor.get("glyph_lift");
+        relic_extension = hardwareMap.dcMotor.get("relic_extension");
+        leds = hardwareMap.dcMotor.get("leds");
+
+        //Hardware Map Servos
+        rightWheel1 = hardwareMap.crservo.get("right_glyph1");
+        leftWheel1 = hardwareMap.crservo.get("left_glyph1");
+        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
+        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+        spin = hardwareMap.servo.get("spin_grip");
+        relic_arm = hardwareMap.servo.get("relic_arm");
+        relic_claw = hardwareMap.servo.get("relic_claw");
+        relic_tilt = hardwareMap.servo.get("relic_tilt");
+        pan = hardwareMap.servo.get("jewel_pan");
+        tilt = hardwareMap.servo.get("jewel_tilt");
+
+        //Hardware Map Color Sensors
+        lynx = (LynxI2cColorRangeSensor) hardwareMap.get("jewel_color");
+        lynx_floor = (LynxI2cColorRangeSensor) hardwareMap.get("floor_color");
+        bottomGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
+        topGlyphColor = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
+
+        //Hardware Map Range Sensors
+        ultrasonic_jewel = (ModernRoboticsI2cRangeSensor) hardwareMap.get("jewel_us");
+        ultrasonic_back = (ModernRoboticsI2cRangeSensor) hardwareMap.get("back_us");
+        ultrasonic_front = (ModernRoboticsI2cRangeSensor) hardwareMap.get("bottom_front_us");
+        ultrasonic_front_top = (ModernRoboticsI2cRangeSensor) hardwareMap.get("top_front_us");
+
+        //Hardware Map Limit Switch
+        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
+
+
+    }
+
+    public void setMotorBehaviors(){
+        //Set motor behaviors
+        for (DcMotor motor : motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        //Set Servo Init Positions
+        relic.setTiltPosition(1);
+        relic_arm.setPosition(0);
+        pan.setPosition(0.5);
+        tilt.setPosition(1);
+    }
+
+    public void autoSelectAlignment(){
+        boolean selected = false;
+        boolean selecting = true;
+        boolean aligned = false;
+        while(!selected&&!isStopRequested()){
+            //telemetry.addData("Floor Red", floor_color.red());
+            //telemetry.addData("Floor Blue", floor_color.blue());
+            //telemetry.addData("Floor HSV", floor_color.getHSV()[0]);
+            telemetry.addData("Auto Program Selected", autoProgram);
+
+            if(isStopRequested()){
+                selected = true;
+            }
+            if (gamepad1.b || gamepad2.b){
+                selected = true;
+            }
+            if(aligned){
+                led.turnOn();
+            }else{
+                led.turnOff();
+            }
+
+            double jewelValue = ultrasonic_jewel.cmUltrasonic();
+            double backValue = ultrasonic_back.cmUltrasonic();
+            double frontValue = ultrasonic_front.cmUltrasonic();
+            telemetry.addData("Jewel US", jewelValue);
+            telemetry.addData("Back US", backValue);
+            telemetry.addData("Front US", frontValue);
+            telemetry.addData("Aligned", aligned);
+            telemetry.addData("Red Stone 1", "DPad-Up");
+            telemetry.addData("Red Stone 2", "DPad-Left");
+            telemetry.addData("Blue Stone 1", "DPad-Down");
+            telemetry.addData("Blue Stone 2", "DPad-Right");
+
+            if(jewelValue != 255 && backValue != 255 && selecting){
+
+                if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
+                    if(frontValue > 60 && backValue <= 40){
+                        if(jewelValue == 36 && backValue == 37) {
+                            autoProgram = "RedStone1";
+                            aligned = true;
+                        }else{
+                            autoProgram = "RedStone1";
+                            aligned = false;
+                        }
+                    }
+                    if(frontValue > 60 && backValue > 90){
+                        if(jewelValue == 36 && frontValue == 93){
+                            aligned = true;
+                            autoProgram = "RedStone2";
+                        }else{
+                            autoProgram = "RedStone2";
+                            aligned = false;
+                        }
+
+                    }
+                }else if (floor_color.getHSV()[0] > 200){
+                    if(frontValue < 50 && backValue > 60){
+                        if(jewelValue == 36 && frontValue == 38){
+                            autoProgram = "BlueStone1";
+                            aligned = true;
+                        }else{
+                            autoProgram = "BlueStone1";
+                            aligned = false;
+                        }
+                    }
+                    if(frontValue > 100 && (backValue > 85 && backValue < 150)){
+                        if(jewelValue == 36 && backValue == 93){
+                            autoProgram = "BlueStone2";
+                            aligned = true;
+                        }else{
+                            autoProgram = "BlueStone2";
+                            aligned = false;
+                        }
+                    }
+                }
+            }
+
+            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93 && selecting){
+                aligned = true;
+                led.turnOn();
+            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93 && selecting){
+                aligned = true;
+                led.turnOn();
+            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2") && selecting){
+                aligned = false;
+                led.turnOff();
+            }
+
+            if(gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.dpad_right || gamepad1.dpad_left){
+                selecting = false;
+                if(gamepad1.dpad_up){
+                    autoProgram = "RedStone1";
+                    selected = true;
+                }else if(gamepad1.dpad_left){
+                    autoProgram = "RedStone2";
+                    selected = true;
+                }else if(gamepad1.dpad_down){
+                    autoProgram = "BlueStone1";
+                    selected = true;
+                }else if(gamepad1.dpad_right){
+                    autoProgram = "BlueStone2";
+                    selected = true;
+                }
+            }
+            if(backValue==255 || jewelValue == 255){
+
+            }else{
+                telemetry.update();
+            }
+        }
+        led.turnOff();
+    }
+
+    public void initIMU(){
+        //Calibrate IMU
+        telemetry.addData("Init", "IMU Calibrating");
+        telemetry.update();
+        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = new BoschIMU(boschIMU);
+        imu.initialize();
+        imu.setOffset(0);
+        telemetry.addData("Init", "IMU Instantiated");
+        telemetry.update();
     }
 }
