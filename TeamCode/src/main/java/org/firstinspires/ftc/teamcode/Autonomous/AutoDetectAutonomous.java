@@ -118,6 +118,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         initVuforia();
         initHardwareMap();
+        floor_color = new LynxColorRangeSensor(bottom_color);
         autoSelectAlignment();
         setMotorBehaviors();
         initIMU();
@@ -128,7 +129,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
         jewel = new TwoPointJewelArm(pan, tilt, jewelColor, telemetry);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
-        floor_color = new LynxColorRangeSensor(bottom_color);
         led = new LED(leds);
 
         //Init timers
