@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public class TankDrive implements IDrivetrain {
         accThread.start();
     }
 
-
+/*
     @Override
     public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
         if((endCondition&&
@@ -146,6 +147,19 @@ public class TankDrive implements IDrivetrain {
         motors.get(3).setPower(leftSpeed);
     }
 
+
+
+    @Override
+    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError) {
+        return false;
+    }
+
+    @Override
+    public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime, double correctionAngleError, Direction direction) {
+        return false;
+    }
+
+
     //Sets base encoder value to the current position of the motors
     @Override
     public void softResetEncoder() {
@@ -185,15 +199,15 @@ public class TankDrive implements IDrivetrain {
         return sum/4;
     }
 
+    @Override
+    public double getEncoderDistance() {
+        return 0;
+    }
+
     //Stops drivetrain and threads related to the drivetrain
     @Override
     public void stop() {
         accThread.stop();
     }
 
-    //Set zero power to all drive motors
-    @Override
-    public void setPowerZero(){
-        setPowerAll(0, 0);
-    }
 }

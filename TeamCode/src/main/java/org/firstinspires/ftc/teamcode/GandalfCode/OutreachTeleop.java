@@ -205,7 +205,7 @@ public class OutreachTeleop extends LinearOpMode{
 
 
     /*
-    Method that averages all of the encoders no matter what direction the robot is traveling
+    Method that averages all of the encoders no matter what Direction the robot is traveling
      */
 
     @Override
@@ -475,7 +475,7 @@ public class OutreachTeleop extends LinearOpMode{
 
                     break;
                 /*
-                This state is for sliding in a certain direction until a sensor value
+                This state is for sliding in a certain Direction until a sensor value
                  */
                 case slideState:
                     if(gamepad1.b){
