@@ -467,7 +467,7 @@ public class TheWizardTeleopStateMachine extends LinearOpMode {
                 }
                 intakePressed = false;
             }
-            telemetry.addData("intake direction", intakeDirection);
+            telemetry.addData("intake Direction", intakeDirection);
             telemetry.addData("intake pressed", intakePressed);
             telemetry.addData("Glyph Height", lift.getCurrentPosition());
             telemetry.update();

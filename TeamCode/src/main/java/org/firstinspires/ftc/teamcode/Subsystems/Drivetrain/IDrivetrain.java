@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 
-import org.firstinspires.ftc.teamcode.Utilities;
+import org.firstinspires.ftc.teamcode.Enums.Direction;
 
 /**
  * Created by Sarthak on 9/24/2017.
@@ -18,7 +18,7 @@ public interface IDrivetrain {
      * @param lowPower The lowest power the robot will move at
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
-     * @param endOrientationAngle The direction the robot is facing
+     * @param endOrientationAngle The Direction the robot is facing
      * @return
      */
     boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError);
@@ -32,7 +32,7 @@ public interface IDrivetrain {
      * @param correctionTime The amount of time to spend correcting to stay within the desired range
      * @return
      */
-    boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime);
+    boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime, double correctionAngleError, Direction direction);
 
 
     //boolean moveNoIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, doudouble angle, double speed, boolean condition, double pivotAmount);

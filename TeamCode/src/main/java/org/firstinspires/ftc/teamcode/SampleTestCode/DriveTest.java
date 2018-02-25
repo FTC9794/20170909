@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
@@ -44,15 +45,11 @@ public class DriveTest extends LinearOpMode {
         drive.resetEncoders();
         double[] PID = {0.005};
         double encoder = drive.averageEncoders();
-        while(drive.moveIMU(0, 0, 810, 0, 0.75, .15,
-            -90, PID, 90, 1000, 20)&&opModeIsActive()){
+        while(drive.pivotIMU(90, 0, .75, .2, 5, 500, Direction.COUNTERCLOCKWISE)&&opModeIsActive()){
 
-            encoder = drive.averageEncoders();
-            telemetry.addData("Current Position", encoder);
-            telemetry.update();
         }
         while(opModeIsActive()){
-            telemetry.addData("Current Position", drive.averageEncoders());
+            telemetry.addData("Current Position", imu.getZAngle());
             telemetry.update();
         }
 

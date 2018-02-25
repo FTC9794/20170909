@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.DataLogger;
+import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Utilities;
 
@@ -191,7 +192,7 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @param lowPower The lowest power the robot will move at
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
-     * @param endOrientationAngle The direction the robot is facing
+     * @param endOrientationAngle The Direction the robot is facing
      * @return
      */
     @Override
@@ -239,15 +240,44 @@ public class MecanumDriveTrain implements IDrivetrain {
     }
 
     @Override
-    public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime) {
+    public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionAngleError, double correctionTime, Direction direction) {
         double currentAngle = imu.getZAngle(desiredAngle);
-        double difference = desiredAngle-currentAngle;
+        double angleDifference = desiredAngle-currentAngle;
         double rampDownDifference = desiredAngle - rampDownAngle;
         double power;
-        if(Math.abs(difference)>Math.abs(rampDownAngle)){
+
+        //calculate power
+        if(Math.abs(angleDifference)>Math.abs(rampDownDifference)){
             power = maxPower;
+        }else{
+            power = (maxPower-minPower)/(Math.abs(rampDownDifference)) * Math.abs(angleDifference) + minPower;
         }
-        return false;
+        //turn clockwise or counterclockwise depending on which side of desired angle current angle is
+        if(direction==Direction.FASTEST||targetReached){
+            if(angleDifference>0){
+                this.setPowerAll(-power, -power, power, power);
+            }else{
+                this.setPowerAll(power, power, -power, -power);
+            }
+        }else if(direction == Direction.CLOCKWISE){
+            this.setPowerAll(-power, -power, power, power);
+        }else{
+            this.setPowerAll(power, power, -power, -power);
+        }
+
+
+        //determine if the pivoting angle is in the desired range
+        if(Math.abs(angleDifference)<correctionAngleError&&!targetReached){
+            pivotTime.reset();
+            targetReached = true;
+        }
+        if(targetReached && pivotTime.milliseconds()>=correctionTime){
+            targetReached = false;
+            this.stop();
+            return false;
+        }else{
+            return true;
+        }
     }
 
     //Sets base encoder value to the current position of the motors
