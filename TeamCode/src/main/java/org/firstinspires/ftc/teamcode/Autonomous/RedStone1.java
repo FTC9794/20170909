@@ -11,13 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.ReadWriteFile;
 
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
-import org.apache.commons.jexl3.MapContext;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -27,10 +21,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
@@ -38,9 +31,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
-import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.MRRangeSensor;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +68,7 @@ public class RedStone1 extends LinearOpMode {
     private final double OUTTAKE_SPEED = -0.74;
     private final double REDUCED_OUTTAKE_SPEED = -0.25;
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
     DcMotor leds;
@@ -293,7 +284,7 @@ public class RedStone1 extends LinearOpMode {
         telemetry.update();
 
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         telemetry.addData("Init", "Drivetrain and IMU Initialized");
         telemetry.update();

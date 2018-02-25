@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
-import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -17,11 +16,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.teamcode.DataLogger;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
-import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
@@ -61,7 +59,7 @@ public class OmniDirectionalAutonomousDemo extends LinearOpMode {
     DigitalChannel glyphLimit;
     LynxI2cColorRangeSensor lynx, lynx_floor, bottomGlyphColor;
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
     ModernRoboticsI2cRangeSensor ultrasonic_front;
@@ -192,7 +190,7 @@ public class OmniDirectionalAutonomousDemo extends LinearOpMode {
         telemetry.update();
 
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         telemetry.addData("Init", "Drivetrain and IMU Initialized");
         telemetry.update();

@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 
@@ -24,7 +23,7 @@ public class OmniDriveTeleop extends LinearOpMode {
     AHRS navx;
 
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     List<DcMotor> motors;
 
     GamepadPlus gamepadPlus1;
@@ -62,7 +61,7 @@ public class OmniDriveTeleop extends LinearOpMode {
         imu.setAsZero();
 
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         gamepadPlus1 = new GamepadPlus(gamepad1);
 

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.Teleop;
 
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -13,9 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.DataLogger;
 import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
-import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.twoWheelIntake;
@@ -28,8 +25,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.microedition.khronos.opengles.GL;
 
 /**
  * Created by Sarthak on 11/1/2017.
@@ -66,7 +61,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     IGlyph bottomIntake, topIntake;
     ClawThreePoint relic;
     DualWheelIntake intake;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     TwoPointJewelArm jewel;
 
     List<DcMotor> driveMotors;
@@ -259,7 +254,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        drive = new OmniDirectionalDrive(driveMotors, telemetry);
+        drive = new MecanumDriveTrain(driveMotors, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
         topIntake = new twoWheelIntake(leftWheel2, rightWheel2, INTAKE_POWER, OUTAKE_POWER);

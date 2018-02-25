@@ -1,17 +1,14 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
-import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
-import org.firstinspires.ftc.teamcode.Subsystems.IMU.NavxIMU;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +22,7 @@ public class OmniDriveTeleopBosch extends LinearOpMode {
     DcMotor rf, rb, lf, lb;
 
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     List<DcMotor> motors;
 
     GamepadPlus gamepadPlus1;
@@ -62,7 +59,7 @@ public class OmniDriveTeleopBosch extends LinearOpMode {
 
         telemetry.addData("Init", "About to Init Drivetrain");
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         gamepadPlus1 = new GamepadPlus(gamepad1);
 
