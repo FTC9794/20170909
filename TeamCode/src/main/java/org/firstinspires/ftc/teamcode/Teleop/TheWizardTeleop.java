@@ -477,7 +477,7 @@ public class TheWizardTeleop extends LinearOpMode {
                 rb.setPower(rbPower*.75);
                 lf.setPower(lfPower*.75);
                 lb.setPower(lbPower*.75);
-            }*/
+            }
             switch (hand){
                 case LEFT:
                     if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
@@ -493,7 +493,7 @@ public class TheWizardTeleop extends LinearOpMode {
                         drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.85, true, -gamepadPlus1.leftStickX()*0.85);
                     }
             }
-
+*/
             /*if(gamepadPlus2.leftTrigger() > ANALOG_PRESSED && glyphLimit.getState()){
                 desiredEncoderPosition -= 100;
             }else if(gamepadPlus2.rightTrigger() > ANALOG_PRESSED && intake.returnLiftPosition() < 2600){

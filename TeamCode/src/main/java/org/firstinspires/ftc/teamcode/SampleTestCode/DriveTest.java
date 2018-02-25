@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Created by Sarthak on 2/25/2018.
  */
-
+@Autonomous(name = "Drive Test", group = "")
 public class DriveTest extends LinearOpMode {
 
     BNO055IMU boschIMU;
@@ -26,37 +27,11 @@ public class DriveTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        rf = hardwareMap.dcMotor.get("right_front");
-        rb = hardwareMap.dcMotor.get("right_back");
-        lf = hardwareMap.dcMotor.get("left_front");
-        lb = hardwareMap.dcMotor.get("left_back");
-        rf.setDirection(DcMotorSimple.Direction.REVERSE);
-        rb.setDirection(DcMotorSimple.Direction.REVERSE);
-        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        motors = new ArrayList<>();
-        motors.add(rf);
-        motors.add(rb);
-        motors.add(lf);
-        motors.add(lb);
+        initHardwareMap();
+        setMotorBehaviors();
 
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-
-        //Calibrate IMU
-        telemetry.addData("Init", "IMU Calibrating");
-        telemetry.update();
-        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
-        imu = new BoschIMU(boschIMU);
-        imu.initialize();
-        imu.setOffset(0);
-        telemetry.addData("Init", "IMU Instantiated");
-        telemetry.update();
+        initIMU();
 
         //initialize drivetrain
         drive = new MecanumDriveTrain(motors, imu, telemetry);
@@ -67,19 +42,57 @@ public class DriveTest extends LinearOpMode {
         waitForStart();
 
         drive.resetEncoders();
-        double[] PID = {0.1};
+        double[] PID = {0.005};
         double encoder = drive.averageEncoders();
-        while(drive.moveIMU(encoder, 1000, 750, 250, 0.75, 0.25,
-                0, PID, 0, 1000) && opModeIsActive()){
+        while(drive.moveIMU(0, 0, 810, 0, 0.75, .15,
+            -90, PID, 90, 1000, 20)&&opModeIsActive()){
+
             encoder = drive.averageEncoders();
             telemetry.addData("Current Position", encoder);
             telemetry.update();
         }
-
         while(opModeIsActive()){
             telemetry.addData("Current Position", drive.averageEncoders());
             telemetry.update();
         }
 
     }
+    public void initHardwareMap(){
+        //Hardware Map Motors
+        rf = hardwareMap.dcMotor.get("right_front");
+        rb = hardwareMap.dcMotor.get("right_back");
+        lf = hardwareMap.dcMotor.get("left_front");
+        lb = hardwareMap.dcMotor.get("left_back");
+
+        //Group drive motors in Array List
+        motors = new ArrayList<>();
+        motors.add(rf);
+        motors.add(rb);
+        motors.add(lf);
+        motors.add(lb);
+
+    }
+
+    public void setMotorBehaviors(){
+        //Set motor behaviors
+        for (DcMotor motor : motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    public void initIMU(){
+        //Calibrate IMU
+        telemetry.addData("Init", "IMU Calibrating");
+        telemetry.update();
+        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = new BoschIMU(boschIMU);
+        imu.initialize();
+        imu.setOffset(0);
+        telemetry.addData("Init", "IMU Instantiated");
+        telemetry.update();
+    }
+
 }

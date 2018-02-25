@@ -504,7 +504,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 rb.setPower(rbPower*.75);
                 lf.setPower(lfPower*.75);
                 lb.setPower(lbPower*.75);
-            }*/
+            }*//*
             switch (hand){
                 case LEFT:
                     if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
@@ -519,7 +519,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }else{
                         drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.85, true, -gamepadPlus1.leftStickX()*0.85);
                     }
-            }
+            }*/
             telemetry.addData("rf", rf.getPower());
             telemetry.addData("rb", rb.getPower());
             telemetry.addData("lf", lf.getPower());

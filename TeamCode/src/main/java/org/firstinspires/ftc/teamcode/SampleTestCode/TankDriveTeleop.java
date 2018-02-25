@@ -69,7 +69,7 @@ public class TankDriveTeleop extends LinearOpMode {
         telemetry.update();
         waitForStart();
         while(opModeIsActive()){
-            drive.moveIMU(1, 0, gamepadPlus1.leftStickY(), 1, gamepadPlus1.getAngleRightStick(), PIVOT_GAIN*gamepadPlus1.getDistanceFromCenterRight(), 0, 0, false, 0);
+            //drive.moveIMU(1, 0, gamepadPlus1.leftStickY(), 1, gamepadPlus1.getAngleRightStick(), PIVOT_GAIN*gamepadPlus1.getDistanceFromCenterRight(), 0, 0, false, 0);
         }
         drive.stop();
     }

@@ -192,18 +192,11 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
      * @param endOrientationAngle The direction the robot is facing
-     * @param timeAfterAngle How Much time the robot spends correcting after a pivot
      * @return
      */
     @Override
-    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double timeAfterAngle) {
-        if(currentPosition==targetPosition){
-            pivotToAngle(endOrientationAngle, maxPower, lowPower, timeAfterAngle, PIDGain);
-            telemetry.addData("endOrientationAngle", endOrientationAngle);
-            telemetry.addData("State", "Pivot");
-            //telemetry.update();
-            return needsToPivot;
-        }else if(currentPosition < targetPosition){
+    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError) {
+        if(currentPosition < targetPosition){
             double currentAngle = imu.getZAngle(endOrientationAngle);
             moveAngle = moveAngle - endOrientationAngle;
             if(moveAngle <= -180){
@@ -211,9 +204,9 @@ public class MecanumDriveTrain implements IDrivetrain {
             }
             double power;
             //ramp up ramp, down or stay flat power
-            if(currentPosition<=rampUpTargetPosition){
+            if(currentPosition<rampUpTargetPosition){
                 power = (maxPower-lowPower)/(rampUpTargetPosition)*currentPosition+lowPower;
-            }else if(currentPosition>=rampDownTargetPosition){
+            }else if(currentPosition>rampDownTargetPosition){
                 power = (lowPower-maxPower)/(targetPosition-rampDownTargetPosition)*(currentPosition-rampDownTargetPosition)+maxPower;
             }else{
                 power = maxPower;
@@ -224,11 +217,37 @@ public class MecanumDriveTrain implements IDrivetrain {
             double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
             rawSlide(horizontal, vertical, pivotCorrection, power);
             return true;
+        } else if(currentPosition > targetPosition + allowableDistanceError){
+            double currentAngle = imu.getZAngle(endOrientationAngle);
+            moveAngle = moveAngle - endOrientationAngle + 180;
+            if(moveAngle <= -180){
+                moveAngle+=360;
+            }
+            double power;
+            //ramp up ramp, down or stay flat power
+            power  = lowPower;
+            double horizontal = Utilities.round2D(calculateX(moveAngle, power));
+            double vertical = Utilities.round2D(calculateY(moveAngle, power));
+            double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
+            rawSlide(horizontal, vertical, pivotCorrection, power);
+            return true;
         }
         else{
             setPowerAll(0, 0, 0, 0);
             return false;
         }
+    }
+
+    @Override
+    public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime) {
+        double currentAngle = imu.getZAngle(desiredAngle);
+        double difference = desiredAngle-currentAngle;
+        double rampDownDifference = desiredAngle - rampDownAngle;
+        double power;
+        if(Math.abs(difference)>Math.abs(rampDownAngle)){
+            power = maxPower;
+        }
+        return false;
     }
 
     //Sets base encoder value to the current position of the motors

@@ -19,11 +19,20 @@ public interface IDrivetrain {
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
      * @param endOrientationAngle The direction the robot is facing
-     * @param timeAfterAngle How Much time the robot spends correcting after a pivot
      * @return
      */
-    boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double timeAfterAngle);
+    boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError);
 
+    /**
+     *
+     * @param desiredAngle The angle to which to pivot to
+     * @param rampDownAngle The angle at which to start slowing down
+     * @param maxPower The max power to pivot at
+     * @param minPower The min power to pivot at
+     * @param correctionTime The amount of time to spend correcting to stay within the desired range
+     * @return
+     */
+    boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime);
 
 
     //boolean moveNoIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, doudouble angle, double speed, boolean condition, double pivotAmount);
