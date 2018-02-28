@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.GamepadPlus;
 import org.firstinspires.ftc.teamcode.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.twoWheelIntake;
@@ -66,7 +66,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
     IGlyph bottomIntake, topIntake;
     ClawThreePoint relic;
     DualWheelIntake intake;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     TwoPointJewelArm jewel;
 
     List<DcMotor> driveMotors;
@@ -259,7 +259,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
         waitForStart();
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
         intake = new DualWheelIntake(rightWheel1, rightWheel2, leftWheel1, leftWheel2, spin, lift, glyphLimit, telemetry);
-        drive = new OmniDirectionalDrive(driveMotors, telemetry);
+        drive = new MecanumDriveTrain(driveMotors, telemetry);
         jewel = new TwoPointJewelArm(pan, tilt, null, telemetry);
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
         topIntake = new twoWheelIntake(leftWheel2, rightWheel2, INTAKE_POWER, OUTAKE_POWER);
@@ -509,7 +509,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                 rb.setPower(rbPower*.75);
                 lf.setPower(lfPower*.75);
                 lb.setPower(lbPower*.75);
-            }*/
+            }*//*
             switch (hand){
                 case LEFT:
                     if(gamepadPlus1.rightTrigger() > ANALOG_PRESSED){
@@ -524,7 +524,7 @@ public class TheWizardTeleopLefty extends LinearOpMode {
                     }else{
                         drive.moveNoIMU(gamepadPlus1.getAngleRightStick(), gamepadPlus1.getDistanceFromCenterRight()*0.85, true, -gamepadPlus1.leftStickX()*0.85);
                     }
-            }
+            }*/
             telemetry.addData("rf", rf.getPower());
             telemetry.addData("rb", rb.getPower());
             telemetry.addData("lf", lf.getPower());

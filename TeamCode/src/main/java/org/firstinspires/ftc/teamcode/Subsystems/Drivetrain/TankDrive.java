@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 
 import java.util.List;
@@ -39,70 +40,65 @@ public class TankDrive implements IDrivetrain {
         accThread.start();
     }
 
-
-    @Override
-    public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
-        if((endCondition&&
-                (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
-                ||needsToPivot){
-            needsToPivot = pivotToAngle(endOrientationAngle, highPower, lowPower, timeAfterAngle, pGain);;
-            return needsToPivot;
-        }else if(!endCondition){
-            slideAngle(highPower, lowPower, powerChange, powerGain, moveAngle, oGain);
-            return true;
-        }else{
-            needsToPivot = false;
-            return false;
-        }
-    }
-
-    @Override
-    public boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount) {
-        return false;
-    }
-
-    @Override
-    public boolean balance(double highPower, double lowPower, double moveAngle, double oGain, boolean endCondition) {
-        return false;
-    }
-
-    public void slideAngle(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain){
-        double currentAngle = imu.getZAngle();
-        boolean fixAngle = true;
-        while(fixAngle){
-            if(currentAngle>moveAngle+180){
-                currentAngle = currentAngle-360;
-            }else if(currentAngle<moveAngle-180){
-                currentAngle = currentAngle+360;
+    /*
+        @Override
+        public boolean moveIMU(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain, double pGain, double endOrientationAngle, boolean endCondition, double timeAfterAngle) {
+            if((endCondition&&
+                    (imu.getZAngle()>endOrientationAngle+END_ANGLE_OFFSET||imu.getZAngle()<endOrientationAngle-END_ANGLE_OFFSET))
+                    ||needsToPivot){
+                needsToPivot = pivotToAngle(endOrientationAngle, highPower, lowPower, timeAfterAngle, pGain);;
+                return needsToPivot;
+            }else if(!endCondition){
+                slideAngle(highPower, lowPower, powerChange, powerGain, moveAngle, oGain);
+                return true;
             }else{
-                fixAngle = false;
+                needsToPivot = false;
+                return false;
             }
         }
-        double rightPower = powerChange*powerGain-oGain*(moveAngle-currentAngle);
-        double leftPower = powerChange*powerGain+oGain*(moveAngle-currentAngle);
-
-        if(rightPower>0){
-            rightPower = Math.max(Math.min(rightPower, highPower), lowPower);
-        }else{
-            rightPower = Math.min(Math.max(rightPower, -highPower), -lowPower);
+        @Override
+        public boolean moveNoIMU(double angle, double speed, boolean condition, double pivotAmount) {
+            return false;
         }
-        if(leftPower>0){
-            leftPower = Math.max(Math.min(leftPower, highPower), lowPower);
-        }else{
-            leftPower = Math.min(Math.max(leftPower, -highPower), -lowPower);
+        @Override
+        public boolean balance(double highPower, double lowPower, double moveAngle, double oGain, boolean endCondition) {
+            return false;
         }
-
-        this.setPowerAll(rightPower, leftPower);
-    }
-    /**
-     *
-     * @param angle the angle at which the robot will pivot to in the frame of reference of the driver
-     * @param highPower the maximum speed that the robot will travel
-     * @param lowPower the minimum speed of the robot
-     * @param timeAfterAngle the time the robot will spend to correct once +- 5 degrees away from target angle
-     * @param pGain the amount of speed applied per degree the robot is away from the target angle
-     * @return true if the pivot is still occurring false when it is complete
-     */
+        public void slideAngle(double highPower, double lowPower, double powerChange, double powerGain, double moveAngle, double oGain){
+            double currentAngle = imu.getZAngle();
+            boolean fixAngle = true;
+            while(fixAngle){
+                if(currentAngle>moveAngle+180){
+                    currentAngle = currentAngle-360;
+                }else if(currentAngle<moveAngle-180){
+                    currentAngle = currentAngle+360;
+                }else{
+                    fixAngle = false;
+                }
+            }
+            double rightPower = powerChange*powerGain-oGain*(moveAngle-currentAngle);
+            double leftPower = powerChange*powerGain+oGain*(moveAngle-currentAngle);
+            if(rightPower>0){
+                rightPower = Math.max(Math.min(rightPower, highPower), lowPower);
+            }else{
+                rightPower = Math.min(Math.max(rightPower, -highPower), -lowPower);
+            }
+            if(leftPower>0){
+                leftPower = Math.max(Math.min(leftPower, highPower), lowPower);
+            }else{
+                leftPower = Math.min(Math.max(leftPower, -highPower), -lowPower);
+            }
+            this.setPowerAll(rightPower, leftPower);
+        }
+        /**
+         *
+         * @param angle the angle at which the robot will pivot to in the frame of reference of the driver
+         * @param highPower the maximum speed that the robot will travel
+         * @param lowPower the minimum speed of the robot
+         * @param timeAfterAngle the time the robot will spend to correct once +- 5 degrees away from target angle
+         * @param pGain the amount of speed applied per degree the robot is away from the target angle
+         * @return true if the pivot is still occurring false when it is complete
+         */
     private boolean pivotToAngle(double angle, double highPower, double lowPower, double timeAfterAngle, double pGain) {
         //measure the gyro sensor
         //get gyro sensor value
@@ -146,6 +142,20 @@ public class TankDrive implements IDrivetrain {
         motors.get(3).setPower(leftSpeed);
     }
 
+
+
+
+    @Override
+    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctiontime) {
+        return false;
+    }
+
+    @Override
+    public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime, double correctionAngleError, Direction direction) {
+        return false;
+    }
+
+
     //Sets base encoder value to the current position of the motors
     @Override
     public void softResetEncoder() {
@@ -174,9 +184,9 @@ public class TankDrive implements IDrivetrain {
         return encoders;
     }
 
-    //Returns the current distance traveled/encoder position by averaging the position of each drive motor
+
     @Override
-    public double averageEncoders() {
+    public double getEncoderDistance() {
         double[] encoder = this.getEncoderPositions();
         double sum = 0;
         for(double position:encoder){
@@ -191,9 +201,4 @@ public class TankDrive implements IDrivetrain {
         accThread.stop();
     }
 
-    //Set zero power to all drive motors
-    @Override
-    public void setPowerZero(){
-        setPowerAll(0, 0);
-    }
 }

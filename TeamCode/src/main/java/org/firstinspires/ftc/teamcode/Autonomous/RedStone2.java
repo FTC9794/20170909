@@ -21,9 +21,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.GandalfCode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
@@ -65,7 +66,7 @@ public class RedStone2 extends LinearOpMode {
     DigitalChannel glyphLimit;
     LynxI2cColorRangeSensor lynx, lynx_floor, bottomGlyphColor;
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
     DcMotor leds;
@@ -282,7 +283,7 @@ public class RedStone2 extends LinearOpMode {
         telemetry.update();
 
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         telemetry.addData("Init", "Drivetrain and IMU Initialized");
         telemetry.update();
@@ -357,7 +358,7 @@ public class RedStone2 extends LinearOpMode {
         }
         telemetry.addData("VuMark", "Finished");
         telemetry.update();
-
+/*
         //Drive off of balancing stone
         powerChange = (16*COUNTS_PER_INCH) - drive.averageEncoders();
         while(drive.averageEncoders() < 16 * COUNTS_PER_INCH && opModeIsActive()){
@@ -589,5 +590,5 @@ public class RedStone2 extends LinearOpMode {
             telemetry.addData("VuMark Seen", vumarkSeen);
             telemetry.update();
         }
-    }
+    */}
 }

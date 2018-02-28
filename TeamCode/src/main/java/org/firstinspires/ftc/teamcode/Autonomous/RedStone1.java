@@ -28,9 +28,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.GandalfCode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.OmniDirectionalDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
@@ -77,7 +78,7 @@ public class RedStone1 extends LinearOpMode {
     private final double OUTTAKE_SPEED = -0.74;
     private final double REDUCED_OUTTAKE_SPEED = -0.25;
     IIMU imu;
-    OmniDirectionalDrive drive;
+    MecanumDriveTrain drive;
     ModernRoboticsI2cRangeSensor ultrasonic_jewel;
     ModernRoboticsI2cRangeSensor ultrasonic_back;
     DcMotor leds;
@@ -293,7 +294,7 @@ public class RedStone1 extends LinearOpMode {
         telemetry.update();
 
         //initialize drivetrain
-        drive = new OmniDirectionalDrive(motors, imu, telemetry);
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
         drive.resetEncoders();
         telemetry.addData("Init", "Drivetrain and IMU Initialized");
         telemetry.update();
@@ -372,8 +373,8 @@ public class RedStone1 extends LinearOpMode {
 
         //Drive to desired VuMark target
         drive.resetEncoders();
-        powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.averageEncoders();
-        while(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH && opModeIsActive()){
+        powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.getEncoderDistance();
+       /* while(drive.averageEncoders() < vuMarkDistance*COUNTS_PER_INCH && opModeIsActive()){
             drive.moveIMU(0.7, 0.3, powerChange, .15, 0, .008, 0.001, 0,
                     false, 1000);
             powerChange = (vuMarkDistance*COUNTS_PER_INCH) - drive.averageEncoders();
@@ -800,6 +801,6 @@ public class RedStone1 extends LinearOpMode {
         //Lower lift to intake glyphs
         lift.setTargetPosition(5);
         lift.setPower(1);
-        while(opModeIsActive());
+        while(opModeIsActive());*/
     }
 }
