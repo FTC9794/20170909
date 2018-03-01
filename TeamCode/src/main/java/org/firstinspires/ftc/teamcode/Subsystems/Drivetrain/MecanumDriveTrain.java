@@ -200,9 +200,52 @@ public class MecanumDriveTrain implements IDrivetrain {
      */
     @Override
     public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctionTime) {
+
+        double positionDifference = targetPosition - currentPosition;
+
+        if(Math.abs(positionDifference)<=allowableDistanceError){
+            this.stop();
+
+            if(!targetReached){
+                targetReached = true;
+                distanceCorrectionTimer.reset();
+                return true;
+            }
+
+        }else{
+
+            double rampDownDifference = targetPosition - rampDownTargetPosition;
+
+            double power;
+            if(rampDownDifference>Math.abs(positionDifference)){
+                power = Math.abs(positionDifference)*((maxPower-lowPower)/(rampDownDifference))+lowPower;
+            }else{
+                power = maxPower;
+            }
+
+            double currentAngle = imu.getZAngle(endOrientationAngle);
+            moveAngle = moveAngle - currentAngle;
+            if(moveAngle <= -180){
+                moveAngle+=360;
+            }
+            if(positionDifference<0){
+                moveAngle+=180;
+            }
+            double horizontal = Utilities.round2D(calculateX(moveAngle, power));
+            double vertical = Utilities.round2D(calculateY(moveAngle, power));
+            double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
+            rawSlide(horizontal, vertical, pivotCorrection, power);
+        }
+        if(targetReached&&distanceCorrectionTimer.milliseconds()>=correctionTime){
+            this.stop();
+            targetReached = false;
+            return false;
+        }else{
+            return true;
+        }/*
         if(currentPosition < targetPosition){
             double currentAngle = imu.getZAngle(endOrientationAngle);
-            moveAngle = moveAngle - endOrientationAngle;
+            moveAngle = moveAngle - currentAngle;
             if(moveAngle <= -180){
                 moveAngle+=360;
             }
@@ -245,7 +288,7 @@ public class MecanumDriveTrain implements IDrivetrain {
             return false;
         }else{
             return true;
-        }
+        }*/
     }
 
     @Override

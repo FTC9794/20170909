@@ -45,7 +45,7 @@ public class DriveTest extends LinearOpMode {
         drive.resetEncoders();
         double[] PID = {0.005};
         double encoder = drive.getEncoderDistance();
-        while(drive.pivotIMU(90, 0, .75, .2, 5, 500, Direction.COUNTERCLOCKWISE)&&opModeIsActive()){
+        while(drive.moveIMU(drive.getEncoderDistance(), 1000, 500, 0, .5, .2, 0, PID, 0, 20, 500)&&opModeIsActive()){
 
         }
         while(opModeIsActive()){
