@@ -83,15 +83,15 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double LIFT_POWER = 1;
     final double LIFT_HALF_POWER_DOWN = .1;
     final double LIFT_HALF_POWER_UP = .75;
-    final int LIFT_UPPER_LIMIT = 2300;
+    final int LIFT_UPPER_LIMIT = 2208;
     final int GLYPH_POSITION_0 = 0;
-    final int GLYPH_POSITION_1 = 250;
-    final int GLYPH_POSITION_2 = 950;
-    final int GLYPH_POSITION_3 = 1650;
-    final int GLYPH_POSITION_4 = 2300;
+    final int GLYPH_POSITION_1 = 240;
+    final int GLYPH_POSITION_2 = 912;
+    final int GLYPH_POSITION_3 = 1584;
+    final int GLYPH_POSITION_4 = 2208;
     final int LIFT_POSITION_OFFSET = 100;
-    final int LIFT_INTAKEN_POSITION = 250;
-    final int GLYPH_ROTATE_POSITION = 800;
+    final int LIFT_INTAKEN_POSITION = 240;
+    final int GLYPH_ROTATE_POSITION = 768;
 
     double [] pidGain = {0};
     final double ANALOG_PRESSED = .2;
@@ -632,7 +632,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
+        lift.setDirection(DcMotorSimple.Direction.REVERSE);
         //Set servo behaviors
         leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);

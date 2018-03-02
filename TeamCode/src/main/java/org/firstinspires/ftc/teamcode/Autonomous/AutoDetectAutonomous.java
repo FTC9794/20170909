@@ -209,7 +209,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         while(drive.pivotIMU(75, 30, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 1, 500, Direction.FASTEST)&&opModeIsActive());
 
         //lower lift to deposit position
-        lift.setTargetPosition(370);
+        lift.setTargetPosition(344);
         lift.setPower(1);
 
         //drive into cryptobox
@@ -258,11 +258,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while(timer.milliseconds()<250&&opModeIsActive());
         }
         drive.resetEncoders();
-        lift.setTargetPosition(100);
+        lift.setTargetPosition(96);
 
         while(drive.moveIMU(drive.getEncoderDistance(), 26*COUNTS_PER_INCH, 0, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
         if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
-            lift.setTargetPosition(935);
+            lift.setTargetPosition(898);
             while(drive.pivotIMU(75, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST));
 
             //drive into cryptobox
@@ -312,7 +312,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         }
         drive.resetEncoders();
 
-        lift.setTargetPosition(200);
+        lift.setTargetPosition(192);
         while(drive.moveIMU(drive.getEncoderDistance(), 26*COUNTS_PER_INCH, 0, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
 
         if (bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<6) {
@@ -365,7 +365,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder(); // Do we need this????
 
             //Lower lift to dispense glyph
-            lift.setTargetPosition(370);
+            lift.setTargetPosition(355);
             lift.setPower(1);
 
             //Pivot to face cryptobox
@@ -483,7 +483,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(935);
+            lift.setTargetPosition(898);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -675,7 +675,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(350);
+            lift.setTargetPosition(336);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -713,7 +713,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             }
 
-            lift.setTargetPosition(450);
+            lift.setTargetPosition(432);
             lift.setPower(1);
             drive.softResetEncoder();
             led.setLEDPower(0);
@@ -822,7 +822,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder();
 
             //Lower lift to deposit glyph
-            lift.setTargetPosition(250);
+            lift.setTargetPosition(240);
             lift.setPower(1);
             timer.reset();
 
@@ -937,9 +937,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
             drive.softResetEncoder();
             if(vumarkSeen.equals("LEFT")){
-                lift.setTargetPosition(900);
+                lift.setTargetPosition(864);
             }else{
-                lift.setTargetPosition(150);
+                lift.setTargetPosition(144);
             }
             //lift to glyph height 2
 
@@ -1056,7 +1056,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
             drive.softResetEncoder();
             //Lower lift to dispense glyph
-            lift.setTargetPosition(370);
+            lift.setTargetPosition(355);
             lift.setPower(1);
 
             //Pivot to face cryptobox
@@ -1181,7 +1181,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(935);
+            lift.setTargetPosition(898);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -1363,7 +1363,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //lift to glyph height 2
-            lift.setTargetPosition(150);
+            lift.setTargetPosition(144);
             lift.setPower(1);
             drive.setPowerZero();
             drive.softResetEncoder();
@@ -1509,7 +1509,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.softResetEncoder();
 
             //Lower lift to deposit glyph
-            lift.setTargetPosition(250);
+            lift.setTargetPosition(140);
             lift.setPower(1);
             timer.reset();
 
@@ -1624,9 +1624,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.setPowerZero();
             drive.softResetEncoder();
             if(vumarkSeen.equals("RIGHT")){
-                lift.setTargetPosition(900);
+                lift.setTargetPosition(864);
             }else{
-                lift.setTargetPosition(150);
+                lift.setTargetPosition(144);
             }
             //lift to glyph height 2
 
@@ -1807,6 +1807,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lift.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Set servo behaviors
         leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
