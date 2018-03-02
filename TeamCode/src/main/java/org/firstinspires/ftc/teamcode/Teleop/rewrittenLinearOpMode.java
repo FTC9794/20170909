@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -10,12 +12,20 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.GandalfCode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.twoWheelIntake;
+import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
+import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Created by ishaa on 1/28/2018.
@@ -26,6 +36,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     DcMotor lf, lb, rf, rb, lift, relic_extension;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
     Servo spin, pan, tilt, relic_claw, relic_arm, relic_tilt;
+    BNO055IMU boschIMU;
+    IIMU imu;
     LynxI2cColorRangeSensor glyphSensor1;
     LynxI2cColorRangeSensor glyphSensor2;
     DcMotor led_motor;
@@ -34,6 +46,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     ElapsedTime intake2Time;
     ElapsedTime rotateTime;
     double pitch, roll, pivot;
+    double xPowerBalance, yPowerBalance;
     int liftPosition;
     private enum glyphLiftStates{
         MANUAL, POSITION
@@ -47,17 +60,26 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     private enum glyphRotateStates{
         LIFTING, ROTATING, LOWERING, STOPPED
     }
+    private enum driveStates{
+        MANUAL, MOVING_ON_STONE, BALANCING
+    }
+    double balanceAngle;
+    driveStates driveState;
     glyphLiftStates liftState;
     DigitalChannel glyphLimit;
     glyphRotateStates rotateState;
-    boolean yPressed;
-    boolean aPressed;
-    boolean xPressed;
+    List<DcMotor> motors;
+    //toggle variables
+    boolean yPressed = false;
+    boolean aPressed = false;
+    boolean xPressed = false;
+    boolean bPressed = false;
 
     boolean spined = false;
     boolean rotateLower = false;
     boolean clawClosed = true;
 
+    boolean onStone = false;
     final double LIFT_POWER = 1;
     final double LIFT_HALF_POWER_DOWN = .1;
     final double LIFT_HALF_POWER_UP = .75;
@@ -71,6 +93,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final int LIFT_INTAKEN_POSITION = 250;
     final int GLYPH_ROTATE_POSITION = 800;
 
+    double [] pidGain = {0};
     final double ANALOG_PRESSED = .2;
 
     final double INTAKE_POWER = .74;
@@ -96,6 +119,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
     final double RELIC_ARM_RETRACTION_FULL_POWER = -1;
+    final double DESIRED_Y_BALANCE_ANGLE = -.75;
+    final double DESIRED_X_BALANCE_ANGLE = -2.25;
+    final double BALANCE_GAIN = .02;
 
     rewritten.intakeState lowerIntakeState;
     rewritten.intakeState upperIntakeState;
@@ -104,105 +130,111 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     IUltrasonic glyphColor1;
     IUltrasonic glyphColor2;
     ClawThreePoint relic;
+    MecanumDriveTrain drive;
     @Override
     public void runOpMode() throws InterruptedException {
-        lf = hardwareMap.dcMotor.get("left_front");
-        lb = hardwareMap.dcMotor.get("left_back");
-        rf = hardwareMap.dcMotor.get("right_front");
-        rb = hardwareMap.dcMotor.get("right_back");
-        lift = hardwareMap.dcMotor.get("glyph_lift");
-        relic_extension = hardwareMap.dcMotor.get("relic_extension");
 
-        rightWheel1 = hardwareMap.crservo.get("right_glyph1");
-        leftWheel1 = hardwareMap.crservo.get("left_glyph1");
-        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
-        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+        initHardwareMap();
+        setMotorBehaviors();
+        initIMU();
 
-        spin = hardwareMap.servo.get("spin_grip");
-        pan = hardwareMap.servo.get("jewel_pan");
-        tilt = hardwareMap.servo.get("jewel_tilt");
-        relic_arm = hardwareMap.servo.get("relic_arm");
-        relic_claw = hardwareMap.servo.get("relic_claw");
-        relic_tilt = hardwareMap.servo.get("relic_tilt");
-
-        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
-        glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
         glyphColor1 = new RevRangeSensor(glyphSensor1);
         glyphColor2 = new RevRangeSensor(glyphSensor2);
 
-        led_motor = hardwareMap.dcMotor.get("leds");
-        leds = new LED(led_motor);
-
-        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        rf.setDirection(DcMotorSimple.Direction.REVERSE);
-        rb.setDirection(DcMotorSimple.Direction.REVERSE);
-        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        rf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
-
+        //set State of different subsystems
         liftState = glyphLiftStates.POSITION;
         lowerIntakeState = rewritten.intakeState.NOTHING;
         upperIntakeState = rewritten.intakeState.NOTHING;
         rotateState = glyphRotateStates.STOPPED;
+        driveState = driveStates.MANUAL;
 
-        yPressed = false;
-        aPressed = false;
-
+        //create timers
         intake1Time = new ElapsedTime();
         intake2Time = new ElapsedTime();
         rotateTime = new ElapsedTime();
 
+        //create intakes
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
         topIntake = new twoWheelIntake(leftWheel2, rightWheel2, INTAKE_POWER, OUTAKE_POWER);
 
+        //create relic mechanism
         relic = new ClawThreePoint(relic_extension, relic_arm, relic_tilt, relic_claw);
+
+        //create drivetrain
+        drive = new MecanumDriveTrain(motors, imu, telemetry);
+
+        // WAIT FOR START
         waitForStart();
+
         pan.setPosition(JEWEL_PAN_POSITION);
         tilt.setPosition(JEWEL_TILT_POSITION);
         relic.pickUpRelic();
         relic.setTiltPosition(1);
         relic_arm.setPosition(0);
 
+
         while(opModeIsActive()){
 
 
-            pitch = -gamepad1.left_stick_y;
-            roll = gamepad1.left_stick_x;
-            pivot = gamepad1.right_stick_x;
-            if(gamepad1.right_trigger>.2){
-                rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
-                rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
-                lf.setPower((pitch+roll+pivot)*DRIVE_LOW_SPEED);
-                lb.setPower((pitch-roll+pivot)*DRIVE_LOW_SPEED);
-            }else{
-                rf.setPower(pitch-roll-pivot);
-                rb.setPower(pitch+roll-pivot);
-                lf.setPower(pitch+roll+pivot);
-                lb.setPower(pitch-roll+pivot);
+            switch(driveState){
+                case MANUAL:
+                    pitch = -gamepad1.left_stick_y;
+                    roll = gamepad1.left_stick_x;
+                    pivot = gamepad1.right_stick_x;
+                    if(gamepad1.right_trigger>.2){
+                        rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
+                        rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
+                        lf.setPower((pitch+roll+pivot)*DRIVE_LOW_SPEED);
+                        lb.setPower((pitch-roll+pivot)*DRIVE_LOW_SPEED);
+                    }else{
+                        rf.setPower(pitch-roll-pivot);
+                        rb.setPower(pitch+roll-pivot);
+                        lf.setPower(pitch+roll+pivot);
+                        lb.setPower(pitch-roll+pivot);
+                    }
+                    if(gamepad1.b&&!bPressed){
+                        driveState = driveStates.MOVING_ON_STONE;
+                        drive.resetEncoders();
+                        rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        balanceAngle = imu.getZAngle();
+
+                    }
+                    if(gamepad1.y){
+                        driveState = driveStates.BALANCING;
+                        drive.resetEncoders();
+                        rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    }
+                    break;
+                case MOVING_ON_STONE:
+                    /*if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, .5, .1, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
+                        driveState = driveStates.BALANCING;
+                    }
+                    if((gamepad1.b&&!bPressed)||gamepad1.left_stick_x!=0||gamepad1.left_stick_y!=0||gamepad1.right_stick_x!=0){
+                        drive.resetEncoders();
+                        driveState = driveStates.MANUAL;
+                    }*/
+                    break;
+                case BALANCING:
+
+                    xPowerBalance = (imu.getXAngle() - DESIRED_X_BALANCE_ANGLE) * BALANCE_GAIN;
+                    yPowerBalance = (imu.getYAngle() - DESIRED_Y_BALANCE_ANGLE) * BALANCE_GAIN;
+                    rf.setPower(yPowerBalance-xPowerBalance);
+                    rb.setPower(yPowerBalance+xPowerBalance);
+                    lf.setPower(yPowerBalance+xPowerBalance);
+                    lb.setPower(yPowerBalance-xPowerBalance);
+                    if((gamepad1.b&&!bPressed)||gamepad1.left_stick_x!=0||gamepad1.left_stick_y!=0||gamepad1.right_stick_x!=0){
+                        drive.resetEncoders();
+                        driveState = driveStates.MANUAL;
+                    }
             }
+            bPressed = gamepad1.b;
+
 
 
             switch(liftState) {
@@ -554,6 +586,91 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             telemetry.addData("Lift Position", lift.getCurrentPosition());
             telemetry.update();
         }
+
+
+    }
+    public void initIMU(){
+        //Calibrate IMU
+        telemetry.addData("Init", "IMU Calibrating");
+        telemetry.update();
+        boschIMU = hardwareMap.get(BNO055IMU.class, "imu");
+        imu = new BoschIMU(boschIMU);
+        imu.initialize();
+        imu.setOffset(0);
+        telemetry.addData("Init", "IMU Instantiated");
+        telemetry.update();
+    }
+    public void setMotorBehaviors(){
+        motors = new ArrayList<>();
+        motors.add(rf);
+        motors.add(rb);
+        motors.add(lf);
+        motors.add(lb);
+        //reset motor encoders
+        rf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        //Set motor behaviors
+        rf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lf.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lf.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lb.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rf.setDirection(DcMotorSimple.Direction.REVERSE);
+        rb.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
+        relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        //Set servo behaviors
+        leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
+
+    }
+
+    public void initHardwareMap(){
+
+
+        //Hardware Map Motors
+        rf = hardwareMap.dcMotor.get("right_front");
+        rb = hardwareMap.dcMotor.get("right_back");
+        lf = hardwareMap.dcMotor.get("left_front");
+        lb = hardwareMap.dcMotor.get("left_back");
+        lift = hardwareMap.dcMotor.get("glyph_lift");
+        relic_extension = hardwareMap.dcMotor.get("relic_extension");
+        led_motor = hardwareMap.dcMotor.get("leds");
+        leds = new LED(led_motor);
+
+
+        //Hardware Map Servos
+        rightWheel1 = hardwareMap.crservo.get("right_glyph1");
+        leftWheel1 = hardwareMap.crservo.get("left_glyph1");
+        rightWheel2 = hardwareMap.crservo.get("right_glyph2");
+        leftWheel2 = hardwareMap.crservo.get("left_glyph2");
+        spin = hardwareMap.servo.get("spin_grip");
+        relic_arm = hardwareMap.servo.get("relic_arm");
+        relic_claw = hardwareMap.servo.get("relic_claw");
+        relic_tilt = hardwareMap.servo.get("relic_tilt");
+        pan = hardwareMap.servo.get("jewel_pan");
+        tilt = hardwareMap.servo.get("jewel_tilt");
+
+        //Hardware Map Color Sensors
+        glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
+        glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
+
+        //Hardware Map Limit Switch
+        glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
 
 
     }

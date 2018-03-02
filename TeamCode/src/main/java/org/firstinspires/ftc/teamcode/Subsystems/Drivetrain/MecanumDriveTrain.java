@@ -199,7 +199,7 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @return
      */
     @Override
-    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctionTime) {
+    public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double rampDownEnd, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctionTime) {
 
         double positionDifference = targetPosition - currentPosition;
 
@@ -215,10 +215,12 @@ public class MecanumDriveTrain implements IDrivetrain {
         }else{
 
             double rampDownDifference = targetPosition - rampDownTargetPosition;
-
+            double rampDownEndDifference = targetPosition - rampDownEnd;
             double power;
-            if(rampDownDifference>Math.abs(positionDifference)){
-                power = Math.abs(positionDifference)*((maxPower-lowPower)/(rampDownDifference))+lowPower;
+            if(rampDownEndDifference>=Math.abs(positionDifference)) {
+                power = lowPower;
+            }else if(rampDownDifference>Math.abs(positionDifference)){
+                power = Math.abs(positionDifference)*((maxPower-lowPower)/(rampDownDifference-rampDownEndDifference))+lowPower;
             }else{
                 power = maxPower;
             }

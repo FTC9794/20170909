@@ -97,7 +97,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     final double RELIC_ARM_ORIGIN = 0;
 
     final double COUNTS_PER_INCH = 45;
-    final double CENTER_STONE_1_DIST = 29*COUNTS_PER_INCH;
+    final double CENTER_STONE_1_DIST = 31*COUNTS_PER_INCH;
     final double COLUMN_OFFSET = 7.5*COUNTS_PER_INCH;
 
     double imuAngle, encoderAverage, powerChange = 0;
@@ -202,7 +202,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
         }*/
 
         //Move off the stone
-        while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, 10, 500)&&opModeIsActive());
+        while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, 18*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+        /*while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 2000)&&opModeIsActive());
 
         //pivot to face cryptobox
         while(drive.pivotIMU(75, 30, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 1, 500, Direction.FASTEST)&&opModeIsActive());
@@ -339,7 +340,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
             drive.stop();
         }
-
+*/
         /*if(autoProgram.equals("RedStone1")){
 
             //Set the distances (in inches) to move based on the VuMark Target.
