@@ -220,7 +220,7 @@ public class MecanumDriveTrain implements IDrivetrain {
             if(rampDownEndDifference>=Math.abs(positionDifference)) {
                 power = lowPower;
             }else if(rampDownDifference>Math.abs(positionDifference)){
-                power = Math.abs(positionDifference)*((maxPower-lowPower)/(rampDownDifference-rampDownEndDifference))+lowPower;
+                power = (Math.abs(positionDifference)-rampDownDifference)*((maxPower-lowPower)/(rampDownDifference-rampDownEndDifference))+maxPower;
             }else{
                 power = maxPower;
             }
