@@ -218,13 +218,13 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     }
                     break;
                 case MOVING_ON_STONE:
-                    /*if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, .5, .1, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
+                    if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, 990, .5, .1, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
                         driveState = driveStates.BALANCING;
                     }
                     if((gamepad1.b&&!bPressed)||gamepad1.left_stick_x!=0||gamepad1.left_stick_y!=0||gamepad1.right_stick_x!=0){
                         drive.resetEncoders();
                         driveState = driveStates.MANUAL;
-                    }*/
+                    }
                     break;
                 case BALANCING:
 
