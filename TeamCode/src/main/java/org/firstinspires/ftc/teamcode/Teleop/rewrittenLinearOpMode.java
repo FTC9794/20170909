@@ -556,15 +556,22 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
 
+            //check if the button is pressed and it wasn't pressed in the last loop cycle
             if(gamepad2.x&&!xPressed){
+
+                //check to see if the claw was opened or closed
                 if(clawClosed){
+                    //open the claw
                     relic.releaseRelic();
                 }else{
+                    //close the claw
                     relic.pickUpRelic();
                 }
+                //set variables based on updated status of robot
                 clawClosed=!clawClosed;
                 xPressed = true;
-            }else if(!gamepad2.x){
+            }else if(!gamepad2.x){//check if the gamepad wasn't pressed
+                //if it wasn't pressed set the variable accordingly
                 xPressed = false;
             }
 
