@@ -260,6 +260,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             drive.stop();
         }
+
+
+
+
+
+
         /*if(autoProgram.equals("RedStone1")){
 
             //Set the distances (in inches) to move based on the VuMark Target.
