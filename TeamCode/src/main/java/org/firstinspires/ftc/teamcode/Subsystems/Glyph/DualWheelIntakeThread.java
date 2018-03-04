@@ -14,7 +14,6 @@ public class DualWheelIntakeThread implements Runnable {
     GlyphIntakeState state;
     CRServo servo1, servo2;
     boolean running;
-    Thread intakeThread;
     ElapsedTime glyphTimer;
     RevRangeSensor intakeSensor;
     boolean glyphSeen = false;
@@ -25,18 +24,12 @@ public class DualWheelIntakeThread implements Runnable {
         glyphTimer = new ElapsedTime();
         this.intakeSensor = intakeSensor;
         state = GlyphIntakeState.NOTHING;
+
     }
 
-    public synchronized void start(){
-
-        if(!running){
-            running = true;
-            intakeThread = new Thread(this);
-            intakeThread.start();
-        }
-    }
-
+    @Override
     public void run() {
+        running = true;
         while(running){
             switch(state){
                 case NOTHING:
@@ -87,7 +80,7 @@ public class DualWheelIntakeThread implements Runnable {
         state = GlyphIntakeState.NOTHING;
     }
 
-    public void stop(){
+    public synchronized void stop(){
         servo1.setPower(0);
         servo2.setPower(0);
         running = false;

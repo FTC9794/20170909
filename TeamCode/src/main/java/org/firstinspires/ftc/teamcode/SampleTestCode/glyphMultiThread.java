@@ -16,8 +16,8 @@ public class glyphMultiThread extends LinearOpMode {
     CRServo rightWheel1, rightWheel2, leftWheel1, leftWheel2;
     LynxI2cColorRangeSensor glyphSensor1, glyphSensor2;
     RevRangeSensor glyphColor1, glyphColor2;
-    DualWheelIntakeThread bottomIntake;
-    DualWheelIntakeThread topIntake;
+    DualWheelIntakeThread bottomIntake, topIntake;
+    Thread topIntakethread, bottomIntakeThread;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -40,9 +40,13 @@ public class glyphMultiThread extends LinearOpMode {
         bottomIntake = new DualWheelIntakeThread(rightWheel1, leftWheel1, glyphColor1);
         topIntake = new DualWheelIntakeThread(rightWheel2, leftWheel2, glyphColor2);
 
+        topIntakethread = new Thread(topIntake);
+        bottomIntakeThread = new Thread(bottomIntake);
+
         waitForStart();
-        bottomIntake.start();
-        topIntake.start();
+
+        topIntakethread.start();
+        bottomIntakeThread.start();
 
         while(opModeIsActive()){
             if(gamepad1.a){
