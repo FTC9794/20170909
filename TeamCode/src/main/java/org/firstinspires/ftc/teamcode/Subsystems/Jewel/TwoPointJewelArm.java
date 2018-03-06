@@ -35,12 +35,9 @@ public class TwoPointJewelArm implements IJewel {
         for(int i = 0; i < readings; i++){
             if(hsv >= 340 || hsv <= 30){
                 redCount++;
-                //telemetry.addData("Color", "red");
             }else if (hsv >= 150 || hsv <= 225){
                 blueCount++;
-                //telemetry.addData("Color", "blue");
             }else{
-                //telemetry.addData("Color", "Unknown");
             }
         }
         if(blueCount > redCount){
@@ -59,30 +56,58 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     @Override
-    public boolean knockOffJewel(String alliance) {
-        tilt(0.21);
+    public boolean knockOffJewel(String alliance, boolean isLeftFast, boolean isRightFast) {
         if(alliance.equals("blue")){
             if(ballColor.equals("blue")){
-                while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+                if(this.panServo.getPosition() < 0.7){
+                    if(isRightFast){
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }else{
-                while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                if(panServo.getPosition() > 0.3) {
+                    if(isLeftFast){
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }
         }else if(alliance.equals("red")){
             if(ballColor.equals("red")){
-                while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+                if(this.panServo.getPosition() < 0.7){
+                    if(isRightFast) {
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }else{
-                while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                if(panServo.getPosition() > 0.3) {
+                    if(isLeftFast){
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                    }else {
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }
+        }else{
+            return true;
         }
-        return true;
     }
 
     private void tilt(double tiltPosition){
