@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import android.graphics.Camera;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
@@ -18,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.teamcode.Enums.Alliance;
 import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
@@ -32,6 +35,10 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.BLUE;
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.RED;
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
 
 /**
  * Created by Sarthak on 2/7/2018.
@@ -100,6 +107,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     final double COUNTS_PER_INCH = 45;
     final double CENTER_STONE_1_DIST = 31*COUNTS_PER_INCH;
     final double COLUMN_OFFSET = 7.5*COUNTS_PER_INCH;
+    final double BLUE_ALLIANCE_OFFSET = 1.5*COUNTS_PER_INCH;
 
     double imuAngle, encoderAverage, powerChange = 0;
 
@@ -115,6 +123,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     boolean needToWiggle = false;
 
     String autoProgram = "";
+    Alliance alliance = UNKNOWN;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -157,7 +166,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //Reset counters, timers, and activate Vuforia
         led.turnOff();
-        relicTrackables.activate();
+//        relicTrackables.activate();
         timer.reset();
         gameTime.reset();
 
@@ -182,11 +191,20 @@ public class AutoDetectAutonomous extends LinearOpMode {
         intake.setLiftTargetPosition(700, 1);
 
         // Select which Jewel to knock off
-        if(autoProgram.equals("RedStone1")||autoProgram.equals("RedStone2")){
+        /*if(autoProgram.equals("RedStone1")||autoProgram.equals("RedStone2")){
             //Knock off jewel
-            jewel.knockOffJewel("red");
+            while(!jewel.knockOffJewel("red") && opModeIsActive());
         }else{
-            jewel.knockOffJewel("blue");
+            while(!jewel.knockOffJewel("blue") && opModeIsActive());
+        }*/
+        if(autoProgram.equals("RedStone1")){
+            while(!jewel.knockOffJewel(RED, false, true));
+        }else if(autoProgram.equals("RedStone2")){
+            while(!jewel.knockOffJewel(RED, true, true));
+        }else if(autoProgram.equals("BlueStone1")){
+            while(!jewel.knockOffJewel(BLUE, true, false));
+        }else if(autoProgram.equals("BlueStone2")){
+            while(!jewel.knockOffJewel(BLUE, true, true));
         }
 
         //bring jewel back to starting position
@@ -199,67 +217,126 @@ public class AutoDetectAutonomous extends LinearOpMode {
             vumarkSeen = vuMark.toString();
         }
 
-        //check vumark
-        if(vumarkSeen.equals("LEFT")){
-            while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+COLUMN_OFFSET, 0, 0, 18*COUNTS_PER_INCH+COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(false);
 
-        }else if(vumarkSeen.equals("RIGHT")){
-            while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST-COLUMN_OFFSET, 0, 0, 18*COUNTS_PER_INCH-COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+        if(autoProgram.equals("RedStone1")){
+            //check vumark
+            if(vumarkSeen.equals("LEFT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+COLUMN_OFFSET, 0, 0, 18*COUNTS_PER_INCH+COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
 
-        }else{
-            while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+            }else if(vumarkSeen.equals("RIGHT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST-COLUMN_OFFSET, 0, 0, 18*COUNTS_PER_INCH-COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
 
-        }
+            }else{
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
 
-        depositGlyphs(4*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 200);
+            }
+            //Deposit preloaded glyph
+            depositGlyphs(4*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 200);
 
-        //Pivot to face Glyph Pit
-        while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
+            //Pivot to face Glyph Pit
+            while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
 
-        if(vumarkSeen.equals("RIGHT")){
-            getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 43, DEFAULT_MIN_POWER, .4);
-        }else{
-            getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
-        }
-
-        //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
-        if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
             if(vumarkSeen.equals("RIGHT")){
+                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 43, DEFAULT_MIN_POWER, .4);
+            }else{
+                getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+            }
+
+            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                if(vumarkSeen.equals("RIGHT")){
+                    depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 200);
+                }else{
+                    depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 898);
+                }
+
+                //pivot to face the glyph pit
+                while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
+
+            }
+
+            drive.resetEncoders();
+            if(vumarkSeen.equals("LEFT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
+
+            }else if(!vumarkSeen.equals("RIGHT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET+5.7*COUNTS_PER_INCH, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, .4, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
+
+            }
+
+            getGlyphs(28*COUNTS_PER_INCH, 28*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+
+            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                if(vumarkSeen.equals("RIGHT")){
+                    depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH,105, 898);
+                }else if(!vumarkSeen.equals("LEFT")){
+                    depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 0, 200);
+                }else{
+                    depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 75, 200);
+                }
+            }else{
+                while(drive.moveIMU(drive.getEncoderDistance(), 32*COUNTS_PER_INCH, 14*COUNTS_PER_INCH, 0, 30*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+
+                drive.stop();
+            }
+        }else if(autoProgram.equals("BlueStone1")){
+            //check vumark and drive to the target cryptobox column
+            if(vumarkSeen.equals("LEFT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST-COLUMN_OFFSET + BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH+COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+
+            }else if(vumarkSeen.equals("RIGHT")){
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+COLUMN_OFFSET+BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH-COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+
+            }else{
+                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
+
+            }
+
+            //Deposit preloaded glyph
+            depositGlyphs(7*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 200);
+
+            //Pivot to face glyph pit
+            while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
+
+            //Get glyphs from pit
+            if(vumarkSeen.equals("LEFT")){
+                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 43, DEFAULT_MIN_POWER, .4);
+            }else{
+                getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+            }
+
+            //Deposit glyphs from first trip to glyph pit
+            if(vumarkSeen.equals("LEFT")){
                 depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 200);
             }else{
-                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 898);
+                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 898);
             }
 
-            //pivot to face the glyph pit
             while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
 
-        }
+            drive.resetEncoders();
 
-        drive.resetEncoders();
-        if(vumarkSeen.equals("LEFT")){
-            while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-        }else if(!vumarkSeen.equals("RIGHT")){
-            while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET+5.7*COUNTS_PER_INCH, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, .4, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-        }
-
-        getGlyphs(28*COUNTS_PER_INCH, 28*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
-
-        //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
-        if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
             if(vumarkSeen.equals("RIGHT")){
-                depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH,105, 898);
+                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
+
             }else if(!vumarkSeen.equals("LEFT")){
-                depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 0, 200);
-            }else{
-                depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 75, 200);
+                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET+10*COUNTS_PER_INCH, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, .4, 180, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
+
             }
-        }else{
-            while(drive.moveIMU(drive.getEncoderDistance(), 32*COUNTS_PER_INCH, 14*COUNTS_PER_INCH, 0, 30*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+            //Go to glyph pit to get second round of glyphs
+            getGlyphs(28*COUNTS_PER_INCH, 22*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+            if(!vumarkSeen.equals("LEFT")){
+                depositGlyphs(8*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 75, 200);
+            }else{
+                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 80, 898);
+            }
 
             drive.stop();
         }
+
+
 
 
 
@@ -1652,12 +1729,19 @@ public class AutoDetectAutonomous extends LinearOpMode {
     public void initVuforia(){
         telemetry.addData("Init", "Starting Vuforia");
         telemetry.update();
+
+        android.hardware.Camera cam = android.hardware.Camera.open();
+        android.hardware.Camera.Parameters p = cam.getParameters();
+        p.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
+        cam.setParameters(p);
+        cam.startPreview();
+
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         parameters.vuforiaLicenseKey = "ATXxmRr/////AAAAGdfeAuU6SEoFkpmhG616inkbnBHHQ/Ti5DMPAVykTBdmQS8ImGtoIBRRuboa+oIyuvQW1nIychXXxROjGLssEzSFF8yOYE36GqhVtRfI6lw8/HAoJpO1XgIF5Gy1vPx4KFPNInK6CJdZomYyWV8rGnb7ceLJ9Z+g0sl+VcVPKl5DAI84K+06pEZnw+Em7sThhzyzj2p4QbPhXh7fEtNGhFCqey9rcg3h9RfNebyWvJW9z7mGkaJljZy1x3lK7viLbFKyFcAaspZZi1+JzUmeuXxV0r+8hrCgFLPsvKQHlnYumazP9FEtm/FjCpRFF23Et77325/vuD2LRSPzve9ef4zqe6MivrLs9s8lUgd7Eo9W";
 
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
         relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
@@ -1746,15 +1830,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
     }
 
     public void autoSelectAlignment(){
-        boolean selected = false;
-        boolean selecting = true;
-        boolean aligned = false;
-        while(!selected&&!isStopRequested()){
-            //telemetry.addData("Floor Red", floor_color.red());
-            //telemetry.addData("Floor Blue", floor_color.blue());
-            //telemetry.addData("Floor HSV", floor_color.getHSV()[0]);
-            telemetry.addData("Auto Program Selected", autoProgram);
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
+        relicTrackables.activate();
+        boolean selected = false, selecting = true, aligned = false;
+        double jewelValue = 255, backValue = 255, frontValue = 255;
 
+        while(!selected&&!isStopRequested()){
+            //Check to see if selection process exit is triggered
             if(isStopRequested()){
                 selected = true;
             }
@@ -1767,73 +1849,98 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 led.turnOff();
             }
 
-            double jewelValue = ultrasonic_jewel.cmUltrasonic();
-            double backValue = ultrasonic_back.cmUltrasonic();
-            double frontValue = ultrasonic_front.cmUltrasonic();
+            //Get updated US Values
+            double jewelValueTemp = ultrasonic_jewel.cmUltrasonic();
+            double backValueTemp = ultrasonic_back.cmUltrasonic();
+            double frontValueTemp = ultrasonic_front.cmUltrasonic();
+
+            //Filter out 255 values
+            if(jewelValueTemp != 255){
+                jewelValue = jewelValueTemp;
+            }
+            if(backValueTemp != 255){
+                backValue = backValueTemp;
+            }
+            if(frontValueTemp != 255){
+                frontValue = frontValueTemp;
+            }
+            //Show new US values
             telemetry.addData("Jewel US", jewelValue);
             telemetry.addData("Back US", backValue);
             telemetry.addData("Front US", frontValue);
-            telemetry.addData("Aligned", aligned);
-            telemetry.addData("Red Stone 1", "DPad-Up");
-            telemetry.addData("Red Stone 2", "DPad-Left");
-            telemetry.addData("Blue Stone 1", "DPad-Down");
-            telemetry.addData("Blue Stone 2", "DPad-Right");
 
-            if(jewelValue != 255 && backValue != 255 && selecting){
+
+
+            //Determine which stone the robot is on
+            if(selecting){
 
                 if(floor_color.red() > 35 && floor_color.getHSV()[0] < 30){
                     if(frontValue > 60 && backValue <= 40){
-                        if(jewelValue == 36 && backValue == 37) {
-                            autoProgram = "RedStone1";
-                            aligned = true;
-                        }else{
-                            autoProgram = "RedStone1";
-                            aligned = false;
-                        }
+                        autoProgram = "RedStone1";
                     }
                     if(frontValue > 60 && backValue > 90){
-                        if(jewelValue == 36 && frontValue == 93){
-                            aligned = true;
-                            autoProgram = "RedStone2";
-                        }else{
-                            autoProgram = "RedStone2";
-                            aligned = false;
-                        }
+                        autoProgram = "RedStone2";
 
                     }
                 }else if (floor_color.getHSV()[0] > 200){
                     if(frontValue < 50 && backValue > 60){
-                        if(jewelValue == 36 && frontValue == 38){
-                            autoProgram = "BlueStone1";
-                            aligned = true;
-                        }else{
-                            autoProgram = "BlueStone1";
-                            aligned = false;
-                        }
+                        autoProgram = "BlueStone1";
                     }
                     if(frontValue > 100 && (backValue > 85 && backValue < 150)){
-                        if(jewelValue == 36 && backValue == 93){
-                            autoProgram = "BlueStone2";
-                            aligned = true;
-                        }else{
-                            autoProgram = "BlueStone2";
-                            aligned = false;
-                        }
+                        autoProgram = "BlueStone2";
                     }
                 }
             }
 
-            if(autoProgram.equals("RedStone2") && jewelValue == 36 && backValue > 75 && frontValue == 93 && selecting){
-                aligned = true;
-                led.turnOn();
-            }else if(autoProgram.equals("BlueStone2") && jewelValue == 36 && frontValue > 75 && backValue == 93 && selecting){
-                aligned = true;
-                led.turnOn();
-            }else if (autoProgram.equals("BlueStone2") || autoProgram.equals("RedStone2") && selecting){
-                aligned = false;
-                led.turnOff();
-            }
+            telemetry.addData("Auto Program Selected", autoProgram);
 
+
+            //Check if robot is aligned
+            //If robot is aligned, the LEDs will turn on
+            if(autoProgram.equals("RedStone1")){
+                if(jewelValue == 36 && backValue == 37){
+                    aligned = true;
+                    led.turnOn();
+                }else{
+                    aligned = false;
+                    led.turnOff();
+                }
+            }
+            if(autoProgram.equals("RedStone2")){
+                if(jewelValue == 36 && frontValue == 93){
+                    aligned = true;
+                    led.turnOn();
+                }else{
+                    aligned = false;
+                    led.turnOff();
+                }
+            }
+            if(autoProgram.equals("BlueStone1")){
+                if(jewelValue == 36 && frontValue == 38){
+                    aligned = true;
+                    led.turnOn();
+                }else{
+                    aligned = false;
+                    led.turnOff();
+                }
+            }
+            if(autoProgram.equals("BlueStone2")){
+                if(jewelValue == 36 && backValue == 93){
+                    aligned = true;
+                    led.turnOn();
+                }else{
+                    aligned = false;
+                    led.turnOff();
+                }
+            }
+            telemetry.addData("Aligned", aligned);
+
+
+            telemetry.addData("Red Stone 1", "DPad-Up");
+            telemetry.addData("Red Stone 2", "DPad-Left");
+            telemetry.addData("Blue Stone 1", "DPad-Down");
+            telemetry.addData("Blue Stone 2", "DPad-Right");
+            //Controls to override selection
             if(gamepad1.dpad_up || gamepad1.dpad_down || gamepad1.dpad_right || gamepad1.dpad_left){
                 selecting = false;
                 if(gamepad1.dpad_up){
@@ -1850,12 +1957,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     selected = true;
                 }
             }
-            if(backValue==255 || jewelValue == 255){
-
-            }else{
-                telemetry.update();
-            }
+            //Update US values and alignment status
+            telemetry.update();
         }
+        if(autoProgram.equals("RedStone1") || autoProgram.equals("RedStone2")){ alliance = RED;}
+        else{ alliance = BLUE; }
         led.turnOff();
     }
 
@@ -1870,11 +1976,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
         telemetry.addData("Init", "IMU Instantiated");
         telemetry.update();
     }
+
     public void glyphWiggle(double center, double offset){
         while(drive.pivotIMU(center+15, -90, .3, .25, 5, 0, Direction.FASTEST)&&opModeIsActive());
         while(drive.pivotIMU(center-15, -90, .3, .25, 5, 0, Direction.FASTEST)&&opModeIsActive());
         while(drive.pivotIMU(center, -90, .3, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
     }
+
     public void getGlyphs(double forwardDistance, double backupDistance, double backUpAngle, double forwardMin, double backwardMin){
         //intake glyphs
         intake.secureGlyph();
@@ -1908,6 +2016,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         while(drive.moveIMU(drive.getEncoderDistance(), backupDistance, 15*COUNTS_PER_INCH, 0, 23*COUNTS_PER_INCH, DEFAULT_MAX_POWER, backwardMin, backUpAngle, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
 
     }
+
     public void depositGlyphs(double depositDistance, double comeBackDistance, double depositAngle, int depositLiftPosition){
         lift.setTargetPosition(depositLiftPosition);
         while(drive.pivotIMU(depositAngle, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());

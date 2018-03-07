@@ -40,7 +40,7 @@ public class TwoPointJewelArmTest extends LinearOpMode {
             float[] hsv = colorSensor.getHSV();
             telemetry.addData("HSV", hsv[0]);
             jewel.readColor(10);
-            jewel.knockOffJewel("blue");
+            //jewel.knockOffJewel("blue");
             telemetry.update();
         }
     }
