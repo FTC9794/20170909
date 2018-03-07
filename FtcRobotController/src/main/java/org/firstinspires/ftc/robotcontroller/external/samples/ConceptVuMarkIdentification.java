@@ -126,6 +126,7 @@ public class ConceptVuMarkIdentification extends LinearOpMode {
         telemetry.update();
         waitForStart();
 
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
         relicTrackables.activate();
 
         while (opModeIsActive()) {
