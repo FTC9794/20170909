@@ -6,8 +6,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.DataLogger;
+import org.firstinspires.ftc.teamcode.Enums.Alliance;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
+
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.BLUE;
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.RED;
+import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
 
 /**
  * Created by Sarthak on 10/12/2017.
@@ -17,14 +22,14 @@ public class TwoPointJewelArm implements IJewel {
     Servo panServo, tiltServo;
     IColorSensor color;
     Telemetry telemetry;
-    String ballColor;
+    Alliance ballColor;
 
     public TwoPointJewelArm(Servo ServoP, Servo ServoT, IColorSensor color, Telemetry telemetry){
         this.panServo = ServoP;
         this.tiltServo = ServoT;
         this.color = color;
         this.telemetry = telemetry;
-        this.ballColor = "";
+        this.ballColor = UNKNOWN;
     }
 
     @Override
@@ -35,54 +40,79 @@ public class TwoPointJewelArm implements IJewel {
         for(int i = 0; i < readings; i++){
             if(hsv >= 340 || hsv <= 30){
                 redCount++;
-                //telemetry.addData("Color", "red");
             }else if (hsv >= 150 || hsv <= 225){
                 blueCount++;
-                //telemetry.addData("Color", "blue");
             }else{
-                //telemetry.addData("Color", "Unknown");
             }
         }
         if(blueCount > redCount){
             //telemetry.addData("Color", "blue");
-            this.ballColor = "blue";
+            this.ballColor = BLUE;
             return "blue";
         }else if (redCount > blueCount){
             //telemetry.addData("Color", "Red");
-            this.ballColor = "red";
+            this.ballColor = RED;
             return "red";
         }else{
             //telemetry.addData("Color", "Unknown");
-            this.ballColor = "unknown";
+            this.ballColor = UNKNOWN;
             return "unknown";
         }
     }
 
     @Override
-    public boolean knockOffJewel(String alliance) {
-        tilt(0.21);
-        if(alliance.equals("blue")){
-            if(ballColor.equals("blue")){
-                while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+    public boolean knockOffJewel(Alliance alliance, boolean isLeftFast, boolean isRightFast) {
+        if(alliance == BLUE){
+            if(ballColor == BLUE){
+                if(this.panServo.getPosition() < 0.7){
+                    if(isRightFast){
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }else{
-                while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                if(panServo.getPosition() > 0.3) {
+                    if(isLeftFast){
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }
-        }else if(alliance.equals("red")){
-            if(ballColor.equals("red")){
-                while(this.panServo.getPosition() < 0.7){
-                    this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+        }else if(alliance == RED){
+            if(alliance == RED){
+                if(this.panServo.getPosition() < 0.7){
+                    if(isRightFast) {
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
+                    }else{
+                        this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }else{
-                while(panServo.getPosition() > 0.3) {
-                    this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                if(panServo.getPosition() > 0.3) {
+                    if(isLeftFast){
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
+                    }else {
+                        this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
+                    }
+                    return false;
+                }else{
+                    return true;
                 }
             }
+        }else{
+            return true;
         }
-        return true;
     }
 
     private void tilt(double tiltPosition){

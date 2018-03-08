@@ -109,7 +109,7 @@ public class ConceptVuMarkIdentification extends LinearOpMode {
          * Here we chose the back (HiRes) camera (for greater range), but
          * for a competition robot, the front camera might be more convenient.
          */
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
         /**
@@ -126,6 +126,7 @@ public class ConceptVuMarkIdentification extends LinearOpMode {
         telemetry.update();
         waitForStart();
 
+        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
         relicTrackables.activate();
 
         while (opModeIsActive()) {
