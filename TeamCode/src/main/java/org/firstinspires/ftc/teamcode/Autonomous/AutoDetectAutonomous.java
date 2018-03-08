@@ -382,7 +382,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
             drive.resetEncoders();
 
-            //Deposit preloaded glyph
+            /*//Deposit preloaded glyph
             lift.setTargetPosition(200);
             lift.setPower(1);
             //drive into cryptobox
@@ -399,7 +399,10 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.resetEncoders();
             while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
 
-            drive.resetEncoders();
+            drive.resetEncoders();*/
+
+            depositGlyphsFarStone(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 0, 200);
+
             //Strafe towards middle of the field
             if(vumarkSeen.equals("RIGHT")){
                 while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15*COUNTS_PER_INCH - COLUMN_OFFSET), 0, 0, 14 * COUNTS_PER_INCH, .75,
@@ -2328,5 +2331,24 @@ public class AutoDetectAutonomous extends LinearOpMode {
         drive.resetEncoders();
         while(drive.moveIMU(drive.getEncoderDistance(), comeBackDistance, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle+180, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
 
+    }
+
+    public void depositGlyphsFarStone(double depositDistance, double comeBackDistance, double depositAngle, double depositOrientation, int depositLiftPosition){
+        //Deposit glyphs into cryptobox column
+        lift.setTargetPosition(depositLiftPosition);
+        lift.setPower(1);
+        //drive into cryptobox
+        drive.resetEncoders();
+        while (drive.moveIMU(drive.getEncoderDistance(), depositDistance, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle, DEFAULT_PID, depositOrientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
+            telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+            telemetry.update();
+        }
+        //deposit glyph
+        intake.dispenseGlyph();
+        timer.reset();
+        while (timer.milliseconds() < 250 && opModeIsActive()) ;
+        //Back away from cryptobox
+        drive.resetEncoders();
+        while (drive.moveIMU(drive.getEncoderDistance(), comeBackDistance, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle+180, DEFAULT_PID, depositOrientation, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
     }
 }
