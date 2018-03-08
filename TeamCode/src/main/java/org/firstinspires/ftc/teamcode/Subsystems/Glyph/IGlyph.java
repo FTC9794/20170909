@@ -6,18 +6,12 @@ package org.firstinspires.ftc.teamcode.Subsystems.Glyph;
 
 public interface IGlyph {
     //Intake and gain possession glyph
-    boolean secureGlyph();
+    void secureGlyph();
 
     //Release glyph into cryptobox
-    boolean dispenseGlyph();
+    void dispenseGlyph();
 
-    /**
-     * Adjust the height of the glyph
-     * @param power The power the glyph handler will move at to adjust position
-     * @param condition When the glyph handler will stop moving
-     */
-    boolean changeHeight(double power, boolean condition);
 
-    boolean turnOff();
+    void turnOff();
 
 }

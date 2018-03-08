@@ -49,12 +49,12 @@ public class DualWheelIntake implements IGlyph {
     }
 
     @Override
-    public boolean secureGlyph() {
+    public void secureGlyph() {
         rightWheel1.setPower(INTAKE_SPPED);
         rightWheel2.setPower(INTAKE_SPPED);
         leftWheel1.setPower(INTAKE_SPPED);
         leftWheel2.setPower(INTAKE_SPPED);
-        return true;
+
     }
     public boolean secureGlyph1(){
         rightWheel1.setPower(INTAKE_SPPED);
@@ -72,12 +72,12 @@ public class DualWheelIntake implements IGlyph {
         return true;
     }
     @Override
-    public boolean dispenseGlyph() {
+    public void dispenseGlyph() {
         rightWheel1.setPower(OUTTAKE_SPEED);
         rightWheel2.setPower(OUTTAKE_SPEED);
         leftWheel1.setPower(OUTTAKE_SPEED);
         leftWheel2.setPower(OUTTAKE_SPEED);
-        return true;
+
     }
 
     public boolean setIntakePower(double leftPower, double rightPower){
@@ -96,7 +96,7 @@ public class DualWheelIntake implements IGlyph {
         return true;
     }
 
-    @Override
+
     public boolean changeHeight(double power, boolean condition) {
         if(condition){
             lift.setPower(power);
@@ -107,8 +107,8 @@ public class DualWheelIntake implements IGlyph {
     }
 
     @Override
-    public boolean turnOff() {
-        return false;
+    public void turnOff() {
+
     }
 
     public boolean setLiftPower(double power){

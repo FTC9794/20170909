@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSensor;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
+import org.firstinspires.ftc.teamcode.Subsystems.Glyph.IGlyph;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.BoschIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.Jewel.TwoPointJewelArm;
@@ -48,7 +49,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
     //create sensor interface variables
     BNO055IMU boschIMU;
-    DualWheelIntake intake;
+    IGlyph intake;
     ClawThreePoint relic;
     IColorSensor jewelColor;
     IColorSensor floor_color;
@@ -185,7 +186,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //Turn on the Intake and Raise the Lift to snap in arms the arms
         intake.secureGlyph();
-        intake.setLiftTargetPosition(200, 1);
+        lift.setPower(1);
+        lift.setTargetPosition(200);
 
         //Move jewel to position and read color
         jewel.setPanTiltPos(0.5, 0.21);
@@ -198,7 +200,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //read jewel color and lift the lift even higher
         jewel.readColor(5);
-        intake.setLiftTargetPosition(700, 1);
+        lift.setTargetPosition(700);
 
         // Select which Jewel to knock off
         if(autoProgram.equals("RedStone1")){
