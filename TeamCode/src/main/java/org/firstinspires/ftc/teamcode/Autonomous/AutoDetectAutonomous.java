@@ -166,12 +166,22 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //Reset counters, timers, and activate Vuforia
         led.turnOff();
-//        relicTrackables.activate();
         timer.reset();
         gameTime.reset();
 
         //Reset drive encoders
         drive.resetEncoders();
+
+        //Read VuMark and determine drive distance and column
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+
+        if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+            vumarkSeen = vuMark.toString();
+        }
+
+        if(vumarkSeen.equals("")){
+            com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
+        }
 
         //Turn on the Intake and Raise the Lift to snap in arms the arms
         intake.secureGlyph();
@@ -191,12 +201,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
         intake.setLiftTargetPosition(700, 1);
 
         // Select which Jewel to knock off
-        /*if(autoProgram.equals("RedStone1")||autoProgram.equals("RedStone2")){
-            //Knock off jewel
-            while(!jewel.knockOffJewel("red") && opModeIsActive());
-        }else{
-            while(!jewel.knockOffJewel("blue") && opModeIsActive());
-        }*/
         if(autoProgram.equals("RedStone1")){
             while(!jewel.knockOffJewel(RED, false, true));
         }else if(autoProgram.equals("RedStone2")){
@@ -210,15 +214,21 @@ public class AutoDetectAutonomous extends LinearOpMode {
         //bring jewel back to starting position
         jewel.setPanTiltPos(0.5, 1);
 
-        //Read VuMark and determine drive distance and column
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
+        if(vumarkSeen.equals("")) {
+            //Read VuMark and determine drive distance and column
+            vuMark = RelicRecoveryVuMark.from(relicTemplate);
 
-        if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
-            vumarkSeen = vuMark.toString();
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+                vumarkSeen = vuMark.toString();
+            }
         }
 
         com.vuforia.CameraDevice.getInstance().setFlashTorchMode(false);
-
+/*
+**************************************************************************************************************************************
+***********************************************     RED STONE 1     *************************************************************
+***************************************************************************************************************************************
+ */
         if(autoProgram.equals("RedStone1")){
             //check vumark
             if(vumarkSeen.equals("LEFT")){
@@ -272,15 +282,21 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 if(vumarkSeen.equals("RIGHT")){
                     depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH,105, 898);
                 }else if(!vumarkSeen.equals("LEFT")){
-                    depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 0, 200);
+                    depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 90, 200);
                 }else{
                     depositGlyphs(8*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 75, 200);
                 }
-            }else{
-                while(drive.moveIMU(drive.getEncoderDistance(), 32*COUNTS_PER_INCH, 14*COUNTS_PER_INCH, 0, 30*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+            }else {
+                while (drive.moveIMU(drive.getEncoderDistance(), 32 * COUNTS_PER_INCH, 14 * COUNTS_PER_INCH, 0, 30 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
+                    ;
 
                 drive.stop();
             }
+/*
+**************************************************************************************************************************************
+***********************************************     BLUE STONE 1     *************************************************************
+***************************************************************************************************************************************
+ */
         }else if(autoProgram.equals("BlueStone1")){
             //check vumark and drive to the target cryptobox column
             if(vumarkSeen.equals("LEFT")){
@@ -302,19 +318,21 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Get glyphs from pit
             if(vumarkSeen.equals("LEFT")){
-                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 43, DEFAULT_MIN_POWER, .4);
+                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 137, DEFAULT_MIN_POWER, .4);
             }else{
                 getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
             }
-
-            //Deposit glyphs from first trip to glyph pit
-            if(vumarkSeen.equals("LEFT")){
-                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 200);
-            }else{
-                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 898);
+            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
+                //Deposit glyphs from first trip to glyph pit
+                if (vumarkSeen.equals("LEFT")) {
+                    depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 75, 200);
+                } else {
+                    depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 105, 898);
+                }
+                //Pivot to face the glyph pit
+                while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
             }
-
-            while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
 
             drive.resetEncoders();
 
@@ -327,19 +345,295 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
             //Go to glyph pit to get second round of glyphs
             getGlyphs(28*COUNTS_PER_INCH, 22*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
-            if(!vumarkSeen.equals("LEFT")){
-                depositGlyphs(8*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 75, 200);
-            }else{
-                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 80, 898);
+
+            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
+                if (vumarkSeen.equals("LEFT")) {
+                    depositGlyphs(8 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 80, 898);
+                }else if(!vumarkSeen.equals("RIGHT")){
+                    depositGlyphs(8 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 80, 200);
+                }
+                else {
+                    depositGlyphs(8 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 90, 898);
+                }
             }
 
             drive.stop();
         }
+/*
+**************************************************************************************************************************************
+***********************************************     RED STONE 2     *************************************************************
+***************************************************************************************************************************************
+ */
+        else if(autoProgram.equals("RedStone2")) {
+            //Drive off of balancing stone
+            while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .5,
+                    DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            drive.resetEncoders();
+            //Drive to target cryptobox column
+            if (vumarkSeen.equals("RIGHT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH - COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            } else if (vumarkSeen.equals("LEFT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH + COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            } else
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            drive.resetEncoders();
 
+            //Deposit preloaded glyph
+            lift.setTargetPosition(200);
+            lift.setPower(1);
+            //drive into cryptobox
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()){
+                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                telemetry.update();
+            }
+            //deposit glyph
+            intake.dispenseGlyph();
+            timer.reset();
+            while(timer.milliseconds()<250&&opModeIsActive());
+            //Back away from cryptobox
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
 
+            drive.resetEncoders();
+            //Strafe towards middle of the field
+            if(vumarkSeen.equals("RIGHT")){
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15*COUNTS_PER_INCH - COLUMN_OFFSET), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            }else if(vumarkSeen.equals("LEFT")){
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15*COUNTS_PER_INCH + COLUMN_OFFSET), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            }else{
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15*COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            }
+            drive.resetEncoders();
 
+            //Pivot to face glyph pit and move along midfield line
+            while(drive.pivotIMU(-135, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
+            //Lower lift to intake glyphs
+            lift.setTargetPosition(5);
+            lift.setPower(1);
+            drive.resetEncoders();
 
+            //start up intake
+            intake.secureGlyph();
 
+            while (drive.moveIMU(drive.getEncoderDistance(), 35 * COUNTS_PER_INCH, 17.5*COUNTS_PER_INCH, 0, 35 * COUNTS_PER_INCH, 1,
+                    0.6, 170, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+
+            //Get glyphs from pit
+            //Move into Glyph Pit
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 9*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 9*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -135, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+
+            //Wait for glyphs to come into the robot
+            timer.reset();
+            while(opModeIsActive()&&timer.milliseconds()<250){
+
+            }
+
+            //check if glyph in bottom arms of robot
+            if (bottomGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                led.setLEDPower(1);
+            }else{
+                glyphWiggle(-135, 15);
+                timer.reset();
+                while(timer.milliseconds()<250&&opModeIsActive());
+            }
+            drive.resetEncoders();
+            lift.setTargetPosition(96);
+
+            //back up from pit
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 9*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 9*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 45, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+
+            //Move along midfield line towards cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 35 * COUNTS_PER_INCH, 17*COUNTS_PER_INCH, 0, 14 * COUNTS_PER_INCH, .75,
+                    0.6, 10, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+
+            //Pivot to face cryptobox
+            while(drive.pivotIMU(0, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.CLOCKWISE)&&opModeIsActive());
+
+            //Strafe to left column
+            drive.resetEncoders();
+            /*while (drive.moveIMU(drive.getEncoderDistance(), 3*COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .6,
+                    0.4, 90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+*/
+            drive.resetEncoders();
+            //Deposit glyphs into column
+            if(!vumarkSeen.equals("LEFT")){
+                //Deposit preloaded glyph
+                lift.setTargetPosition(200);
+                lift.setPower(1);
+                //drive into cryptobox
+                drive.resetEncoders();
+                while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()){
+                    telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                    telemetry.update();
+                }
+                //deposit glyph
+                intake.dispenseGlyph();
+                timer.reset();
+                while(timer.milliseconds()<250&&opModeIsActive());
+                //Back away from cryptobox
+                drive.resetEncoders();
+                while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
+
+            }else{
+                //Deposit preloaded glyph
+                lift.setTargetPosition(898);
+                lift.setPower(1);
+                //drive into cryptobox
+                drive.resetEncoders();
+                while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()){
+                    telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                    telemetry.update();
+                }
+                //deposit glyph
+                intake.dispenseGlyph();
+                timer.reset();
+                while(timer.milliseconds()<250&&opModeIsActive());
+                //Back away from cryptobox
+                drive.resetEncoders();
+                while(drive.moveIMU(drive.getEncoderDistance(), 6*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
+
+            }
+
+            drive.stop();
+        }
+/*
+**************************************************************************************************************************************
+***********************************************     BLUE STONE 2     *************************************************************
+***************************************************************************************************************************************
+ */
+
+        else if(autoProgram.equals("BlueStone2")) {
+            //Drive off of balancing stone
+            while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .5,
+                    DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+
+            //Pivot to face cryptobox
+            while (drive.pivotIMU(180, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            drive.resetEncoders();
+
+            //Drive to target cryptobox column
+            if (vumarkSeen.equals("LEFT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH - COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, 90, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            } else if (vumarkSeen.equals("RIGHT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH + COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, 90, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            } else
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.4, 90, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            drive.resetEncoders();
+
+            //Deposit glyphs into cryptobox column
+            lift.setTargetPosition(200);
+            lift.setPower(1);
+            //drive into cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
+                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                telemetry.update();
+            }
+            //deposit glyph
+            intake.dispenseGlyph();
+            timer.reset();
+            while (timer.milliseconds() < 250 && opModeIsActive()) ;
+            //Back away from cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
+
+            //Strafe towards middle of the field
+            if (vumarkSeen.equals("LEFT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15 * COUNTS_PER_INCH - COLUMN_OFFSET), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            } else if (vumarkSeen.equals("RIGHT")) {
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15 * COUNTS_PER_INCH + COLUMN_OFFSET), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            } else {
+                while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH - (15 * COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            }
+
+            //pivot to face glyph pit
+            while (drive.pivotIMU(-35, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive())
+                ;
+            lift.setTargetPosition(5);
+            lift.setPower(1);
+            drive.resetEncoders();
+
+            //Move along midfield line towards glyph pit
+            //start up intake
+            intake.secureGlyph();
+            while (drive.moveIMU(drive.getEncoderDistance(), 35 * COUNTS_PER_INCH, 17.5 * COUNTS_PER_INCH, 0, 35 * COUNTS_PER_INCH, 1,
+                    0.6, 10, DEFAULT_PID, 135, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+
+            //Move into Glyph Pit
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -35, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+
+            //Wait for glyphs to come into the robot
+            timer.reset();
+            while (opModeIsActive() && timer.milliseconds() < 250) {
+
+            }
+
+            //check if glyph in bottom arms of robot
+            if (bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
+                led.setLEDPower(1);
+            } else {
+                glyphWiggle(-35, 15);
+                timer.reset();
+                while (timer.milliseconds() < 250 && opModeIsActive()) ;
+            }
+            drive.resetEncoders();
+            lift.setTargetPosition(96);
+
+            //back up from pit
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 145, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+
+            //Move along midfield line towards cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 35 * COUNTS_PER_INCH, 17 * COUNTS_PER_INCH, 0, 14 * COUNTS_PER_INCH, .75,
+                    0.6, -170, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+
+            //Pivot to face cryptobox
+            while (drive.pivotIMU(180, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.CLOCKWISE) && opModeIsActive()) ;
+
+            drive.resetEncoders();
+            //Deposit glyphs into column
+            if(!vumarkSeen.equals("RIGHT")){
+                lift.setTargetPosition(200);
+                lift.setPower(1);
+            }else{
+                lift.setTargetPosition(898);
+                lift.setPower(1);
+            }
+            //drive into cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
+                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                telemetry.update();
+            }
+            //deposit glyph
+            intake.dispenseGlyph();
+            timer.reset();
+            while (timer.milliseconds() < 250 && opModeIsActive()) ;
+            //Back away from cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
+
+            drive.resetEncoders();
+        }
 
 
 
@@ -1830,7 +2124,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
     }
 
     public void autoSelectAlignment(){
-        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
         relicTrackables.activate();
         boolean selected = false, selecting = true, aligned = false;
         double jewelValue = 255, backValue = 255, frontValue = 255;
