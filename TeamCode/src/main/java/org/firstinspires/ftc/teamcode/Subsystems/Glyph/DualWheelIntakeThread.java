@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.Subsystems.Glyph;
 
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Enums.GlyphIntakeState;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
 
@@ -20,7 +22,7 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
     CRServo servo1, servo2;
     boolean running;
     ElapsedTime glyphTimer;
-    RevRangeSensor intakeSensor;
+    LynxI2cColorRangeSensor intakeSensor;
     boolean glyphSeen = false;
     Telemetry telemetry;
 
@@ -31,7 +33,7 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
      * @param intakeSensor The sensor that will detect whether a glyph is inside the intake
      * @param telemetry Used for debugging
      */
-    public DualWheelIntakeThread(CRServo servo1, CRServo servo2, RevRangeSensor intakeSensor, Telemetry telemetry){
+    public DualWheelIntakeThread(CRServo servo1, CRServo servo2, LynxI2cColorRangeSensor intakeSensor, Telemetry telemetry){
         //set parameters to local variables
         this.servo1 = servo1;
         this.servo2 = servo2;
@@ -62,10 +64,10 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
                 case INTAKE_MOTOR:
 
                     //determine if glyph is inside mechanism
-                    if(intakeSensor.cmDistance()<GLYPH_SEEN_DISTANCE&&!glyphSeen){
+                    if(intakeSensor.getDistance(DistanceUnit.CM)<GLYPH_SEEN_DISTANCE&&!glyphSeen){
                         glyphSeen = true;
                         glyphTimer.reset();
-                    }else if(intakeSensor.cmDistance()>GLYPH_SEEN_DISTANCE){
+                    }else if(intakeSensor.getDistance(DistanceUnit.CM)>GLYPH_SEEN_DISTANCE){
                         glyphSeen = false;
                     }
 
@@ -89,7 +91,7 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
                 case INTAKE_NO_MOTOR:
 
                     //determine whether a glyph is still in the intake
-                    if(intakeSensor.cmDistance()>6){
+                    if(intakeSensor.getDistance(DistanceUnit.CM)>6){
                         //go to the state which will turn the motors on
                         state = GlyphIntakeState.INTAKE_MOTOR;
                     }else{
@@ -131,5 +133,9 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
         servo1.setPower(0);
         servo2.setPower(0);
         running = false;
+    }
+
+    public GlyphIntakeState getState(){
+        return state;
     }
 }

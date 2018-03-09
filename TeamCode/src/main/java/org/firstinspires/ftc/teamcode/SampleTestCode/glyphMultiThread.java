@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
 public class glyphMultiThread extends LinearOpMode {
     CRServo rightWheel1, rightWheel2, leftWheel1, leftWheel2;
     LynxI2cColorRangeSensor glyphSensor1, glyphSensor2;
-    RevRangeSensor glyphColor1, glyphColor2;
+    LynxI2cColorRangeSensor glyphColor1, glyphColor2;
     DualWheelIntakeThread bottomIntake, topIntake;
     Thread topIntakethread, bottomIntakeThread;
     boolean xPressed;
@@ -38,8 +38,8 @@ public class glyphMultiThread extends LinearOpMode {
         glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
         glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
 
-        glyphColor1 = new RevRangeSensor(glyphSensor1);
-        glyphColor2 = new RevRangeSensor(glyphSensor2);
+        //glyphColor1 = new RevRangeSensor(glyphSensor1);
+        //glyphColor2 = new RevRangeSensor(glyphSensor2);
 
         bottomIntake = new DualWheelIntakeThread(rightWheel1, leftWheel1, glyphColor1, telemetry);
         topIntake = new DualWheelIntakeThread(rightWheel2, leftWheel2, glyphColor2, telemetry);

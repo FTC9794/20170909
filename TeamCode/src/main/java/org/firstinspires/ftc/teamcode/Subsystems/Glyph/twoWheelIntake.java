@@ -21,28 +21,25 @@ public class twoWheelIntake implements IGlyph {
         this.outtakePower = outtakePower;
     }
     @Override
-    public boolean secureGlyph() {
+    public void secureGlyph() {
         left.setPower(intakePower);
         right.setPower(intakePower);
-        return true;
     }
 
     @Override
-    public boolean dispenseGlyph() {
+    public void dispenseGlyph() {
         left.setPower(outtakePower);
         right.setPower(outtakePower);
-        return true;
+
     }
 
-    @Override
     public boolean changeHeight(double power, boolean condition) {
         return false;
     }
 
     @Override
-    public boolean turnOff() {
+    public void turnOff() {
         left.setPower(0);
         right.setPower(0);
-        return true;
     }
 }
