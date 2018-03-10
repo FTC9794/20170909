@@ -392,7 +392,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
             drive.resetEncoders();
             //Pivot to face cryptobox
-            while (drive.pivotIMU(15, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            while (drive.pivotIMU(15, 0, .4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             //Deposit glyphs into cryptobox column
             lift.setTargetPosition(200);
             lift.setPower(1);
