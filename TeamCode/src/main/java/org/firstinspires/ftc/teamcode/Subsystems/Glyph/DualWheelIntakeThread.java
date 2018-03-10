@@ -39,6 +39,7 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
         this.servo2 = servo2;
         this.intakeSensor = intakeSensor;
         this.telemetry = telemetry;
+
         //initialize objects and variables
         state = GlyphIntakeState.NOTHING;
         glyphTimer = new ElapsedTime();
@@ -91,7 +92,7 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
                 case INTAKE_NO_MOTOR:
 
                     //determine whether a glyph is still in the intake
-                    if(intakeSensor.getDistance(DistanceUnit.CM)>6){
+                    if(intakeSensor.getDistance(DistanceUnit.CM)>GLYPH_SEEN_DISTANCE){
                         //go to the state which will turn the motors on
                         state = GlyphIntakeState.INTAKE_MOTOR;
                     }else{

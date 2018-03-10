@@ -57,8 +57,9 @@ public class glyphMultiThread extends LinearOpMode {
         topIntakethread.start();
         bottomIntakeThread.start();
 
-
-        while(!isStopRequested()){
+        topIntake.secureGlyph();
+        //topIntake.secureGlyph();
+/*        while(!isStopRequested()){
             if(gamepad1.x){
                 bottomIntake.secureGlyph();
                 topIntake.secureGlyph();
@@ -73,7 +74,7 @@ public class glyphMultiThread extends LinearOpMode {
             }
 
 
-        }
+        }*/
         bottomIntake.stop();
         topIntake.stop();
 
