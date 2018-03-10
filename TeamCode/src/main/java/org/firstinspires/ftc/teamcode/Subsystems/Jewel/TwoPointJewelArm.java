@@ -62,57 +62,58 @@ public class TwoPointJewelArm implements IJewel {
 
     @Override
     public boolean knockOffJewel(Alliance alliance, boolean isLeftFast, boolean isRightFast) {
-        if(alliance == BLUE){
-            if(ballColor == BLUE){
-                if(this.panServo.getPosition() < 0.7){
-                    if(isRightFast){
+        if (alliance == BLUE) {
+            if (ballColor == BLUE) {
+                if (this.panServo.getPosition() < 0.7) {
+                    if (isRightFast) {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
-                    }else{
+                    } else {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
                     }
                     return false;
-                }else{
+                } else {
                     return true;
                 }
-            }else{
-                if(panServo.getPosition() > 0.3) {
-                    if(isLeftFast){
+            } else if (ballColor == RED) {
+                if (panServo.getPosition() > 0.3) {
+                    if (isLeftFast) {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
-                    }else{
+                    } else {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
                     }
                     return false;
-                }else{
+                } else {
                     return true;
                 }
             }
-        }else if(alliance == RED){
-            if(alliance == RED){
-                if(this.panServo.getPosition() < 0.7){
-                    if(isRightFast) {
+        } else if (alliance == RED) {
+            if (ballColor == RED) {
+                if (this.panServo.getPosition() < 0.7) {
+                    if (isRightFast) {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
-                    }else{
+                    } else {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
                     }
                     return false;
-                }else{
+                } else {
                     return true;
                 }
-            }else{
-                if(panServo.getPosition() > 0.3) {
-                    if(isLeftFast){
+            } else if (ballColor == BLUE) {
+                if (panServo.getPosition() > 0.3) {
+                    if (isLeftFast) {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
-                    }else {
+                    } else {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
                     }
                     return false;
-                }else{
+                } else {
                     return true;
                 }
             }
-        }else{
+        } else {
             return true;
         }
+        return false;
     }
 
     private void tilt(double tiltPosition){

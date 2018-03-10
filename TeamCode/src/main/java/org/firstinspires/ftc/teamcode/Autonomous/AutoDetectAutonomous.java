@@ -90,15 +90,15 @@ public class AutoDetectAutonomous extends LinearOpMode {
     double vuMarkDistance = 36;
 
     final double DEFAULT_MAX_POWER = .75;
-    final double DEFAULT_MIN_POWER = .2;
+    final double DEFAULT_MIN_POWER = .25;
     final double DEFAULT_ERROR_DISTANCE = 10;
     final double[] DEFAULT_PID = {.05};
     final double DEFAULT_MIN_POWER_PIVOT = .15;
 
 
 
-    final double SPIN_START = 0;
-    final double SPIN_ROTATED = .95;
+    final double SPIN_START = 0.825;
+    final double SPIN_ROTATED = 0;
 
     final double RELIC_CLAW_CLOSED = 1;
     final double RELIC_CLAW_OPENED = 0;
@@ -159,6 +159,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         //Finish init
         telemetry.addData("Init", "Finished");
         telemetry.addData("Auto Program Selected", autoProgram);
+        telemetry.addData("Alliance", alliance);
         telemetry.update();
         led.setLEDPower(0.2);
 
@@ -194,8 +195,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
         //Turn on the Intake and Raise the Lift to snap in arms the arms
         bottomIntake.secureGlyph();
-        lift.setPower(1);
         lift.setTargetPosition(200);
+        lift.setPower(1);
 
         //Move jewel to position and read color
         jewel.setPanTiltPos(0.5, 0.21);
@@ -207,8 +208,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
         }
 
         //read jewel color and lift the lift even higher
-        jewel.readColor(5);
+        jewel.readColor(10);
         lift.setTargetPosition(700);
+        lift.setPower(1);
 
         // Select which Jewel to knock off
         if(autoProgram.equals("RedStone1")){
@@ -234,6 +236,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         }
 
         com.vuforia.CameraDevice.getInstance().setFlashTorchMode(false);
+        relicTrackables.deactivate();
 /*
 **************************************************************************************************************************************
 ***********************************************     RED STONE 1     *************************************************************
@@ -252,7 +255,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             }
             //Deposit preloaded glyph
-            depositGlyphs(4*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 200);
+            depositGlyphs(4*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 75, 500);
 
             //Pivot to face Glyph Pit
             while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
@@ -321,16 +324,16 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //Deposit preloaded glyph
-            depositGlyphs(7*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 200);
+            depositGlyphs(7*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 105, 500);
 
             //Pivot to face glyph pit
             while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST)&&opModeIsActive());
 
             //Get glyphs from pit
             if(vumarkSeen.equals("LEFT")){
-                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 137, DEFAULT_MIN_POWER, .4);
+                getGlyphs(28*COUNTS_PER_INCH, 32*COUNTS_PER_INCH, 137, 0.4, .4);
             }else{
-                getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+                getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, 0.4, 0.4);
             }
             //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
             if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
@@ -354,7 +357,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             }
             //Go to glyph pit to get second round of glyphs
-            getGlyphs(28*COUNTS_PER_INCH, 22*COUNTS_PER_INCH, 90, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER);
+            getGlyphs(28*COUNTS_PER_INCH, 22*COUNTS_PER_INCH, 90, 0.4, 0.4);
 
             //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
             if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
@@ -394,12 +397,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Pivot to face cryptobox
             while (drive.pivotIMU(15, 0, .4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             //Deposit glyphs into cryptobox column
-            lift.setTargetPosition(200);
+            lift.setTargetPosition(300);
             lift.setPower(1);
 
             //drive into cryptobox
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 4 * COUNTS_PER_INCH, 0, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
+            while (drive.moveIMU(drive.getEncoderDistance(), 5 * COUNTS_PER_INCH, 0, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
                 telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
                 telemetry.update();
             }
@@ -409,7 +412,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while (timer.milliseconds() < 250 && opModeIsActive()) ;
             //Back away from cryptobox
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 7 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
             drive.resetEncoders();
 
             lift.setTargetPosition(898);
@@ -440,7 +443,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Move into Glyph Pit
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -135, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, -135, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
 
             //Wait for glyphs to come into the robot
             timer.reset();
@@ -469,13 +472,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     0.6, 0, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
 
             //Pivot to face cryptobox
-            while (drive.pivotIMU(15, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.COUNTERCLOCKWISE) && opModeIsActive()) ;
+            while (drive.pivotIMU(15, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
             drive.resetEncoders();
 
             drive.resetEncoders();
             //Deposit glyphs into column
-            if(!vumarkSeen.equals("RIGHT")){
+            if(!vumarkSeen.equals("LEFT")){
                 lift.setTargetPosition(200);
                 lift.setPower(1);
             }else{
@@ -529,13 +532,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Drive to target cryptobox column
             if (vumarkSeen.equals("LEFT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 20 * COUNTS_PER_INCH - COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
             } else if (vumarkSeen.equals("RIGHT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 20 * COUNTS_PER_INCH + COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH + COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
             } else
-                while (drive.moveIMU(drive.getEncoderDistance(), 20 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.4, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
             drive.resetEncoders();
 
@@ -543,7 +546,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while (drive.pivotIMU(165, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
             //Deposit glyphs into cryptobox column
-            lift.setTargetPosition(200);
+            lift.setTargetPosition(300);
             lift.setPower(1);
 
             //drive into cryptobox
@@ -592,7 +595,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Move into Glyph Pit
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -45, DEFAULT_PID, -45, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, -45, DEFAULT_PID, -45, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
 
             //Wait for glyphs to come into the robot
             timer.reset();
@@ -663,7 +666,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while (drive.moveIMU(drive.getEncoderDistance(), 12 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, .8, .65, 90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
             drive.stop();
             //Pivot to face Relic
-            while (drive.pivotIMU(20, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            while (drive.pivotIMU(20, 0, 0.4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
         }
 
@@ -2155,6 +2158,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         relic_arm.setPosition(0);
         pan.setPosition(0.5);
         tilt.setPosition(1);
+        spin.setPosition(SPIN_START);
     }
 
     public void autoSelectAlignment(){
@@ -2272,15 +2276,19 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 selecting = false;
                 if(gamepad1.dpad_up){
                     autoProgram = "RedStone1";
+                    alliance = RED;
                     selected = true;
                 }else if(gamepad1.dpad_left){
                     autoProgram = "RedStone2";
+                    alliance = RED;
                     selected = true;
                 }else if(gamepad1.dpad_down){
                     autoProgram = "BlueStone1";
+                    alliance = BLUE;
                     selected = true;
                 }else if(gamepad1.dpad_right){
                     autoProgram = "BlueStone2";
+                    alliance = BLUE;
                     selected = true;
                 }
             }
