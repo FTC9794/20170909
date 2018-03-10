@@ -110,6 +110,11 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
                     servo2.setPower(-.7);
                     break;
             }
+            try {
+                Thread.sleep(75);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
         }
     }
