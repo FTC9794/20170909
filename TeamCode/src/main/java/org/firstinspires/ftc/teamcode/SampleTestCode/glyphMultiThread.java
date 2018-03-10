@@ -35,8 +35,8 @@ public class glyphMultiThread extends LinearOpMode {
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //Hardware Map Color Sensors
-        glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
-        glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
+        glyphColor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
+        glyphColor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
 
         //glyphColor1 = new RevRangeSensor(glyphSensor1);
         //glyphColor2 = new RevRangeSensor(glyphSensor2);
