@@ -9,14 +9,21 @@ import java.util.Arrays;
  */
 
 public class MRRangeSensor implements IUltrasonic {
+    //Create ultrasonic
     private ModernRoboticsI2cRangeSensor ultrasonic;
+    //Create instance variables
     private boolean firstRead = false;
     private double prevValue, currentValue;
 
+    //Constructor
     public MRRangeSensor(ModernRoboticsI2cRangeSensor ultrasonic){
         this.ultrasonic = ultrasonic;
     }
 
+    /**
+     * Returns the distance read by the sensor
+     * @return the distance in centimeters, as a double type
+     */
     @Override
     public double cmDistance() {
         if(!firstRead){
@@ -27,11 +34,15 @@ public class MRRangeSensor implements IUltrasonic {
             prevValue = currentValue;
         }
         return currentValue;
-        //return smoothMedian();
     }
 
+    //Returns the optical distance from the sensor (for close-up targets)
     public double opticalDistance() { return ultrasonic.cmOptical(); }
 
+    /**
+     * Sensor filter that calculates the median value of five sensor readings
+     * @return the filtered ultrasonic value as an integer
+     */
     private int smoothMedian(){
         double[] values = new double[5];
         for(int i = 0; i < values.length; i++){
@@ -48,6 +59,13 @@ public class MRRangeSensor implements IUltrasonic {
         return (int) median;
     }
 
+    /**
+     * Low pass sensor filter to reduce the effect of spikes in the data
+     * @param sensorReading current value the sensor returned
+     * @param filterValue gain to multiply the reading by
+     * @param smoothedValue previous filtered value from sensor
+     * @return
+     */
     private int lowPass(double sensorReading, double filterValue, double smoothedValue){
         if(filterValue >= 1){
             filterValue = 0.99;

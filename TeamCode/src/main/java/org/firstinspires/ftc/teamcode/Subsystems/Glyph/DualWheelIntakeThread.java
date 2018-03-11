@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
 
 public class DualWheelIntakeThread implements Runnable, IGlyph {
 
+    //Constant for the distance to detect when a glyph is in the robot's possession
     final double GLYPH_SEEN_DISTANCE = 6;
 
     //Create objects to be used in thread

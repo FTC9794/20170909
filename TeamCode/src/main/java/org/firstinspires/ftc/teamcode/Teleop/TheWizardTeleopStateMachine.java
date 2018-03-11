@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.GamepadPlus;
-import org.firstinspires.ftc.teamcode.Handiness;
+import org.firstinspires.ftc.teamcode.Enums.Handiness;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 
 import java.util.ArrayList;

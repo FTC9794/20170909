@@ -88,11 +88,13 @@ public class NavxIMU implements IIMU {
         this.offset = offset;
     }
 
+    //Set the current position as 0
     @Override
     public void setAsZero() {
         navX.zeroYaw();
     }
 
+    //Initialize imu parameters
     @Override
     public void initialize() {
 

@@ -201,8 +201,10 @@ public class MecanumDriveTrain implements IDrivetrain {
     @Override
     public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double rampDownEnd, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctionTime) {
 
+        //get the difference between the target position and the current position
         double positionDifference = targetPosition - currentPosition;
 
+        //If the robot is within the window of error for distance movements, stop motors
         if(Math.abs(positionDifference)<=allowableDistanceError){
             this.stop();
 
@@ -214,85 +216,61 @@ public class MecanumDriveTrain implements IDrivetrain {
 
         }else{
 
+            //Calculate the difference between the target position and the position the robot begins to ramp down
             double rampDownDifference = targetPosition - rampDownTargetPosition;
             double rampDownEndDifference = targetPosition - rampDownEnd;
+            //Calculate robot power
             double power;
             if(rampDownEndDifference>=Math.abs(positionDifference)) {
                 power = lowPower;
-            }else if(rampDownDifference>Math.abs(positionDifference)){
+            }else if(rampDownDifference>Math.abs(positionDifference)){ //Find the speed based on the speed of the robot's slope and distance traveled
                 power = (Math.abs(positionDifference)-rampDownDifference)*((maxPower-lowPower)/(rampDownDifference-rampDownEndDifference))+maxPower;
             }else{
                 power = maxPower;
             }
 
+            //Calculate orientation corrections
+            //Get the current imu angle
             double currentAngle = imu.getZAngle(endOrientationAngle);
+            //Calculate angle at which to slide at
             moveAngle = moveAngle - currentAngle;
+            //Correct for IMU discontinuity
             if(moveAngle <= -180){
                 moveAngle+=360;
             }
             if(positionDifference<0){
                 moveAngle+=180;
             }
+            //Calculate the x vector for movement
             double horizontal = Utilities.round2D(calculateX(moveAngle, power));
+            //Calculate the y vector for movement
             double vertical = Utilities.round2D(calculateY(moveAngle, power));
+            //Calculate the correction to maintain the robot's orientation
             double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
+            //Calculate individual motor speeds
             rawSlide(horizontal, vertical, pivotCorrection, power);
         }
+        //Check if the robot has corrected for the desired amount of time
         if(targetReached&&distanceCorrectionTimer.milliseconds()>=correctionTime){
             this.stop();
             targetReached = false;
             return false;
         }else{
             return true;
-        }/*
-        if(currentPosition < targetPosition){
-            double currentAngle = imu.getZAngle(endOrientationAngle);
-            moveAngle = moveAngle - currentAngle;
-            if(moveAngle <= -180){
-                moveAngle+=360;
-            }
-            double power;
-            //ramp up ramp, down or stay flat power
-            if(currentPosition<rampUpTargetPosition){
-                power = (maxPower-lowPower)/(rampUpTargetPosition)*currentPosition+lowPower;
-            }else if(currentPosition>rampDownTargetPosition){
-                power = (lowPower-maxPower)/(targetPosition-rampDownTargetPosition)*(currentPosition-rampDownTargetPosition)+maxPower;
-            }else{
-                power = maxPower;
-            }
-
-            double horizontal = Utilities.round2D(calculateX(moveAngle, power));
-            double vertical = Utilities.round2D(calculateY(moveAngle, power));
-            double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
-            rawSlide(horizontal, vertical, pivotCorrection, power);
-        } else if(currentPosition >= targetPosition){
-            double currentAngle = imu.getZAngle(endOrientationAngle);
-            moveAngle = moveAngle - endOrientationAngle + 180;
-            if(moveAngle <= -180){
-                moveAngle+=360;
-            }
-            double power;
-            //ramp up ramp, down or stay flat power
-            power  = lowPower;
-            double horizontal = Utilities.round2D(calculateX(moveAngle, power));
-            double vertical = Utilities.round2D(calculateY(moveAngle, power));
-            double pivotCorrection = ((currentAngle - endOrientationAngle) * PIDGain[0]);
-            rawSlide(horizontal, vertical, pivotCorrection, power);
         }
-        if(!targetReached&&currentPosition<targetPosition+allowableDistanceError&&currentPosition>targetPosition){
-            targetReached = true;
-            distanceCorrectionTimer.reset();
-            return true;
-        }
-        if(targetReached&&distanceCorrectionTimer.milliseconds()>=correctionTime){
-            this.stop();
-            targetReached = false;
-            return false;
-        }else{
-            return true;
-        }*/
     }
 
+    /**
+     *
+     * @param desiredAngle The angle to which to pivot to
+     * @param rampDownAngle The angle at which to start slowing down
+     * @param maxPower The max power to pivot at
+     * @param minPower The min power to pivot at
+     * @param correctionAngleError
+     * @param correctionTime The amount of time to spend correcting to stay within the desired range
+     * @param direction
+     * @return true if the action has been completed, false if the robot is still pivoting
+     */
     @Override
     public boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionAngleError, double correctionTime, Direction direction) {
         double currentAngle = imu.getZAngle(desiredAngle);

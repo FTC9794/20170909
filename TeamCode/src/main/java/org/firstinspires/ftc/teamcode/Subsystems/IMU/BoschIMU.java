@@ -84,6 +84,7 @@ public class BoschIMU implements IIMU {
     @Override
     public double getZVelo() { return imu.getVelocity().zVeloc; }
 
+    //Calibrate IMU
     @Override
     public void calibrate() {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -95,6 +96,7 @@ public class BoschIMU implements IIMU {
         File file = AppUtil.getInstance().getSettingsFile(filename);
         ReadWriteFile.writeFile(file, calibrationData.serialize());
     }
+    //Intialize IMU Parameters
     @Override
     public void initialize(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -107,11 +109,13 @@ public class BoschIMU implements IIMU {
         imu.initialize(parameters);
     }
 
+    //Set an offset
     @Override
     public void setOffset(double offset) {
         this.offset = offset;
     }
 
+    //Set the current position to 0
     @Override
     public void setAsZero() {
         offset = -imu.getAngularOrientation().firstAngle;

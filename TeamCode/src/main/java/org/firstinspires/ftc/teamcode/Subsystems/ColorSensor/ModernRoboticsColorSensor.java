@@ -9,37 +9,63 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  */
 
 public class ModernRoboticsColorSensor implements IColorSensor {
+    //Create color sensor
     ColorSensor color;
 
+    //Constructor for MR Color Sensor class
     public ModernRoboticsColorSensor(ColorSensor color){
         this.color = color;
     }
 
+    /**
+     * Returns the red value from the sensor reading
+     * @return the red value as an integer
+     */
     @Override
     public int red() {
         return color.red();
     }
 
+    /**
+     * Returns the green value from the sensor reading
+     * @return the green value as an integer
+     */
     @Override
     public int green() {
         return color.green();
     }
 
+    /**
+     * Returns the blue value from the sensor reading
+     * @return the blue value as an integer
+     */
     @Override
     public int blue() {
         return color.blue();
     }
 
+    /**
+     * Returns the hue value from the sensor reading
+     * @return the hue value as an integer
+     */
     @Override
     public int getHue() {
         return color.argb();
     }
 
+    /**
+     * Returns the alpha value from the sensor reading
+     * @return the alpha value as an integer
+     */
     @Override
     public int alpha() {
         return color.alpha();
     }
 
+    /**
+     * Collects the HSV (Hue, Saturation, Value) and returns all three values in the form of a float array
+     * @return the HSV value within a float array
+     */
     @Override
     public float[] getHSV() {
         float[] hsv = {0F, 0F, 0F};
