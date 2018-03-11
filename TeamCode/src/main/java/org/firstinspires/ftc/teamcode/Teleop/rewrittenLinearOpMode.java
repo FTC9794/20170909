@@ -36,6 +36,7 @@ import java.util.List;
 public class rewrittenLinearOpMode extends LinearOpMode {
     //hardware to be used on robot
     DcMotor lf, lb, rf, rb, lift, relic_extension;
+    List<DcMotor> motors;
     CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
     Servo spin, pan, tilt, relic_claw, relic_arm, relic_tilt;
     BNO055IMU boschIMU;
@@ -54,6 +55,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     //variables tracking different values of sensors, inputs and positions
     double pitch, roll, pivot;
     double xPowerBalance, yPowerBalance;
+    double balanceAngle;
     int liftPosition;
 
     //enum for the glyph lift states
@@ -78,9 +80,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     rewritten.intakeState lowerIntakeState;
     rewritten.intakeState upperIntakeState;
 
-
-    List<DcMotor> motors;
-    double balanceAngle;
     //toggle variables
     boolean yPressed = false;
     boolean aPressed = false;
@@ -88,8 +87,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     boolean bPressed = false;
 
     //information of hardware variables
-    boolean spined = false;
-    boolean rotateLower = false;
+    boolean glyphIntakeRotated = false;
+    boolean lowerLiftAfterRotating = false;
     boolean clawClosed = true;
     boolean intaking = false;
     boolean intakePressed = false;
@@ -220,7 +219,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             bottomIntakeStateMachine();
             topIntakeStateMachine();
-
+            rotateStateMachine();
             controlLEDS();
             relicControls();
 
@@ -275,11 +274,13 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         telemetry.update();
     }
     public void setMotorBehaviors(){
+        //add motors to a list
         motors = new ArrayList<>();
         motors.add(rf);
         motors.add(rb);
         motors.add(lf);
         motors.add(lb);
+
         //reset motor encoders
         rf.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rb.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -307,6 +308,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
+
         //Set servo behaviors
         leftWheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         rightWheel1.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -576,7 +578,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     drive.resetEncoders();
                     driveState = driveStates.MANUAL;
                 }
-        }
+        }//end of drivetrain state machine
 
         //set variable for toggle to whether b is pressed or not
         bPressed = gamepad1.b;
@@ -589,7 +591,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             case NOTHING:
 
                 //Check if the right bumper or if the up and down eject buttons are pressed and the spin is the right orientation to go to the outake state
-                if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
+                if(gamepad1.right_bumper||(!glyphIntakeRotated&&gamepad1.dpad_down)||(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.OUTAKE;
 
                 //If the robot is intaking, move to the intake state
@@ -597,7 +599,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     lowerIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake1Time.reset();
 
-                    //Turn off the motors if not changing states
+                //Turn off the motors if not changing states
                 }else{
                     bottomIntake.turnOff();
                 }
@@ -611,12 +613,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     lowerIntakeState = rewritten.intakeState.INTAKE_NO_MOTOR;
 
                     //if moving to the intake no motor state and the bottom intake is on the bottom then lift the lift to get glyphs off the ground
-                    if(!spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
+                    if(!glyphIntakeRotated&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
                         liftPosition = LIFT_INTAKEN_POSITION;
                     }
 
                     //otherwise if the right bumper is pressed or the up or down dpad based on how the mechanism is spun, move to the outake state and set intaking to false
-                }else if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
+                }else if(gamepad1.right_bumper||(!glyphIntakeRotated&&gamepad1.dpad_down)||(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
@@ -644,7 +646,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     intake1Time.reset();
 
                     //if the right bumper is pressed or the dpad up or down depending on the intake orientation, the robot will stop intaking and this intake will move to the outake state
-                }else if(gamepad1.right_bumper||(!spined&&gamepad1.dpad_down)||(spined&&gamepad1.dpad_up)){
+                }else if(gamepad1.right_bumper||(!glyphIntakeRotated&&gamepad1.dpad_down)||(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
@@ -662,7 +664,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             case OUTAKE:
 
                 //if one of the outake buttons is not held down, then the robot will move into the nothing state
-                if(!gamepad1.right_bumper&&!(!spined&&gamepad1.dpad_down)&&!(spined&&gamepad1.dpad_up)){
+                if(!gamepad1.right_bumper&&!(!glyphIntakeRotated&&gamepad1.dpad_down)&&!(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.NOTHING;
 
                     //otherwise, the robot will outake a glyph
@@ -680,117 +682,194 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             case NOTHING:
 
                 //Check if the right bumper or if the up and down eject buttons are pressed and the spin is the right orientation to go to the outake state
-                if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
+                if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
 
                 //If the robot is intaking, move to the intake state
                 }else if (intaking) {
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
+
+                //Turn off the motors if not changing states
                 }else{
                     topIntake.turnOff();
                 }
                 break;
 
+            //intake motor state for top intake state machine
             case INTAKE_MOTOR:
+
+                //if there is a glyph in this intake and it has seen that glyph for more milliseconds than the glyph visible time then change to the intake no motor state
                 if(glyphColor2.cmDistance() < GLYPH_GRAB_DISTANCE&&intake2Time.milliseconds()>GLYPH_VISIBLE_TIME){
                     upperIntakeState= rewritten.intakeState.INTAKE_NO_MOTOR;
-                    if(spined&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
+
+                    //lift the lift barely off the ground if this intake is the bottom intake to prevent the glyph from falling out
+                    if(glyphIntakeRotated&&lift.getCurrentPosition()<LIFT_INTAKEN_POSITION){
                         liftPosition = LIFT_INTAKEN_POSITION;
                     }
-                }else if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
+
+                //If the outake buttons are pressed, then move to the outake state and set the robot as not intaking
+                }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
+
+                //If the robot is no longer intaking then move to the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
+
+                //if the robot does not have a glyph, then reset the timer and turn on the motors
                 }else if(glyphColor2.cmDistance() > GLYPH_GRAB_DISTANCE){
                     intake2Time.reset();
                     topIntake.secureGlyph();
+
+                //if the robot has a glyph then don't reset the timer to determine how long it has had it for and keep running the motors
                 }else{
                     topIntake.secureGlyph();
                 }
                 break;
+
+            //intake no motor state is used when a glyph is in the robot, the wheels are off, but the robot is still intaking
             case INTAKE_NO_MOTOR:
+
+                //if a glyph is no longer in the intake, go to the intake motor state to turn the wheels back on
                 if(glyphColor2.cmDistance()>GLYPH_GRAB_DISTANCE){
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
-                }else if(gamepad1.right_bumper||(spined&&gamepad1.dpad_down)||(!spined&&gamepad1.dpad_up)){
+
+                //if an eject button is pressed, move into the outake state
+                }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
+
+                //if the robot is no longer intaking, move into the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
+
+                //otherwise turn off the motor and wait for an event to happen so that the wheels and glyph inside the robot do not wear out
                 }else{
                     topIntake.turnOff();
                 }
                 break;
+
+            //outake state for ejecting glyphs
             case OUTAKE:
-                if(!gamepad1.right_bumper&&!(spined&&gamepad1.dpad_down)&&!(!spined&&gamepad1.dpad_up)){
+
+                //determine if all of the outake buttons are not pressed, if they are all not pressed, move to the nothing state
+                if(!gamepad1.right_bumper&&!(glyphIntakeRotated&&gamepad1.dpad_down)&&!(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.NOTHING;
+
+                //if any of them are pressed, outake
                 }else{
                     topIntake.dispenseGlyph();
                 }
                 break;
-        }
+        }//end of bottom intake state machine
+
+    }
+
+
+    public void rotateStateMachine(){
+        //rotate state machine is used to automatically lift our glyph lift to a safe height, rotate our intake mechanism and lower the lift
         switch(rotateState){
+
+            //in the stop state, nothing is movine
             case STOPPED:
-                if(spined){
+
+                //check whether the intake is rotated or not and set the servo position based on that
+                if(glyphIntakeRotated){
                     spin.setPosition(SPIN_SPUN_POSITION);
                 }else{
                     spin.setPosition(SPIN_NORMAL_POSITION);
                 }
+
+                //if the left bumper is pressed and the glyph lift isn't being manually controlled then begin the rotating proceedure
                 if(gamepad2.left_bumper&&liftState!= glyphLiftStates.MANUAL){
+
+                    //if the glyph lift is below the safe height for rotating, move into the lifting state and set variable to lower lift after finished rotating
                     if(liftPosition < GLYPH_ROTATE_POSITION){
                         rotateState = glyphRotateStates.LIFTING;
                         liftPosition = GLYPH_ROTATE_POSITION+LIFT_POSITION_OFFSET;
-                        rotateLower = true;
+                        lowerLiftAfterRotating = true;
+
+                    //if the glyph lift is above the safe height for rotating, move into the rotating state without lifting and don't lower lift after done rotating
                     }else{
                         rotateState = glyphRotateStates.ROTATING;
-                        spined = !spined;
+                        glyphIntakeRotated = !glyphIntakeRotated;
                         rotateTime.reset();
-                        rotateLower = false;
+                        lowerLiftAfterRotating = false;
                     }
                 }
                 break;
+
+            //lifting state used to lift glyph lift to safe position to rotate
             case LIFTING:
+
+                //if the driver takes control of the lift, stop the rotating procedure
                 if(liftState == glyphLiftStates.MANUAL){
                     rotateState = glyphRotateStates.STOPPED;
                 }
+
+                //if the lift is above the rotating position, move into the rotating state and set the variable appropriately
                 if(lift.getCurrentPosition()>=GLYPH_ROTATE_POSITION){
                     rotateState = glyphRotateStates.ROTATING;
-                    spined = !spined;
+                    glyphIntakeRotated = !glyphIntakeRotated;
                     rotateTime.reset();
                 }
                 break;
+
+            //rotating state used for rotating intake
             case ROTATING:
+
+                //determine if it has been enough time for the intake to rotate
                 if(rotateTime.milliseconds()>ROTATE_TIME){
-                    if(rotateLower){
+
+                    //if the lift needs to lower after rotating, go to the lowering state
+                    if(lowerLiftAfterRotating){
                         rotateState = glyphRotateStates.LOWERING;
                         liftPosition = 0;
+
+                    //if the lift does not need to lower after rotating, go to the stopped state
                     }else{
                         rotateState = glyphRotateStates.STOPPED;
                     }
+
+                //if the driver takes control of the glyph lift, stop rotating procedure
                 }else if(liftState == glyphLiftStates.MANUAL){
                     rotateState = glyphRotateStates.STOPPED;
-                }else if(spined){
+
+                //move the servo to the desired position based on the variable set when leaving previous state to come to rotating state
+                }else if(glyphIntakeRotated){
                     spin.setPosition(SPIN_SPUN_POSITION);
                 }else{
                     spin.setPosition(SPIN_NORMAL_POSITION);
                 }
                 break;
+
+            //lowering state is to bring lift to ground after it has finished rotating
             case LOWERING:
+
+                //if the lift has reached the desired position or the driver has taken control of the glyph lift then the robot will go into the stopped state
                 if(lift.getCurrentPosition()<LIFT_POSITION_OFFSET||liftState == glyphLiftStates.MANUAL){
                     rotateState = glyphRotateStates.STOPPED;
                 }
         }
     }
+
+
     public void controlLEDS(){
-        if(spined){
+
+        //determine which intake is on the bottom
+        if(glyphIntakeRotated){
+
+            //if upper intake on bottom and upper intake has a glyph then turn on lights
             if(upperIntakeState== rewritten.intakeState.INTAKE_NO_MOTOR){
                 leds.setLEDPower(.5);
             }else{
                 leds.setLEDPower(0);
             }
         }else{
+
+            //if bottom intake on bottom and bottom intake has a glyph then turn on lights
             if(lowerIntakeState== rewritten.intakeState.INTAKE_NO_MOTOR){
                 leds.setLEDPower(.5);
             }else{
@@ -807,17 +886,17 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.extend(RELIC_ARM_EXTENSION_HALF_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2200);
         }
 
+        //relic retraction controls with encoder limits
         if(gamepad2.right_bumper){
             relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
         }else{
             relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
         }
 
+        //if nothing is being pressed, don't extend or retract
         if(!gamepad2.dpad_up && !gamepad2.dpad_down){
             relic.extensionPowerZero();
         }
-
-        telemetry.addData("relic extension position", relic_extension.getCurrentPosition());
 
         //check if the button is pressed and it wasn't pressed in the last loop cycle
         if(gamepad2.x&&!xPressed){
@@ -838,6 +917,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             xPressed = false;
         }
 
+        //set relic to preset positions based on different buttons
         if(gamepad2.dpad_left){
             relic.setArmPosition(RELIC_ARM_GRAB_POS);
         }else if(gamepad1.a){
@@ -849,7 +929,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.setTiltPosition(0.6);
             relic.setArmPosition(0.6);
         }
-        //Relic Arm Servo Controls
+
+        //Relic Arm Servo Controls to keep relic always standing regardless of the angle the arm is at
         if (relic.returnArmPos()< .4) {
             relic.adjustArm((-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1), 0.05);
             relic.adjustArm((-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04), -0.05);
