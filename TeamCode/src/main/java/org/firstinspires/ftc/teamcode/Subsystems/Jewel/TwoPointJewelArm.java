@@ -19,12 +19,19 @@ import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
  */
 
 public class TwoPointJewelArm implements IJewel {
+    //hardware and information used by the jewel object
     Servo panServo, tiltServo;
     IColorSensor color;
     Telemetry telemetry;
     Alliance ballColor;
 
+    //constants for the position at which the jewel pan should be when the jewel is knocked off either left or right
+    final double POSITION_RIGHT_KNOCK = .7;
+    final double POSITION_LEFT_KNOCK = .3;
+
     public TwoPointJewelArm(Servo ServoP, Servo ServoT, IColorSensor color, Telemetry telemetry){
+
+        //set parameters of constructor to hardware in object
         this.panServo = ServoP;
         this.tiltServo = ServoT;
         this.color = color;
@@ -32,12 +39,24 @@ public class TwoPointJewelArm implements IJewel {
         this.ballColor = UNKNOWN;
     }
 
+    /**
+     *
+     * @param readings How many times the ball will be read
+     * @return String of the color seen
+     */
     @Override
     public String readColor(int readings) {
+
+        //initialize variables to count the amount of times red has been seen vs. blue
         int blueCount = 0, redCount = 0;
-        float hsv = color.getHSV()[0];
-        //telemetry.addData("HSV", hsv);
+
+        //repeat the readings
         for(int i = 0; i < readings; i++){
+
+            //get an HSV reading of the ball
+            float hsv = color.getHSV()[0];
+
+            //determine if it is red or blue
             if(hsv >= 340 || hsv <= 30){
                 redCount++;
             }else if (hsv >= 150 || hsv <= 225){
@@ -45,50 +64,84 @@ public class TwoPointJewelArm implements IJewel {
             }else{
             }
         }
+
+        //compare the red counts vs. the blue counts to determine whether a blue or red ball is being seen
         if(blueCount > redCount){
-            //telemetry.addData("Color", "blue");
             this.ballColor = BLUE;
             return "blue";
         }else if (redCount > blueCount){
-            //telemetry.addData("Color", "Red");
             this.ballColor = RED;
             return "red";
         }else{
-            //telemetry.addData("Color", "Unknown");
             this.ballColor = UNKNOWN;
             return "unknown";
         }
     }
 
+    /**
+     *
+     * @param alliance The alliance color of the robot
+     * @param isLeftFast Whether to knock the jewel off fast if it needs to knock off the left
+     * @param isRightFast Whether to knock the jewel off fast if it needs to knock off the right
+     * @return Return true when method is complete or false if it isn't complete
+     */
     @Override
     public boolean knockOffJewel(Alliance alliance, boolean isLeftFast, boolean isRightFast) {
+        //determine which alliance the robot is on
         if (alliance == BLUE) {
+
+            //if blue alliance check if blue ball
             if (ballColor == BLUE) {
-                if (this.panServo.getPosition() < 0.7) {
+
+                //determine if servo has moved enough
+                if (this.panServo.getPosition() < POSITION_RIGHT_KNOCK) {
+
+                    //move servo at different speed depending on parameter
                     if (isRightFast) {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
                     } else {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.001, 0.22);
                     }
+
+                    //return false since the servo is not at the desired position yet
                     return false;
                 } else {
+                    //return true when the servo is at the desired position
                     return true;
                 }
+
+            //if blue alliance and ball is red
             } else if (ballColor == RED) {
-                if (panServo.getPosition() > 0.3) {
+                //check servo to see if at desired position
+                if (panServo.getPosition() > POSITION_LEFT_KNOCK) {
+
+                    //move either fast or slow depending on parameters
                     if (isLeftFast) {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
                     } else {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.001, 0.22);
                     }
+
+                    //return false since servo is not at the desired position yet
                     return false;
                 } else {
+                    //return true when the servo is at the desired position
                     return true;
                 }
+            }else{
+                //return true because ball color must be unknown
+                return true;
             }
+
+        //if alliance is red
         } else if (alliance == RED) {
+            //if red alliance check if red ball
             if (ballColor == RED) {
-                if (this.panServo.getPosition() < 0.7) {
+
+                //check servo to see if at desired position
+                if (this.panServo.getPosition() < POSITION_RIGHT_KNOCK) {
+
+                    //move either fast or slow depending on parameters
                     if (isRightFast) {
                         this.setPanTiltPos(this.panServo.getPosition() + 0.005, 0.22);
                     } else {
@@ -98,8 +151,13 @@ public class TwoPointJewelArm implements IJewel {
                 } else {
                     return true;
                 }
+
+            //Check to see if ball read was blue so need to knock off ball read
             } else if (ballColor == BLUE) {
-                if (panServo.getPosition() > 0.3) {
+                //check servo to see if at desired position
+                if (panServo.getPosition() > POSITION_LEFT_KNOCK) {
+
+                    //move either fast or slow depending on parameters
                     if (isLeftFast) {
                         this.setPanTiltPos(this.panServo.getPosition() - 0.005, 0.22);
                     } else {
@@ -109,19 +167,37 @@ public class TwoPointJewelArm implements IJewel {
                 } else {
                     return true;
                 }
+            }else{
+                //return true to stop method because ball color must be unknown
+                return true;
             }
         } else {
+            //return true because alliance must be null
             return true;
         }
-        return false;
+
     }
 
+    /**
+     *
+     * @param tiltPosition set the tilt position of the jewel tilt servo
+     */
     private void tilt(double tiltPosition){
         tiltServo.setPosition(tiltPosition);
     }
 
+    /**
+     *
+     * @param panPosition set the pan position of the jewel pan servo
+     */
     private void pan(double panPosition) { panServo.setPosition(panPosition); }
 
+    /**
+     *
+     * @param panPosition The position at which to move the pan servo
+     * @param tiltPosition The position at which to move the tilt servo
+     * @return Return true since method is complete as soon as it is run
+     */
     public boolean setPanTiltPos(double panPosition, double tiltPosition){
         pan(panPosition);
         tilt(tiltPosition);
