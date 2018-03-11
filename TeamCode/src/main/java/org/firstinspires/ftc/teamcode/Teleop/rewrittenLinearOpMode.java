@@ -112,7 +112,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double DRIVE_LOW_SPEED = .5;
     final double DESIRED_Y_BALANCE_ANGLE = -.75;
     final double DESIRED_X_BALANCE_ANGLE = -2.25;
-    final double BALANCE_GAIN = .02;
+    final double BALANCE_GAIN = .015;
 
     //constant for gamepads
     final double ANALOG_PRESSED = .2;
@@ -147,6 +147,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     ClawThreePoint relic;
     MecanumDriveTrain drive;
 
+
+    /*
+**************************************************************************************************************************************
+**********************************************     PROGRAM STARTS HERE     *************************************************************
+***************************************************************************************************************************************
+ */
     @Override
     public void runOpMode() throws InterruptedException {
 

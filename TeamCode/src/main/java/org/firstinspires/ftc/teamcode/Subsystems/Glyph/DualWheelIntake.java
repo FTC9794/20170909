@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 /**
  * Created by Sarthak on 11/11/2017.
  */
-
+@Deprecated
 public class DualWheelIntake implements IGlyph {
     private CRServo rightWheel1, leftWheel1, rightWheel2, leftWheel2;
     private Servo spin;

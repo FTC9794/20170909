@@ -5,5 +5,9 @@ package org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor;
  */
 
 public interface IUltrasonic {
+    /**
+     * Gets the range reading in centimeters
+     * @return the distance in centimeters
+     */
     public double cmDistance();
 }

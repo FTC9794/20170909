@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 /**
  * Created by Sarthak on 10/28/2017.
  */
-
+@Deprecated
 public class FourArmRotatingGlyph implements  IGlyph {
 
     private Servo right1, right2, left1, left2, spin;

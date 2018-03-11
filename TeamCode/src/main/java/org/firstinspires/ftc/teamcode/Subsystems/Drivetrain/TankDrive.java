@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by Sarthak on 9/24/2017.
  */
-
+@Deprecated
 public class TankDrive implements IDrivetrain {
     List<DcMotor> motors;
     IIMU imu;

@@ -11,7 +11,7 @@ public interface IGlyph {
     //Release glyph into cryptobox
     void dispenseGlyph();
 
-
+    //Turn off the intake mechanism
     void turnOff();
 
 }
