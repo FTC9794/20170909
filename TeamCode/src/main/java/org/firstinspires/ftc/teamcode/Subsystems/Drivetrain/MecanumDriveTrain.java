@@ -70,8 +70,8 @@ public class MecanumDriveTrain implements IDrivetrain {
     /**
      *
      * @param angle the angle at which the robot will pivot to in the frame of reference of the driver
-     * @param maxPower the maximum speed that the robot will travel
-     * @param lowPower the minimum speed of the robot
+     * @param maxPower the maximum speed that the robot will travel, ranging from 0.0 to 1.0
+     * @param lowPower the minimum speed of the robot, ranging from 0.0 to 1.0
      * @param timeAfterAngle the time the robot will spend to correct once +- 5 degrees away from target angle
      * @param pGain the amount of speed applied per degree the robot is away from the target angle
      * @return true if the pivot is still occurring false when it is complete
@@ -215,8 +215,8 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @param targetPosition The target position of the robot in the same unit as current position
      * @param rampDownTargetPosition Position at which the robot will start ramping down
      * @param rampUpTargetPosition Position at which the robot will stop ramping up in power
-     * @param maxPower The maximum power the robot will move at
-     * @param lowPower The lowest power the robot will move at
+     * @param maxPower The maximum power the robot will move at, ranging from 0.0 to 1.0
+     * @param lowPower The lowest power the robot will move at, ranging from 0.0 to 1.0
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
      * @param endOrientationAngle The Direction the robot is facing
@@ -288,8 +288,8 @@ public class MecanumDriveTrain implements IDrivetrain {
      * Pivots the robot to a desired angle, while using a proportional control loop to maintain the robot's drive speed
      * @param desiredAngle The angle to which to pivot to
      * @param rampDownAngle The angle at which to start slowing down
-     * @param maxPower The max power to pivot at
-     * @param minPower The min power to pivot at
+     * @param maxPower The max power to pivot at, ranging from 0.0 to 1.0
+     * @param minPower The min power to pivot at, ranging from 0.0 to 1.0
      * @param correctionAngleError
      * @param correctionTime The amount of time to spend correcting to stay within the desired range
      * @param direction

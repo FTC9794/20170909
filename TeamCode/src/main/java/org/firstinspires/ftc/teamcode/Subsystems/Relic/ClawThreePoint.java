@@ -107,8 +107,8 @@ public class ClawThreePoint implements IRelic {
     }
 
     /**
-     * Set the relic arm position
-     * @param armPosition the position to set the servo
+     * Set the relic arm position while automatically adjusting the tilt servo to keep the claw perpendicular the to ground
+     * @param armPosition the position to set the servo, ranging from 0.0 to 1.0
      */
     public void setArmPosition(double armPosition){
         double prevPosition = arm.getPosition();
@@ -126,7 +126,7 @@ public class ClawThreePoint implements IRelic {
 
     /**
      * Set the position of the tilt servo
-     * @param tiltPosition the position to set the servo
+     * @param tiltPosition the position to set the servo, ranging from 0.0 to 1.0
      */
     public void setTiltPosition(double tiltPosition){
         this.relicTiltPos = tiltPosition;
@@ -135,7 +135,7 @@ public class ClawThreePoint implements IRelic {
 
     /**
      * Extend the relic slides
-     * @param power power to extend relic at
+     * @param power power to extend relic at, ranging from 0 to 1.0
      * @param condition the condition at which the relic slides will extend
      */
     @Override
@@ -147,7 +147,7 @@ public class ClawThreePoint implements IRelic {
 
     /**
      * Retract the relic slides
-     * @param power power to retract mechanism at
+     * @param power power to retract mechanism at, ranging from -1.0 to 0
      * @param condition the condition at which the relic slides will retract
      */
     @Override
