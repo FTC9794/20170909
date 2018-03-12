@@ -13,32 +13,48 @@ import java.io.File;
  */
 
 public class BoschIMU implements IIMU {
+    //Create imu hardware
     BNO055IMU imu;
     double offset;
 
-    //Constructor
+    /**
+     * Constructor for Bosch IMU
+     * @param imu imu sensor
+     */
     public BoschIMU(BNO055IMU imu){
         this.imu = imu;
     }
 
-    //Get X Angle
+    /**
+     * Gets the angle on the x-axis
+     * @return angle on the x-axis
+     */
     @Override
     public double getXAngle() {
         return -imu.getAngularOrientation().thirdAngle - offset;
     }
 
-    //Get Y Angle
+    /**
+     * Gets the angle on the y-axis
+     * @return angle on the y-axis
+     */
     @Override
     public double getYAngle() {
         return -imu.getAngularOrientation().secondAngle - offset;
     }
 
-    //Get Z Angle
+    /**
+     * Gets the angle on the z-axis
+     * @return angle on the z-axis
+     */
     @Override
     public double getZAngle() {
         return -imu.getAngularOrientation().firstAngle - offset;
     }
-
+    /**
+     * Gets the angle on the z-axis while placing the imu discontinuity 180 degrees from the desired angle
+     * @return angle on the z-axis
+     */
     @Override
     public double getZAngle(double desiredAngle) {
         double angle = getZAngle();
@@ -50,41 +66,61 @@ public class BoschIMU implements IIMU {
         return angle;
     }
 
-    //Get X Acceleration
+    /**
+     * Gets the acceleration on the x-axis
+     * @return acceleration on the x-axis
+     */
     @Override
     public double getXAcc() {
         return imu.getAcceleration().xAccel;
     }
 
-    //Get Y Acceleration
+    /**
+     * Gets the acceleration on the y-axis
+     * @return acceleration on the y-axis
+     */
     @Override
     public double getYAcc() {
         return imu.getAcceleration().yAccel;
     }
 
-    //Get Z Acceleration
+    /**
+     * Gets the acceleration on the z-axis
+     * @return acceleration on the z-axis
+     */
     @Override
     public double getZAcc() {
         return imu.getAcceleration().zAccel;
     }
 
-    //Get X Velocity
+    /**
+     * Gets the velocity on the x-axis
+     * @return velocity on the x-axis
+     */
     @Override
     public double getXVelo() {
         return imu.getVelocity().xVeloc;
     }
 
-    //Get Y Velocity
+    /**
+     * Gets the velocity on the y-axis
+     * @return velocity on the y-axis
+     */
     @Override
     public double getYVelo() {
         return imu.getVelocity().yVeloc;
     }
 
-    //Get Z Velocity
+    /**
+     * Gets the velocity on the z-axis
+     * @return velocity on the z-axis
+     */
     @Override
     public double getZVelo() { return imu.getVelocity().zVeloc; }
 
-    //Calibrate IMU
+    /**
+     * Calibrates IMU and initializes parameters
+     */
     @Override
     public void calibrate() {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -96,7 +132,10 @@ public class BoschIMU implements IIMU {
         File file = AppUtil.getInstance().getSettingsFile(filename);
         ReadWriteFile.writeFile(file, calibrationData.serialize());
     }
-    //Intialize IMU Parameters
+
+    /**
+     * Initializes IMU parameters
+     */
     @Override
     public void initialize(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -109,13 +148,18 @@ public class BoschIMU implements IIMU {
         imu.initialize(parameters);
     }
 
-    //Set an offset
+    /**
+     * Sets an offset for the IMU angle values
+     * @param offset the offset to set
+     */
     @Override
     public void setOffset(double offset) {
         this.offset = offset;
     }
 
-    //Set the current position to 0
+    /**
+     * Set the current angle as 0
+     */
     @Override
     public void setAsZero() {
         offset = -imu.getAngularOrientation().firstAngle;
