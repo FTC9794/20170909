@@ -19,7 +19,7 @@ public interface IDrivetrain {
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
      * @param endOrientationAngle The Direction the robot is facing
-     * @return
+     * @return true if the motion is complete, false is the motion is ongoing
      */
     boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double rampDownEnd, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctiontime);
 
@@ -30,7 +30,7 @@ public interface IDrivetrain {
      * @param maxPower The max power to pivot at
      * @param minPower The min power to pivot at
      * @param correctionTime The amount of time to spend correcting to stay within the desired range
-     * @return
+     * @return true if the motion is complete, false is the motion is ongoing
      */
     boolean pivotIMU(double desiredAngle, double rampDownAngle, double maxPower, double minPower, double correctionTime, double correctionAngleError, Direction direction);
 
