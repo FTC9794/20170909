@@ -29,6 +29,13 @@ public class TwoPointJewelArm implements IJewel {
     final double POSITION_RIGHT_KNOCK = .7;
     final double POSITION_LEFT_KNOCK = .3;
 
+    /**
+     * Constructor for jewel arm with two degrees of freedom
+     * @param ServoP Servo to pan the mechanism horizontally
+     * @param ServoT Servo to tilt the mechanism vertically
+     * @param color Color sensor to detect ball color
+     * @param telemetry to display sensor values and debugging information
+     */
     public TwoPointJewelArm(Servo ServoP, Servo ServoT, IColorSensor color, Telemetry telemetry){
 
         //set parameters of constructor to hardware in object
@@ -40,7 +47,7 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     /**
-     *
+     * Reads the color of the ball
      * @param readings How many times the ball will be read
      * @return String of the color seen
      */
@@ -79,7 +86,7 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     /**
-     *
+     * Knocks off the jewel of the opposing alliance
      * @param alliance The alliance color of the robot
      * @param isLeftFast Whether to knock the jewel off fast if it needs to knock off the left
      * @param isRightFast Whether to knock the jewel off fast if it needs to knock off the right
@@ -179,7 +186,7 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     /**
-     *
+     * Sets the position of the tilt servo
      * @param tiltPosition set the tilt position of the jewel tilt servo
      */
     private void tilt(double tiltPosition){
@@ -187,13 +194,13 @@ public class TwoPointJewelArm implements IJewel {
     }
 
     /**
-     *
+     * Sets the position of the pan servo
      * @param panPosition set the pan position of the jewel pan servo
      */
     private void pan(double panPosition) { panServo.setPosition(panPosition); }
 
     /**
-     *
+     * Sets the position of the pan servo and the tilt servo
      * @param panPosition The position at which to move the pan servo
      * @param tiltPosition The position at which to move the tilt servo
      * @return Return true since method is complete as soon as it is run
