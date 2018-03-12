@@ -42,8 +42,7 @@ public class MecanumDriveTrain implements IDrivetrain {
     Telemetry telemetry;
 
     /**
-     * Constructor
-     *
+     * Constructor for Mecanum Drivetrain
      * @param motors List of motors on drivetrain in order of Right Front, Right Back, Left Front and then Left Back
      * @param imu the inertial measurement unit or gyro sensor of the robot
      */
@@ -56,7 +55,11 @@ public class MecanumDriveTrain implements IDrivetrain {
         distanceCorrectionTimer = new ElapsedTime();
     }
 
-    //No IMU Here
+    /**
+     * Construcor for Mecanum drivetrain that has no inertial measurement unit
+     * @param motors
+     * @param telemetry
+     */
     public MecanumDriveTrain(List<DcMotor> motors, Telemetry telemetry){
         this.motors = motors;
         this.imu = null;
@@ -73,6 +76,7 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @param pGain the amount of speed applied per degree the robot is away from the target angle
      * @return true if the pivot is still occurring false when it is complete
      */
+    @Deprecated
     private boolean pivotToAngle(double angle, double maxPower, double lowPower, double timeAfterAngle, double[] pGain) {
         //get gyro sensor value
         double currentAngle = imu.getZAngle(angle);
@@ -129,6 +133,14 @@ public class MecanumDriveTrain implements IDrivetrain {
     }
 
     //Takes the horizontal power, vertical power and pivoting power and determines how much power to apply to each wheel and normalizes to max power
+
+    /**
+     * Takes the horizontal power, vertical power, and pivoting power and determins how much power to apply to each wheel, and normalizes the max poer
+     * @param horizontal the horizontal (x vector) power
+     * @param vertical the vertical (y vector) power
+     * @param pivot the pivoting power
+     * @param maxPower the max power the wheels can move
+     */
     public void rawSlide(double horizontal, double vertical, double pivot, double maxPower){
         //create an array with all the speeds
         double powers[] = {vertical-horizontal+pivot, vertical+horizontal+pivot, vertical+horizontal-pivot,vertical-horizontal-pivot};
@@ -162,17 +174,29 @@ public class MecanumDriveTrain implements IDrivetrain {
         this.setPowerAll(powers[0], powers[1], powers[2], powers[3]);
     }
 
-    //returns X vector value using angle and speed
+    /**
+     * Calculate the power in the x direction
+     * @param desiredAngle angle on the x axis
+     * @param speed robot's speed
+     * @return the x vector
+     */
     private double calculateX(double desiredAngle, double speed) {
         return Math.sin(Math.toRadians(desiredAngle)) * speed;
     }
 
-    //returns the Y vector value using angle and speed
+    /**
+     * Calculate the power in the y direction
+     * @param desiredAngle angle on the y axis
+     * @param speed robot's speed
+     * @return the y vector
+     */
     private double calculateY(double desiredAngle, double speed) {
         return Math.cos(Math.toRadians(desiredAngle)) * speed;
     }
 
-    //Resets encoder values to zero
+    /**
+     * Resets the drive encoder values to zero
+     */
     @Override
     public void resetEncoders(){
         for(DcMotor motor:motors){
@@ -186,7 +210,7 @@ public class MecanumDriveTrain implements IDrivetrain {
     }
 
     /**
-     *
+     * Moves the robot in any lateral directino (0-360 degrees) while maintaining a specific orientation
      * @param currentPosition The current position of robot in any unit eg. encoder counts, sensor distances...
      * @param targetPosition The target position of the robot in the same unit as current position
      * @param rampDownTargetPosition Position at which the robot will start ramping down
@@ -196,7 +220,7 @@ public class MecanumDriveTrain implements IDrivetrain {
      * @param moveAngle The angle at which the robot will move in the frame of reference of the starting position
      * @param PIDGain Three gains to control PID feedback loop for Orientation correction
      * @param endOrientationAngle The Direction the robot is facing
-     * @return
+     * @return true once the movement is complete, false if the movement is ongoing
      */
     @Override
     public boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double rampDownEnd, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctionTime) {
@@ -261,7 +285,7 @@ public class MecanumDriveTrain implements IDrivetrain {
     }
 
     /**
-     *
+     * Pivots the robot to a desired angle, while using a proportional control loop to maintain the robot's drive speed
      * @param desiredAngle The angle to which to pivot to
      * @param rampDownAngle The angle at which to start slowing down
      * @param maxPower The max power to pivot at
@@ -312,7 +336,9 @@ public class MecanumDriveTrain implements IDrivetrain {
         }
     }
 
-    //Sets base encoder value to the current position of the motors
+    /**
+     * Resets the encoders by setting the current encoder position as position 0
+     */
     @Override
     public void softResetEncoder(){
         rfLastEncoder = motors.get(0).getCurrentPosition();
@@ -322,13 +348,19 @@ public class MecanumDriveTrain implements IDrivetrain {
     }
 
 
-    //Returns an array with encoder positions for each drive motor
+    /**
+     * Get the individual motor encoder positions
+     * @return the motor encoders in a double array, in the order of right front, right back, left front, left back
+     */
     private double[] getEncoderPositions(){
         double[] encoders = {motors.get(0).getCurrentPosition()-rfLastEncoder, motors.get(1).getCurrentPosition()-rbLastEncoder, motors.get(2).getCurrentPosition()-lfLastEncoder, motors.get(3).getCurrentPosition()-lbLastEncoder};
         return encoders;
     }
 
-    //Returns the current distance traveled/encoder position by averaging the position of each drive motor
+    /**
+     * Returns the current distance traveled/encoder position by averaging the position of each drive motor
+     * @return distance traveled as a double
+     */
     public double getEncoderDistance(){
         double []encoders = this.getEncoderPositions();
         double x = ((encoders[2] + encoders[1]) - (encoders[0] + encoders[3])) / 4;
