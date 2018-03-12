@@ -5,18 +5,75 @@ package org.firstinspires.ftc.teamcode.Subsystems.IMU;
  */
 
 public interface IIMU {
-    double getXAngle();  //Gets angle on x-axis
-    double getYAngle();  //Gets angle on y-axis
-    double getZAngle();  //Gets angle on z-axis
-    double getZAngle(double desiredAngle); //get z angle with the discontinuity being opposite of the desired angle
-    double getXAcc();    //Gets acceleration on x-axis
-    double getYAcc();    //Gets acceleration on y-axis
-    double getZAcc();    //Gets acceleration on z-axis
-    double getXVelo();    //Gets velocity on x-axis
-    double getYVelo();    //Gets velocity on y-axis
-    double getZVelo();    //Gets velocity on z-axis
-    void calibrate();    //Calibrates sensor
-    void setOffset(double offset);   //sets offset
-    void setAsZero();    //Set the current position as zero
+    /**
+     * Gets the angle on the x-axis
+     * @return the x-axis angle
+     */
+    double getXAngle();
+    /**
+     * Gets the angle on the y-axis
+     * @return the y-axis angle
+     */
+    double getYAngle();
+    /**
+     * Gets the angle on the z-axis
+     * @return the z-axis angle
+     */
+    double getZAngle();
+    /**
+     * Gets the angle on the z-axis with the discontinuity being opposite of the desired angle
+     * @return the z-axis angle
+     */
+    double getZAngle(double desiredAngle);
+    /**
+     * Gets the acceleration on the x-axis
+     * @return hte acceleration on the x-axis
+     */
+    double getXAcc();
+    /**
+     * Gets the acceleration on the y-axis
+     * @return the accerlation on the y-axis
+     */
+    double getYAcc();
+    /**
+     * Gets the acceleration on the z-axis
+     * @return the acceleration on the z-axis
+     */
+    double getZAcc();
+    /**
+     * Gets the velocity on the x-axis
+     * @return the x-axis velocity
+     */
+    double getXVelo();
+    /**
+     * Gets the acceleration on the y-axis
+     * @return the y-axis velocity
+     */
+    double getYVelo();
+    /**
+     * Gets the acceleration on the z-axis
+     * @return the z-axis velocity
+     */
+    double getZVelo();
+
+    /**
+     * Calibrate the imu and initialize the parameters
+     */
+    void calibrate();
+
+    /**
+     * Set an offest for the imu
+     * @param offset the offset to set
+     */
+    void setOffset(double offset);
+
+    /**
+     * Set the current position as the zero position for the imu
+     */
+    void setAsZero();
+
+    /**
+     * Initialize the parameters for the IMU
+     */
     void initialize();
 }

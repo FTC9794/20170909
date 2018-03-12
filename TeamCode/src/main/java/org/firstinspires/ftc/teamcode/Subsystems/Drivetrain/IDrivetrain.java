@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.Enums.Direction;
 public interface IDrivetrain {
 
     /**
-     *
+     * Moves the robot in any lateral direction while maintaining a certain orientation.
      * @param currentPosition The current position of robot in any unit eg. encoder counts, sensor distances...
      * @param targetPosition The target position of the robot in the same unit as current position
      * @param rampDownTargetPosition Position at which the robot will start ramping down
@@ -24,7 +24,7 @@ public interface IDrivetrain {
     boolean moveIMU(double currentPosition, double targetPosition, double rampDownTargetPosition, double rampUpTargetPosition, double rampDownEnd, double maxPower, double lowPower, double moveAngle, double[] PIDGain, double endOrientationAngle, double allowableDistanceError, double correctiontime);
 
     /**
-     *
+     * Pivots the robot to a desired angle. It uses a proportional control loop to maintain the robot's speed
      * @param desiredAngle The angle to which to pivot to
      * @param rampDownAngle The angle at which to start slowing down
      * @param maxPower The max power to pivot at
@@ -39,17 +39,27 @@ public interface IDrivetrain {
 
     //boolean balance(double highPower, double lowPower, double moveAngle, double oGain, boolean endCondition);
 
-    //resets the encoders.
+    /**
+     * Resets the robots encoders by zeroing the current value, instead of changing the mode of the motor.
+     * This should be used when you need quick, and continuous motions
+     */
     void softResetEncoder();
 
-    // Change the mode of the motors to stop and reset encoders
+    /**
+     * Resets the robot's encoders by stopping the motors and resetting the mode of the motors
+     */
     void resetEncoders();
 
 
-    //Gets the distance traveled using encoders
+    /**
+     * Calculates how far the robot has traveled based on the drive motor encoders
+     * @return the distance traveled since the last encoder reset
+     */
     double getEncoderDistance();
 
-    //Stops all the motors on the drivetrain
+    /**
+     * Stops the drive motors and sets power to zero
+     */
     void stop();
 
 }

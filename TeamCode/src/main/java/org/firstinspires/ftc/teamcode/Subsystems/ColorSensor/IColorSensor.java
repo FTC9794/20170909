@@ -5,16 +5,35 @@ package org.firstinspires.ftc.teamcode.Subsystems.ColorSensor;
  */
 
 public interface IColorSensor {
-    //Gets the red value from the sensor
+    /**
+     * Returns the color sensors red value
+     * @return the red value as an integer
+     */
     public int red();
-    //Gets the green value from the sensor
+    /**
+     * Returns the color sensors green value
+     * @return the green value as an integer
+     */
     public int green();
-    //Gets the blue value from the sensor
+    /**
+     * Returns the color sensors blue value
+     * @return the blue value as an integer
+     */
     public int blue();
-    //Gets the hue from the sensor
+    /**
+     * Returns the color sensors hue value
+     * @return the hue value as an integer
+     */
     public int getHue();
-    //Gets the alpha reading from the sensor
+    /**
+     * Returns the color sensors alpha value
+     * @return the alpha value as an integer
+     */
     public int alpha();
-    //Gets the HSV values from the sensor and return the three values as a float array
+
+    /**
+     * Collects the Hue, Saturation, and Value from the sensor
+     * @return the HSV value in a float array
+     */
     public float[] getHSV();
 }

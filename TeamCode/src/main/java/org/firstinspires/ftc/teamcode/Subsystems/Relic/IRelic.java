@@ -5,12 +5,18 @@ package org.firstinspires.ftc.teamcode.Subsystems.Relic;
  */
 
 public interface IRelic {
-    //Gains possession of relic
+    /**
+     * Gain possession of the relic
+     */
     void pickUpRelic();
-    //Drop relic
+
+    /**
+     * Release the relic from the robot's possession
+     */
     void releaseRelic();
 
     /**
+     * Extend the relic mechanism
      * @param power power to extend relic at
      */
     void extend(double power, boolean condition);

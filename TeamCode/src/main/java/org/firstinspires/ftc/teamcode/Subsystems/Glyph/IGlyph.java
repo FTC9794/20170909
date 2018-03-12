@@ -5,13 +5,19 @@ package org.firstinspires.ftc.teamcode.Subsystems.Glyph;
  */
 
 public interface IGlyph {
-    //Intake and gain possession glyph
+    /**
+     * Bring glyph into robot's possession
+     */
     void secureGlyph();
 
-    //Release glyph into cryptobox
+    /**
+     * Dispense the glyph from the robot
+     */
     void dispenseGlyph();
 
-    //Turn off the intake mechanism
+    /**
+     * Turn off the glyph intake mechanism (set motor powers to zero or servos to default position)
+     */
     void turnOff();
 
 }
