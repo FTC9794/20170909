@@ -15,7 +15,10 @@ public class MRRangeSensor implements IUltrasonic {
     private boolean firstRead = false;
     private double prevValue, currentValue;
 
-    //Constructor
+    /**
+     * Constructor for Modern Robotics Range Sensor
+     * @param ultrasonic range sensor hardware
+     */
     public MRRangeSensor(ModernRoboticsI2cRangeSensor ultrasonic){
         this.ultrasonic = ultrasonic;
     }
@@ -36,7 +39,10 @@ public class MRRangeSensor implements IUltrasonic {
         return currentValue;
     }
 
-    //Returns the optical distance from the sensor (for close-up targets)
+    /**
+     * Reads the optical distance from the sensor. Use for close-up targets
+     * @return the optical distance as a double
+     */
     public double opticalDistance() { return ultrasonic.cmOptical(); }
 
     /**
