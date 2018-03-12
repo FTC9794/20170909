@@ -47,6 +47,9 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
         running = true;
     }
 
+    /**
+     * What happens when the thread is started and is running
+     */
     @Override
     public void run() {
 
@@ -120,28 +123,40 @@ public class DualWheelIntakeThread implements Runnable, IGlyph {
         }
     }
 
-    //This method sets the state of the intake to intaking
+    /**
+     * Sets the state of the intake to intaking
+     */
     public void secureGlyph() {
         state = GlyphIntakeState.INTAKE_MOTOR;
     }
 
-    //this method ejects glyphs by changing the state to outaking
+    /**
+     * Ejects the glyph by changing the state to outtaking
+     */
     public void dispenseGlyph() {
         state = GlyphIntakeState.OUTAKE;
     }
 
-    //This method turns off the intake
+    /**
+     * Turns off the intake
+     */
     public void turnOff() {
         state = GlyphIntakeState.NOTHING;
     }
 
-    //this method is called to stop the thread
+    /**
+     * Stops the thread
+     */
     public void stop(){
         servo1.setPower(0);
         servo2.setPower(0);
         running = false;
     }
 
+    /**
+     * Gets the current state of the glyph mechanism state machine
+     * @return the state of the glyph mechanism
+     */
     public GlyphIntakeState getState(){
         return state;
     }
