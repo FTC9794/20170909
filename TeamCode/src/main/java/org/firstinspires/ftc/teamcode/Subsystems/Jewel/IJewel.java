@@ -19,7 +19,7 @@ public interface IJewel {
      * @param alliance the alliance color the robot is on
      * @param isLeftFast if the left ball is being knocked off, should it be done fast or slow
      * @param isRightFast if the right ball is being knocked off, should it be done fast or slow
-     * @return
+     * @return true if the action has been completed, false if the action is ongoing
      */
     boolean knockOffJewel(Alliance alliance, boolean isLeftFast, boolean isRightFast);
 }

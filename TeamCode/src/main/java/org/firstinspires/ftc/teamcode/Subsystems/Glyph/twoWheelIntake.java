@@ -60,7 +60,7 @@ public class twoWheelIntake implements IGlyph {
      * Changes the height of the glyph lift
      * @param power power to set the motor
      * @param condition the condition that the lift changes position
-     * @return
+     * @return true, once the action is completed
      */
     public boolean changeHeight(double power, boolean condition) {
         return false;
