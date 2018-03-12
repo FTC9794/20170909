@@ -14,7 +14,10 @@ public class LynxColorRangeSensor implements IColorSensor {
     //Create color sensor
     private LynxI2cColorRangeSensor color;
 
-    //Constructor for color sensor
+    /**
+     * Constructor for REV Color Sensor
+     * @param color sensor to make readings
+     */
     public LynxColorRangeSensor(LynxI2cColorRangeSensor color){
         this.color = color;
     }
@@ -65,6 +68,10 @@ public class LynxColorRangeSensor implements IColorSensor {
         return hsv;
     }
 
+    /**
+     * Reads the alpha value from the color sensor
+     * @return the alpha value as an integer
+     */
     @Override
     public int alpha() {
         return color.alpha();

@@ -12,7 +12,10 @@ public class ModernRoboticsColorSensor implements IColorSensor {
     //Create color sensor
     ColorSensor color;
 
-    //Constructor for MR Color Sensor class
+    /**
+     * Constructor for Modern Robotics Color Sensor
+     * @param color color sensor to make readings
+     */
     public ModernRoboticsColorSensor(ColorSensor color){
         this.color = color;
     }
