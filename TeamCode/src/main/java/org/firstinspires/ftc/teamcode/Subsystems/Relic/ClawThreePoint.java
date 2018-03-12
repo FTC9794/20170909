@@ -27,7 +27,7 @@ public class ClawThreePoint implements IRelic {
     private final double RELIC_ARM_ORIGIN = 0;
 
     /**
-     * Constructor for Relic Mechanism
+     * Constructor for Relic Mechanism with three degrees of freedom
      * @param extension motor to extend slides
      * @param arm servo to control arm action
      * @param tilt servo to tilt the claw
@@ -45,18 +45,18 @@ public class ClawThreePoint implements IRelic {
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    @Override
     /**
      * Set the relic claw to a position to pick up the relic
      */
+    @Override
     public void pickUpRelic() {
         claw.setPosition(RELIC_CLAW_CLOSED);
     }
 
-    @Override
     /**
      * Set the relic claw to a position to release the relic
      */
+    @Override
     public void releaseRelic() {
         claw.setPosition(RELIC_CLAW_OPENED);
     }
