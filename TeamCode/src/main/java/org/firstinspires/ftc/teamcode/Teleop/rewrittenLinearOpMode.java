@@ -134,7 +134,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
     //constants for relic
     final double RELIC_ARM_ORIGIN = .01;
-    final double RELIC_ARM_GRAB_POS = .82;
+    final double RELIC_ARM_GRAB_POS = .78;
     final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
@@ -228,6 +228,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             rotateStateMachine();
             controlLEDS();
             relicControls();
+            telemetry.addData("Relic Tilt", relic_tilt.getPosition());
+            telemetry.addData("Relic Arm", relic_arm.getPosition());
+            telemetry.update();
 
         }
 

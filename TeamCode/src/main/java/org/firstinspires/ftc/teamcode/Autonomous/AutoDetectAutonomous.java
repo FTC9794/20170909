@@ -272,7 +272,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //get glyphs from glyph pit
-            getGlyphs(28*COUNTS_PER_INCH, 28*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
+            getGlyphs(28*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
 
 
             drive.resetEncoders();
@@ -332,7 +332,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //Get glyphs from pit
-            getGlyphs(28*COUNTS_PER_INCH, 28*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
+            getGlyphs(26*COUNTS_PER_INCH, 26*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
 
             //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
             if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
