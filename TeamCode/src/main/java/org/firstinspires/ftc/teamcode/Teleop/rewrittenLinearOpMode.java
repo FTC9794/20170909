@@ -129,7 +129,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double ROTATE_TIME = 750;
 
     //constants for jewel
-    final double JEWEL_TILT_POSITION = 1;
+    final double JEWEL_TILT_POSITION = 0.7;
     final double JEWEL_PAN_POSITION = .55;
 
     //constants for relic

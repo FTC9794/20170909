@@ -579,13 +579,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Drive to target cryptobox column using ultrasonic distance and preprogramed distance
             if (vumarkSeen.equals("LEFT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 19.5 * COUNTS_PER_INCH - COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
             } else if (vumarkSeen.equals("RIGHT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 19.5 * COUNTS_PER_INCH + COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH + COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
             } else
-                while (drive.moveIMU(drive.getEncoderDistance(), 19.5 * COUNTS_PER_INCH - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
+                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
             drive.resetEncoders();
 
@@ -672,7 +672,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while (drive.moveIMU(drive.getEncoderDistance(), 40 * COUNTS_PER_INCH, 0, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 165, DEFAULT_PID, -15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
 
             //Pivot to face cryptobox
-            while (drive.pivotIMU(165, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.COUNTERCLOCKWISE) && opModeIsActive()) ;
+            while (drive.pivotIMU(165, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
             drive.resetEncoders();
 
@@ -1061,8 +1061,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
         drive.stop();
 
         //drive into cryptobox
+        timer.reset();
         drive.resetEncoders();
-        while(drive.moveIMU(drive.getEncoderDistance(), depositDistance, depositDistance-4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()){
+        while(drive.moveIMU(drive.getEncoderDistance(), depositDistance, depositDistance-4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()&&timer.milliseconds()<5000){
 
         }
         //deposit glyph
@@ -1074,9 +1075,10 @@ public class AutoDetectAutonomous extends LinearOpMode {
         //lower the lift
         lift.setTargetPosition(depositLiftPosition-200);
 
+        timer.reset();
         //push the glyph in another inch while ejecting
         drive.resetEncoders();
-        while(drive.moveIMU(drive.getEncoderDistance(), 1*COUNTS_PER_INCH, 0, 0, .5*COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, depositAngle, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 0)&&opModeIsActive()){
+        while(drive.moveIMU(drive.getEncoderDistance(), 1*COUNTS_PER_INCH, 0, 0, .5*COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, depositAngle, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 0)&&opModeIsActive()&&timer.milliseconds()<1000){
 
         }
         drive.resetEncoders();
