@@ -310,7 +310,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         lb.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rf.setDirection(DcMotorSimple.Direction.REVERSE);
         rb.setDirection(DcMotorSimple.Direction.REVERSE);
-        relic_extension.setDirection(DcMotorSimple.Direction.REVERSE);
         relic_extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -510,7 +509,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 pivot = gamepad1.right_stick_x;
 
                 //set to low power if trigger pressed
-                if(gamepad1.right_trigger>.2){
+                if(gamepad1.right_trigger>.2||gamepad1.left_stick_button||gamepad1.right_stick_button){
                     //multiply the powers by the low speed powers
                     rf.setPower((pitch-roll-pivot)*DRIVE_LOW_SPEED);
                     rb.setPower((pitch+roll-pivot)*DRIVE_LOW_SPEED);
@@ -891,14 +890,18 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     public void relicControls(){
         //Relic Extension Motor Controls with Encoder Limits
         if (gamepad2.right_bumper) {
-            relic.extend(RELIC_ARM_EXTENSION_FULL_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2200);
+            relic.extend(RELIC_ARM_EXTENSION_FULL_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2112);
         } else{
-            relic.extend(RELIC_ARM_EXTENSION_HALF_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2200);
+            relic.extend(RELIC_ARM_EXTENSION_HALF_POWER, gamepad2.dpad_up && relic_extension.getCurrentPosition() < 2112);
         }
 
         //relic retraction controls with encoder limits
         if(gamepad2.right_bumper){
-            relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relicLimit.getState());
+            if(relic_extension.getCurrentPosition() > 250){
+                relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relicLimit.getState());
+            }else{
+                relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relicLimit.getState());
+            }
         }else{
             relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relicLimit.getState());
         }
