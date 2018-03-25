@@ -81,7 +81,6 @@ import java.util.List;
  */
 
 @Autonomous(name="Concept: Vuforia Navigation", group ="Concept")
-@Disabled
 public class ConceptVuforiaNavigation extends LinearOpMode {
 
     public static final String TAG = "Vuforia Navigation Sample";
@@ -117,7 +116,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          * Once you've obtained a license key, copy the string from the Vuforia web site
          * and paste it in to your code onthe next line, between the double quotes.
          */
-        parameters.vuforiaLicenseKey = "ATsODcD/////AAAAAVw2lR...d45oGpdljdOh5LuFB9nDNfckoxb8COxKSFX";
+        parameters.vuforiaLicenseKey = "ATXxmRr/////AAAAGdfeAuU6SEoFkpmhG616inkbnBHHQ/Ti5DMPAVykTBdmQS8ImGtoIBRRuboa+oIyuvQW1nIychXXxROjGLssEzSFF8yOYE36GqhVtRfI6lw8/HAoJpO1XgIF5Gy1vPx4KFPNInK6CJdZomYyWV8rGnb7ceLJ9Z+g0sl+VcVPKl5DAI84K+06pEZnw+Em7sThhzyzj2p4QbPhXh7fEtNGhFCqey9rcg3h9RfNebyWvJW9z7mGkaJljZy1x3lK7viLbFKyFcAaspZZi1+JzUmeuXxV0r+8hrCgFLPsvKQHlnYumazP9FEtm/FjCpRFF23Et77325/vuD2LRSPzve9ef4zqe6MivrLs9s8lUgd7Eo9W";
 
         /*
          * We also indicate which camera on the RC that we wish to use.
@@ -135,16 +134,13 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          * example "StonesAndChips", datasets can be found in in this project in the
          * documentation directory.
          */
-        VuforiaTrackables stonesAndChips = this.vuforia.loadTrackablesFromAsset("StonesAndChips");
-        VuforiaTrackable redTarget = stonesAndChips.get(0);
-        redTarget.setName("RedTarget");  // Stones
-
-        VuforiaTrackable blueTarget  = stonesAndChips.get(1);
-        blueTarget.setName("BlueTarget");  // Chips
+        VuforiaTrackables relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
 
         /** For convenience, gather together all the trackable objects in one easily-iterable collection */
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(stonesAndChips);
+        allTrackables.addAll(relicTrackables);
 
         /**
          * We use units of mm here because that's the recommended units of measurement for the
@@ -221,7 +217,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
                         /* First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z */
                         AxesReference.EXTRINSIC, AxesOrder.XZX,
                         AngleUnit.DEGREES, 90, 90, 0));
-        redTarget.setLocation(redTargetLocationOnField);
+        relicTemplate.setLocation(redTargetLocationOnField);
         RobotLog.ii(TAG, "Red Target=%s", format(redTargetLocationOnField));
 
        /*
@@ -229,16 +225,6 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
         * - First we rotate it 90 around the field's X axis to flip it upright
         * - Finally, we translate it along the Y axis towards the blue audience wall.
         */
-        OpenGLMatrix blueTargetLocationOnField = OpenGLMatrix
-                /* Then we translate the target off to the Blue Audience wall.
-                Our translation here is a positive translation in Y.*/
-                .translation(0, mmFTCFieldWidth/2, 0)
-                .multiplied(Orientation.getRotationMatrix(
-                        /* First, in the fixed (field) coordinate system, we rotate 90deg in X */
-                        AxesReference.EXTRINSIC, AxesOrder.XZX,
-                        AngleUnit.DEGREES, 90, 0, 0));
-        blueTarget.setLocation(blueTargetLocationOnField);
-        RobotLog.ii(TAG, "Blue Target=%s", format(blueTargetLocationOnField));
 
         /**
          * Create a transformation matrix describing where the phone is on the robot. Here, we
@@ -264,8 +250,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          * listener is a {@link VuforiaTrackableDefaultListener} and can so safely cast because
          * we have not ourselves installed a listener of a different type.
          */
-        ((VuforiaTrackableDefaultListener)redTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
-        ((VuforiaTrackableDefaultListener)blueTarget.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+        ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
 
         /**
          * A brief tutorial: here's how all the math is going to work:
@@ -292,7 +277,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
         waitForStart();
 
         /** Start tracking the data sets we care about. */
-        stonesAndChips.activate();
+        relicTrackables.activate();
 
         while (opModeIsActive()) {
 

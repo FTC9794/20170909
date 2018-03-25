@@ -45,7 +45,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     LynxI2cColorRangeSensor glyphSensor2;
     DcMotor led_motor;
     LED leds;
-    DigitalChannel glyphLimit;
+    DigitalChannel glyphLimit, relicLimit;
 
     //timers to be used during teleop
     ElapsedTime intake1Time;
@@ -266,8 +266,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         glyphSensor1 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor1");
         glyphSensor2 = (LynxI2cColorRangeSensor) hardwareMap.get("glyphColor2");
 
-        //Hardware Map Limit Switch
+        //Hardware Map Limit Switches
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
+        relicLimit = hardwareMap.digitalChannel.get("relic_limit");
 
 
     }
@@ -897,14 +898,17 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
         //relic retraction controls with encoder limits
         if(gamepad2.right_bumper){
-            relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
+            relic.retract(RELIC_ARM_RETRACTION_FULL_POWER, gamepad2.dpad_down && relicLimit.getState());
         }else{
-            relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relic_extension.getCurrentPosition() > 200);
+            relic.retract(RELIC_ARM_RETRACTION_HALF_POWER, gamepad2.dpad_down && relicLimit.getState());
         }
 
         //if nothing is being pressed, don't extend or retract
         if(!gamepad2.dpad_up && !gamepad2.dpad_down){
             relic.extensionPowerZero();
+            if(!relicLimit.getState()){
+                relic.resetRelicEncoder();
+            }
         }
 
         //check if the button is pressed and it wasn't pressed in the last loop cycle

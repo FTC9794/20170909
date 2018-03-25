@@ -163,4 +163,9 @@ public class ClawThreePoint implements IRelic {
     public void extensionPowerZero(){
         relic_extension.setPower(0);
     }
+
+    public void resetRelicEncoder(){
+        relic_extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        relic_extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
 }
