@@ -211,7 +211,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 bottomIntake.secureGlyph();
             }
         }else if(autoProgram.equals("RedStone2")){
-            while(!jewel.knockOffJewel(RED, true, true)){
+            while(!jewel.knockOffJewel(RED, true, false)){
                 bottomIntake.secureGlyph();
             }
         }else if(autoProgram.equals("BlueStone1")){
@@ -462,10 +462,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             topIntake.secureGlyph();
 
             //move into glyph pit
-            while (drive.moveIMU(drive.getEncoderDistance(), 40 * COUNTS_PER_INCH, 17.5 * COUNTS_PER_INCH, 0, 26 * COUNTS_PER_INCH, 1,
-                    0.75, -155, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 15 * COUNTS_PER_INCH, 1,
+                    0.35, -155, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
 
-            //Wait for glyphs to come into the robot
+            getGlyphsFarStone(-155, -155);
+
+            /*//Wait for glyphs to come into the robot
             timer.reset();
             while (opModeIsActive() && timer.milliseconds() < 250) {
 
@@ -537,7 +539,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //back into safe zone
             while (drive.moveIMU(drive.getEncoderDistance(), 5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, .8, .65, 45, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
-            drive.stop();
+*/            drive.stop();
         }
 /*
 **************************************************************************************************************************************
@@ -1089,5 +1091,391 @@ public class AutoDetectAutonomous extends LinearOpMode {
         while(drive.moveIMU(drive.getEncoderDistance(), comeBackDistance+1*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, depositAngle+180, DEFAULT_PID, depositAngle, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
         drive.resetEncoders();
 
+    }
+
+    public void getGlyphsFarStone(double moveAngle, double orientation){
+        bottomIntake.secureGlyph();
+        topIntake.secureGlyph();
+
+        timer.reset();
+        while(timer.milliseconds() < 1000 && opModeIsActive());
+
+        drive.resetEncoders();
+
+        int glyphCase = 0;
+        //CASE 0: THE ROBOT HAS 2 GLYPH
+        if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
+            //Do nothing
+            led.turnOn();
+            glyphCase = 0;
+        }
+        //CASE 1: THE ROBOT HAS 1 GLYPH IN THE BOTTOM AND NO GLYPH IN THE TOP
+        else if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
+            glyphCase = 1;
+            led.turnOn();
+
+            //Raise lift to prevent glyph from dragging
+            lift.setTargetPosition(800);
+            lift.setPower(1);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            //Back up 10 inches
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            drive.resetEncoders();
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            //Lift and flip
+            spin.setPosition(SPIN_ROTATED);
+            timer.reset();
+            while(timer.milliseconds() < 750 && opModeIsActive());
+            lift.setTargetPosition(5);
+            lift.setPower(1);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            //Drive 25 inches forward to pick up second glyph
+            while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 1,
+                    0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+
+            timer.reset();
+            while(timer.milliseconds() < 250 && opModeIsActive());
+
+            boolean additionalDistance = false;
+            //check if glyph in bottom arms of robot
+            if (topGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                led.setLEDPower(1);
+            }else{
+                glyphWiggle(orientation, 45);
+                timer.reset();
+                while(timer.milliseconds()<250&&opModeIsActive());
+
+                if(topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))){
+                    additionalDistance = true;
+                }
+
+            }
+            drive.resetEncoders();
+
+            if(additionalDistance){
+                //Drive 6 inches forward to pick up second glyph
+                while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
+                        0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                if (topGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                    led.setLEDPower(1);
+                }else{
+                    glyphWiggle(orientation, 30);
+                    timer.reset();
+                    while(timer.milliseconds()<250&&opModeIsActive());
+                }
+            }
+
+            drive.resetEncoders();
+
+            lift.setTargetPosition(250);
+            lift.setPower(1);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            if(additionalDistance){
+                //Back up 16 inches to original position
+                drive.resetEncoders();
+                while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+                drive.resetEncoders();
+            }else {
+                //Back up 15 inches to original position
+                drive.resetEncoders();
+                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+                drive.resetEncoders();
+            }
+        }
+        //CASE 2: THE ROBOT HAS 1 GLYPH IN THE TOP, BUT NOTHING IN THE BOTTOM
+        else if((bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM)))&& topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
+            glyphCase = 2;
+            //Drive 10 inches forward to pick up second glyph
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                    0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            drive.resetEncoders();
+
+            timer.reset();
+            while(timer.milliseconds() < 250 && opModeIsActive());
+
+            //Check if the robot has a glyph in the bottom
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
+                //Raise lift to prevent glyph from dragging
+                lift.setTargetPosition(800);
+                lift.setPower(1);
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                //Drive back 10 inches to return to original position
+                while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, 1,
+                        0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+                drive.resetEncoders();
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            }
+            else{ //The robot does not have a glyph in the bottom
+                //Wiggle with an offset of 15 degrees to try and get a glyph
+                glyphWiggle(orientation, 25);
+                drive.resetEncoders();
+
+                boolean additionalDistance = false;
+
+                if(bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))){
+                    additionalDistance = true;
+                }
+
+                if(additionalDistance){
+                    //Drive 6 inches forward to pick up second glyph
+                    while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
+                            0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+
+                    /*timer.reset();
+                    while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                    if (bottomGlyphColor.getDistance(DistanceUnit.CM)<=6){
+                        led.setLEDPower(1);
+                    }else{
+                        glyphWiggle(orientation, 30);
+                        timer.reset();
+                        while(timer.milliseconds()<250&&opModeIsActive());
+                    }
+                }
+
+                timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());
+
+                //Raise lift to prevent glyph from dragging
+                lift.setTargetPosition(800);
+                lift.setPower(1);
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                if(additionalDistance){
+                    //Drive back 10 inches to return to original position
+                    while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
+                        ;
+                    drive.resetEncoders();
+                }else {
+                    //Drive back 10 inches to return to original position
+                    while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
+                        ;
+                    drive.resetEncoders();
+                }
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+            }
+
+            //Check if there is a glyph in the bottom
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
+
+                //Raise lift to prevent glyph from dragging
+                lift.setTargetPosition(300);
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            }else{ //If there is only a glyph in the top
+
+                //Lift and flip to deposit the glyph in the bottom half of the mechanism
+                spin.setPosition(SPIN_ROTATED);
+                timer.reset();
+                while(timer.milliseconds() < 750 && opModeIsActive());
+                lift.setTargetPosition(300);
+                lift.setPower(1);
+            }
+        }
+        //CASE 3: THE ROBOT DOES NOT HAVE ANY GLYPHS
+        else if((bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))) && (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
+            glyphCase = 3;
+            //Drive 10 inches forward to pick up second glyph
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                    0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            drive.resetEncoders();
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            //Check if the robot has a glyph in the bottom
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
+                //Raise lift to prevent glyph from dragging
+                lift.setTargetPosition(800);
+                lift.setPower(1);
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                //Drive back 10 inches to return to original position
+                while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                        0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+                drive.resetEncoders();
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+            }
+            else{ //The robot does not have a glyph in the bottom
+                //Wiggle with an offset of 15 degrees to try and get a glyph
+                glyphWiggle(orientation, 30);
+                drive.resetEncoders();
+
+                timer.reset();
+                while(timer.milliseconds() < 250 && opModeIsActive());
+
+                boolean additionalDistance = false;
+                if(bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))){
+                    additionalDistance = true;
+                    //Drive 6 more inches to get a glyph
+                    while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                            0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+                    drive.resetEncoders();
+                }
+
+                //Raise lift to prevent glyph from dragging
+                lift.setTargetPosition(800);
+                lift.setPower(1);
+
+                /*timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                if(additionalDistance){
+                    //Drive back 16 inches to return to original position
+                    while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+                    drive.resetEncoders();
+                }else{
+                    //Drive back 10 inches to return to original position
+                    while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
+                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+                    drive.resetEncoders();
+                }
+
+                timer.reset();
+                while(timer.milliseconds() < 1000 && opModeIsActive());
+            }
+
+            //Back up 10 inches
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            drive.resetEncoders();
+
+            //Check if robot has two glyphs
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
+                //End glyph collection sequence
+            }else {
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                //Lift and flip
+                spin.setPosition(SPIN_ROTATED);
+                timer.reset();
+                while (timer.milliseconds() < 750 && opModeIsActive()) ;
+                lift.setTargetPosition(5);
+                lift.setPower(1);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                //Drive 20 inches forward to pick up second glyph
+                while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 20* COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 1,
+                        0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
+                    ;
+
+                timer.reset();
+                while (timer.milliseconds() < 250 && opModeIsActive()) ;
+
+                boolean additionalDistance = false;
+                //check if glyph in bottom arms of robot
+                if (topGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
+                    led.setLEDPower(1);
+                } else {
+                    glyphWiggle(orientation, 45);
+                    timer.reset();
+                    while (timer.milliseconds() < 250 && opModeIsActive()) ;
+
+                    if (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) {
+                        additionalDistance = true;
+                    }
+
+                }
+                drive.resetEncoders();
+
+                if (additionalDistance) {
+                    //Drive 6 inches forward to pick up second glyph
+                    while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
+                            0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
+                        ;
+
+                    timer.reset();
+                    while (timer.milliseconds() < 250 && opModeIsActive()) ;
+
+                    if (topGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
+                        led.setLEDPower(1);
+                    } else {
+                        glyphWiggle(orientation, 30);
+                        timer.reset();
+                        while (timer.milliseconds() < 250 && opModeIsActive()) ;
+                    }
+                }
+
+                drive.resetEncoders();
+
+                lift.setTargetPosition(250);
+                lift.setPower(1);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+                if (additionalDistance) {
+                    //Back up 16 inches to original position
+                    drive.resetEncoders();
+                    while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
+                        ;
+                    drive.resetEncoders();
+                } else {
+                    //Back up 15 inches to original position
+                    drive.resetEncoders();
+                    while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
+                        ;
+                    drive.resetEncoders();
+                }
+            }
+        }
+
+        //Check if there is a glyph in the bottom
+        if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
+
+            //Raise lift to prevent glyph from dragging
+            lift.setTargetPosition(300);
+
+            /*timer.reset();
+            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+
+        }else{ //If there is only a glyph in the top
+
+            //Lift and flip to deposit the glyph in the bottom half of the mechanism
+            spin.setPosition(SPIN_ROTATED);
+            timer.reset();
+            while(timer.milliseconds() < 750 && opModeIsActive());
+            lift.setTargetPosition(300);
+        }
     }
 }
