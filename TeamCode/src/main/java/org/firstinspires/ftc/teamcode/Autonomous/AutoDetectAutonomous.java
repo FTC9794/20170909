@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Enums.Alliance;
 import org.firstinspires.ftc.teamcode.Enums.Direction;
 import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.IColorSensor;
@@ -35,6 +37,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -467,6 +470,10 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             getGlyphsFarStone(-155, -155);
 
+            //Pivot to face cryptobox
+            while (drive.pivotIMU(15, 105, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            drive.resetEncoders();
+
             /*//Wait for glyphs to come into the robot
             timer.reset();
             while (opModeIsActive() && timer.milliseconds() < 250) {
@@ -725,6 +732,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
         //Stop intake threads
         bottomIntake.stop();
         topIntake.stop();
+
+        String fileName = "autoSpinPosition.txt";
+        File file = AppUtil.getInstance().getSettingsFile(fileName);
+        float spinPosition = (float) spin.getPosition();
+        ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
 
     }
 

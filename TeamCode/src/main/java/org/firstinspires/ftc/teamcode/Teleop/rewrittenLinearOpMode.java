@@ -11,7 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.GandalfCode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain.MecanumDriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Glyph.DualWheelIntake;
@@ -24,6 +26,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,6 +164,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         setMotorBehaviors();
         initIMU();
 
+        //Get spin position from autonomous
+        String fileName = "autoSpinPosition.txt";
+        File file = AppUtil.getInstance().getSettingsFile(fileName);
+        String spinString = ReadWriteFile.readFile(file);
+        double spinInitPosition = Double.parseDouble(spinString);
+
         //create color sensor objects
         glyphColor1 = new RevRangeSensor(glyphSensor1);
         glyphColor2 = new RevRangeSensor(glyphSensor2);
@@ -205,6 +214,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         relic.setTiltPosition(1);
         relic_arm.setPosition(0);
 
+        if(spinInitPosition == 0){ //If the glyph spun in autonomous, initialize it to the rotated position here
+            glyphIntakeRotated = true;
+        }else{ //If the glyph did not spin in autonomous, initialize it to the original initialization position
+            glyphIntakeRotated = false;
+        }
+
 
         //while stop hasn't been pressed and the program is running
         while(opModeIsActive()){
@@ -233,6 +248,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             telemetry.update();
 
         }
+
+        float spinPosition = (float) spin.getPosition();
+        ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
 
 
     }
