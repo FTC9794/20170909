@@ -470,9 +470,46 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             getGlyphsFarStone(-155, -155);
 
+            //back up from pit
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 24 * COUNTS_PER_INCH, 12*COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 25, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            drive.resetEncoders();
+
             //Pivot to face cryptobox
             while (drive.pivotIMU(15, 105, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             drive.resetEncoders();
+
+            //Deposit glyphs into column
+            if(!vumarkSeen.equals("LEFT")){
+                lift.setTargetPosition(300);
+                lift.setPower(1);
+            }else{
+                lift.setTargetPosition(898);
+                lift.setPower(1);
+            }
+            //drive into cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 15, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
+                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
+                telemetry.update();
+            }
+
+            //deposit glyph
+            bottomIntake.dispenseGlyph();
+            topIntake.dispenseGlyph();
+            timer.reset();
+            while (timer.milliseconds() < 250 && opModeIsActive()) ;
+
+            //Back away from cryptobox
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -165, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
+
+            //Reset the drive encoders and set the drive power to zero
+            drive.resetEncoders();
+            drive.stop();
+
+            //Turn off LEDs
+            led.turnOff();
 
             /*//Wait for glyphs to come into the robot
             timer.reset();
@@ -504,7 +541,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Deposit glyphs into column
             if(!vumarkSeen.equals("LEFT")){
-                lift.setTargetPosition(200);
+                lift.setTargetPosition(300);
                 lift.setPower(1);
             }else{
                 lift.setTargetPosition(898);
