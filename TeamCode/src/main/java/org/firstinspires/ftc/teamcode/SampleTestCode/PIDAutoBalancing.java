@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,8 +19,6 @@ import org.firstinspires.ftc.teamcode.Subsystems.IMU.IIMU;
 import org.firstinspires.ftc.teamcode.Subsystems.LED;
 import org.firstinspires.ftc.teamcode.Subsystems.Relic.ClawThreePoint;
 import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.IUltrasonic;
-import org.firstinspires.ftc.teamcode.Teleop.rewritten;
-import org.firstinspires.ftc.teamcode.Teleop.rewrittenLinearOpMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,7 @@ import java.util.List;
  * Created by ishaa on 4/1/2018.
  */
 
+@Autonomous(name="PID Balance")
 public class PIDAutoBalancing extends LinearOpMode {
 
     //hardware to be used on robot
@@ -144,12 +144,12 @@ public class PIDAutoBalancing extends LinearOpMode {
     MecanumDriveTrain drive;
 
     //pid values
-    final double pGainx = .02;
+    final double pGainx = .055;
     final double iGainx = 0;
-    final double dGainx = 0;
-    final double pGainy = .02;
+    final double dGainx = 6;
+    final double pGainy = .055;
     final double iGainy = 0;
-    final double dGainy = 0;
+    final double dGainy = 6;
     final double xDesired = -2.25;
     final double yDesired = -.75;
     double currentTime = 0;
@@ -180,6 +180,7 @@ public class PIDAutoBalancing extends LinearOpMode {
         initHardwareMap();
         initIMU();
         setMotorBehaviors();
+        PIDTimer = new ElapsedTime();
         waitForStart();
         PIDTimer.reset();
         while(opModeIsActive()){
@@ -203,6 +204,7 @@ public class PIDAutoBalancing extends LinearOpMode {
             dx = slopex*dGainx;
             dy = slopey*dGainy;
 
+            telemetry.update();
             correctionx = px+ix+dx;
             correctiony = py+iy+dy;
 
