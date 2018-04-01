@@ -151,12 +151,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     MecanumDriveTrain drive;
 
     //pid values for balancing
-    final double pGainx = .055;
+    final double pGainx = .05;
     final double iGainx = 0;
-    final double dGainx = 6;
-    final double pGainy = .055;
+    final double dGainx = 0;
+    final double pGainy = .05;
     final double iGainy = 0;
-    final double dGainy = 6;
+    final double dGainy = 0;
     final double xDesired = -2.25;
     final double yDesired = -.75;
     double currentTime = 0;
@@ -576,6 +576,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
                     //set the angle at which to climb the stone to the current angle
                     balanceAngle = imu.getZAngle();
+
+                    //reset encoders
+                    drive.resetEncoders();
 
                 }
 
