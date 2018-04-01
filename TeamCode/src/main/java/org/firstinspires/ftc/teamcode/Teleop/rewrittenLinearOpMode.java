@@ -222,19 +222,19 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
 
         //while stop hasn't been pressed and the program is running
-        while(opModeIsActive()){
+        while(opModeIsActive()) {
 
             drivetrainStateMachine();
             liftStateMachine();
 
 
             //toggle to determine whether the robot is intaking or no
-            if(gamepad1.left_bumper){
-                if(!intakePressed){
+            if (gamepad1.left_bumper) {
+                if (!intakePressed) {
                     intaking = !intaking;
                 }
                 intakePressed = true;
-            }else{
+            } else {
                 intakePressed = false;
             }
 
@@ -243,14 +243,15 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             rotateStateMachine();
             controlLEDS();
             relicControls();
+
+            float spinPosition = (float) spin.getPosition();
+            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
+
             telemetry.addData("Relic Tilt", relic_tilt.getPosition());
             telemetry.addData("Relic Arm", relic_arm.getPosition());
             telemetry.update();
 
         }
-
-        float spinPosition = (float) spin.getPosition();
-        ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
 
 
     }
