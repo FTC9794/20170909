@@ -52,17 +52,9 @@ import java.util.List;
 
 @Autonomous(name="Concept: Vuforia Navigation", group ="Concept")
 public class ConceptVuforiaNavigation extends LinearOpMode {
-
     public static final String TAG = "Vuforia Navigation Sample";
-
     OpenGLMatrix lastLocation = null;
-
-    /**
-     * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
-     * localization engine.
-     */
     VuforiaLocalizer vuforia;
-
     @Override public void runOpMode() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);

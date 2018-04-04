@@ -14,12 +14,19 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Enums.Alliance;
@@ -41,6 +48,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation.TAG;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.BLUE;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.RED;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
@@ -68,6 +76,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     VuforiaLocalizer vuforia;
     VuforiaTrackables relicTrackables;
     VuforiaTrackable relicTemplate;
+    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
     String vumarkSeen = "";
 
     //create servo variables
@@ -792,6 +801,32 @@ public class AutoDetectAutonomous extends LinearOpMode {
         relicTemplate = relicTrackables.get(0);
         relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
 
+        allTrackables.addAll(relicTrackables);
+        float mmPerInch        = 25.4f;
+        float mmBotWidth       = 18 * mmPerInch;            // ... or whatever is right for your robot
+        float mmFTCFieldWidth  = (12*12 - 2) * mmPerInch;   // the FTC field is ~11'10" center-to-center of the glass panels
+
+        OpenGLMatrix redTargetLocationOnField = OpenGLMatrix
+                /* Then we translate the target off to the RED WALL. Our translation here
+                is a negative translation in X.*/
+                .translation(-mmFTCFieldWidth/2, 0, 0)
+                .multiplied(Orientation.getRotationMatrix(
+                        /* First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z */
+                        AxesReference.EXTRINSIC, AxesOrder.XZX,
+                        AngleUnit.DEGREES, 90, 90, 0));
+        relicTemplate.setLocation(redTargetLocationOnField);
+        RobotLog.ii(TAG, "Red Target=%s", format(redTargetLocationOnField));
+
+        OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+                .translation(mmBotWidth/2,0,0)
+                .multiplied(Orientation.getRotationMatrix(
+                        AxesReference.EXTRINSIC, AxesOrder.YZY,
+                        AngleUnit.DEGREES, -90, 0, 0));
+        RobotLog.ii(TAG, "phone=%s", format(phoneLocationOnRobot));
+
+        ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+
+
         telemetry.addData("Init", "Finished Starting Vuforia");
         telemetry.update();
     }
@@ -884,6 +919,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
      * and select the corresponding autonomous program
      */
     public void autoSelectAlignment(){
+        OpenGLMatrix lastLocation = null;
         relicTrackables.activate();
         boolean selected = false, selecting = true, aligned = false;
         double jewelValue = 255, backValue = 255, frontValue = 255;
@@ -1014,6 +1050,32 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     selected = true;
                 }
             }
+
+            for (VuforiaTrackable trackable : allTrackables) {
+                /**
+                 * getUpdatedRobotLocation() will return null if no new information is available since
+                 * the last time that call was made, or if the trackable is not currently visible.
+                 * getRobotLocation() will return null if the trackable is not currently visible.
+                 */
+                telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
+
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                if (robotLocationTransform != null) {
+                    lastLocation = robotLocationTransform;
+                }
+            }
+            /**
+             * Provide feedback as to where the robot was last located (if we know).
+             */
+            if (lastLocation != null) {
+                //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
+                telemetry.addData("Pos", format(lastLocation));
+                String zAngle = format(lastLocation).substring(15).split(" ")[2];
+                telemetry.addData("Z Angle", Integer.parseInt(zAngle.substring(0, zAngle.length()-1)) - 20);
+            } else {
+                telemetry.addData("Pos", "Unknown");
+            }
+
             //Update US values and alignment status
             telemetry.update();
         }
@@ -1517,5 +1579,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while(timer.milliseconds() < 750 && opModeIsActive());
             lift.setTargetPosition(300);
         }
+    }
+
+    String format(OpenGLMatrix transformationMatrix) {
+        return transformationMatrix.formatAsTransform();
     }
 }
