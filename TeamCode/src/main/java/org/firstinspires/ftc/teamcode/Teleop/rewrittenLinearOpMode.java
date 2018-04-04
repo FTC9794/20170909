@@ -150,12 +150,43 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     ClawThreePoint relic;
     MecanumDriveTrain drive;
 
+    //pid values for balancing
+    final double pGainx = .05;
+    final double iGainx = 0;
+    final double dGainx = 0;
+    final double pGainy = .05;
+    final double iGainy = 0;
+    final double dGainy = 0;
+    final double xDesired = -2.25;
+    final double yDesired = -.75;
+    double currentTime = 0;
+    double previousTime = 0;
+    double currentDifferencex = 0;
+    double previousDifferencex = 0;
+    double currentDifferencey = 0;
+    double previousDifferencey = 0;
+    double areaSumx = 0;
+    double areaSumy = 0;
+    double correctionx = 0;
+    double correctiony = 0;
+    double currentValuex = 0;
+    double currentValuey = 0;
+    double slopex;
+    double slopey;
+    double px;
+    double py;
+    double ix;
+    double iy;
+    double dx;
+    double dy;
+    ElapsedTime PIDTimer;
+
 
     /*
-**************************************************************************************************************************************
-**********************************************     PROGRAM STARTS HERE     *************************************************************
-***************************************************************************************************************************************
- */
+     **************************************************************************************************************************************
+     **********************************************     PROGRAM STARTS HERE     *************************************************************
+     ***************************************************************************************************************************************
+     */
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -185,6 +216,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         intake1Time = new ElapsedTime();
         intake2Time = new ElapsedTime();
         rotateTime = new ElapsedTime();
+        PIDTimer = new ElapsedTime();
 
         //create intakes
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
@@ -202,11 +234,11 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         // WAIT FOR START
         waitForStart();
 
-/*
-**************************************************************************************************************************************
-***********************************************     OPMODE RUNS HERE     *************************************************************
-***************************************************************************************************************************************
- */
+        /*
+         **************************************************************************************************************************************
+         ***********************************************     OPMODE RUNS HERE     *************************************************************
+         ***************************************************************************************************************************************
+         */
         //set servo initialization positions once play has been pressed
         pan.setPosition(JEWEL_PAN_POSITION);
         tilt.setPosition(JEWEL_TILT_POSITION);
@@ -246,9 +278,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             float spinPosition = (float) spin.getPosition();
             ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-            //telemetry.addData("Relic Tilt", relic_tilt.getPosition());
-            //telemetry.addData("Relic Arm", relic_arm.getPosition());
-            telemetry.update();
 
         }
 
@@ -545,15 +574,11 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     //change the state of the drivetrain
                     driveState = driveStates.MOVING_ON_STONE;
 
-                    //set the motors to the right states
-                    drive.resetEncoders();
-                    rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
                     //set the angle at which to climb the stone to the current angle
                     balanceAngle = imu.getZAngle();
+
+                    //reset encoders
+                    drive.resetEncoders();
 
                 }
 
@@ -563,21 +588,17 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     //set the state to balancing
                     driveState = driveStates.BALANCING;
 
-                    //set the motor modes
-                    drive.resetEncoders();
-                    rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    resetBalancingVariables();
                 }
                 break;
             //state for moving onto the stone using encoders
             case MOVING_ON_STONE:
 
                 //drive onto the balancing stone using the drivetrain method
-                if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, 990, .5, .1, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
+                if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, 990, .75, .3, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
                     //once method is complete change states to balancing
                     driveState = driveStates.BALANCING;
+                    resetBalancingVariables();
                 }
 
                 //go to manual state if joysticks moved or b pressed
@@ -589,17 +610,37 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             //state for balancing on stone after all 4 wheels are on stone
             case BALANCING:
+                currentValuex = imu.getXAngle();
+                currentValuey = imu.getYAngle();
+                currentTime = PIDTimer.milliseconds();
+                currentDifferencex = currentValuex - xDesired;
+                currentDifferencey = currentValuey - yDesired;
+                px = currentDifferencex * pGainx;
+                py = currentDifferencey * pGainy;
 
-                //determine how much power to put in the X and Y directions base on the IMU angles
-                xPowerBalance = (imu.getXAngle() - DESIRED_X_BALANCE_ANGLE) * BALANCE_GAIN;
-                yPowerBalance = (imu.getYAngle() - DESIRED_Y_BALANCE_ANGLE) * BALANCE_GAIN;
+                areaSumx += ((previousDifferencex+currentDifferencex)/2)*(currentTime-previousTime);
+                areaSumy += ((previousDifferencey+currentDifferencey)/2)*(currentTime-previousTime);
 
-                //set the powers
-                rf.setPower(yPowerBalance-xPowerBalance);
-                rb.setPower(yPowerBalance+xPowerBalance);
-                lf.setPower(yPowerBalance+xPowerBalance);
-                lb.setPower(yPowerBalance-xPowerBalance);
+                ix = areaSumx*iGainx;
+                iy = areaSumy*iGainy;
 
+                slopex = (previousDifferencex-currentDifferencex)/(previousTime-currentTime);
+                slopey = (previousDifferencey-currentDifferencey)/(previousTime-currentTime);
+
+                dx = slopex*dGainx;
+                dy = slopey*dGainy;
+
+                correctionx = px+ix+dx;
+                correctiony = py+iy+dy;
+
+                rf.setPower(correctiony-correctionx);
+                rb.setPower(correctiony+correctionx);
+                lf.setPower(correctiony+correctionx);
+                lb.setPower(correctiony-correctionx);
+
+                previousTime = currentTime;
+                previousDifferencex = currentDifferencex;
+                previousDifferencey = currentDifferencey;
                 //leave this state when b pressed or joysticks moved
                 if((gamepad1.b&&!bPressed)||gamepad1.left_stick_x!=0||gamepad1.left_stick_y!=0||gamepad1.right_stick_x!=0){
                     drive.resetEncoders();
@@ -621,12 +662,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(gamepad1.right_bumper||(!glyphIntakeRotated&&gamepad1.dpad_down)||(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.OUTAKE;
 
-                //If the robot is intaking, move to the intake state
+                    //If the robot is intaking, move to the intake state
                 }else if (intaking) {
                     lowerIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake1Time.reset();
 
-                //Turn off the motors if not changing states
+                    //Turn off the motors if not changing states
                 }else{
                     bottomIntake.turnOff();
                 }
@@ -712,12 +753,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
 
-                //If the robot is intaking, move to the intake state
+                    //If the robot is intaking, move to the intake state
                 }else if (intaking) {
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
 
-                //Turn off the motors if not changing states
+                    //Turn off the motors if not changing states
                 }else{
                     topIntake.turnOff();
                 }
@@ -735,21 +776,21 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         liftPosition = LIFT_INTAKEN_POSITION;
                     }
 
-                //If the outake buttons are pressed, then move to the outake state and set the robot as not intaking
+                    //If the outake buttons are pressed, then move to the outake state and set the robot as not intaking
                 }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
-                //If the robot is no longer intaking then move to the nothing state
+                    //If the robot is no longer intaking then move to the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //if the robot does not have a glyph, then reset the timer and turn on the motors
+                    //if the robot does not have a glyph, then reset the timer and turn on the motors
                 }else if(glyphColor2.cmDistance() > GLYPH_GRAB_DISTANCE){
                     intake2Time.reset();
                     topIntake.secureGlyph();
 
-                //if the robot has a glyph then don't reset the timer to determine how long it has had it for and keep running the motors
+                    //if the robot has a glyph then don't reset the timer to determine how long it has had it for and keep running the motors
                 }else{
                     topIntake.secureGlyph();
                 }
@@ -763,16 +804,16 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
 
-                //if an eject button is pressed, move into the outake state
+                    //if an eject button is pressed, move into the outake state
                 }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
-                //if the robot is no longer intaking, move into the nothing state
+                    //if the robot is no longer intaking, move into the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //otherwise turn off the motor and wait for an event to happen so that the wheels and glyph inside the robot do not wear out
+                    //otherwise turn off the motor and wait for an event to happen so that the wheels and glyph inside the robot do not wear out
                 }else{
                     topIntake.turnOff();
                 }
@@ -785,7 +826,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(!gamepad1.right_bumper&&!(glyphIntakeRotated&&gamepad1.dpad_down)&&!(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //if any of them are pressed, outake
+                    //if any of them are pressed, outake
                 }else{
                     topIntake.dispenseGlyph();
                 }
@@ -818,7 +859,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         liftPosition = GLYPH_ROTATE_POSITION+LIFT_POSITION_OFFSET;
                         lowerLiftAfterRotating = true;
 
-                    //if the glyph lift is above the safe height for rotating, move into the rotating state without lifting and don't lower lift after done rotating
+                        //if the glyph lift is above the safe height for rotating, move into the rotating state without lifting and don't lower lift after done rotating
                     }else{
                         rotateState = glyphRotateStates.ROTATING;
                         glyphIntakeRotated = !glyphIntakeRotated;
@@ -855,16 +896,16 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         rotateState = glyphRotateStates.LOWERING;
                         liftPosition = 0;
 
-                    //if the lift does not need to lower after rotating, go to the stopped state
+                        //if the lift does not need to lower after rotating, go to the stopped state
                     }else{
                         rotateState = glyphRotateStates.STOPPED;
                     }
 
-                //if the driver takes control of the glyph lift, stop rotating procedure
+                    //if the driver takes control of the glyph lift, stop rotating procedure
                 }else if(liftState == glyphLiftStates.MANUAL){
                     rotateState = glyphRotateStates.STOPPED;
 
-                //move the servo to the desired position based on the variable set when leaving previous state to come to rotating state
+                    //move the servo to the desired position based on the variable set when leaving previous state to come to rotating state
                 }else if(glyphIntakeRotated){
                     spin.setPosition(SPIN_SPUN_POSITION);
                 }else{
@@ -973,6 +1014,22 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
             relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
         }
+    }
+
+    public void resetBalancingVariables(){
+        currentTime = 0;
+        previousTime = 0;
+        currentDifferencex = 0;
+        previousDifferencex = 0;
+        currentDifferencey = 0;
+        previousDifferencey = 0;
+        areaSumx = 0;
+        areaSumy = 0;
+        correctionx = 0;
+        correctiony = 0;
+        currentValuex = 0;
+        currentValuey = 0;
+        PIDTimer.reset();
     }
 
 }
