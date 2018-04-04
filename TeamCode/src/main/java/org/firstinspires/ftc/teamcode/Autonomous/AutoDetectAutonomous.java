@@ -749,7 +749,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.stop();
 
             //Pivot to face glyph pit in preparation for teleop
-            while (drive.pivotIMU(-45, 0, 0.4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            while (drive.pivotIMU(-45, 0, 0.4, 0.25, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
             //move backward to get into safe zone
             drive.resetEncoders();
@@ -1174,7 +1174,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Lift and flip
             spin.setPosition(SPIN_ROTATED);
             timer.reset();
-            while(timer.milliseconds() < 750 && opModeIsActive());
+            while(timer.milliseconds() < 1000 && opModeIsActive());
             lift.setTargetPosition(5);
             lift.setPower(1);
 
@@ -1414,11 +1414,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 while(timer.milliseconds() < 1000 && opModeIsActive());*/
             }
 
-            //Back up 10 inches
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            drive.resetEncoders();
-
             //Check if robot has two glyphs
             if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
                 //End glyph collection sequence
@@ -1429,7 +1424,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 //Lift and flip
                 lift.setTargetPosition(800);
                 timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());
+                while(timer.milliseconds() < 250 && opModeIsActive());
                 spin.setPosition(SPIN_ROTATED);
                 timer.reset();
                 while (timer.milliseconds() < 750 && opModeIsActive()) ;
@@ -1439,8 +1434,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
             /*timer.reset();
             while(timer.milliseconds() < 1000 && opModeIsActive());*/
 
-                //Drive 20 inches forward to pick up second glyph
-                while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 20* COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 1,
+                //Drive 21 inches forward to pick up second glyph
+                while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 10* COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
                         0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
                     ;
 
@@ -1456,14 +1451,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     timer.reset();
                     while (timer.milliseconds() < 250 && opModeIsActive()) ;
 
-                    if (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) {
+                    if ((topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) && gameTime.seconds() < 23) {
                         additionalDistance = true;
                     }
 
                 }
                 drive.resetEncoders();
 
-                if (additionalDistance) {
+                /*if (additionalDistance) {
                     //Drive 6 inches forward to pick up second glyph
                     while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
                             0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
@@ -1479,7 +1474,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         timer.reset();
                         while (timer.milliseconds() < 250 && opModeIsActive()) ;
                     }
-                }
+                }*/
 
                 drive.resetEncoders();
 
@@ -1496,9 +1491,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         ;
                     drive.resetEncoders();
                 } else {
-                    //Back up 15 inches to original position
+                    //Back up 21 inches to original position
                     drive.resetEncoders();
-                    while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
+                    while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
                         ;
                     drive.resetEncoders();
                 }

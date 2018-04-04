@@ -150,37 +150,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     ClawThreePoint relic;
     MecanumDriveTrain drive;
 
-    //pid values for balancing
-    final double pGainx = .05;
-    final double iGainx = 0;
-    final double dGainx = 0;
-    final double pGainy = .05;
-    final double iGainy = 0;
-    final double dGainy = 0;
-    final double xDesired = -2.25;
-    final double yDesired = -.75;
-    double currentTime = 0;
-    double previousTime = 0;
-    double currentDifferencex = 0;
-    double previousDifferencex = 0;
-    double currentDifferencey = 0;
-    double previousDifferencey = 0;
-    double areaSumx = 0;
-    double areaSumy = 0;
-    double correctionx = 0;
-    double correctiony = 0;
-    double currentValuex = 0;
-    double currentValuey = 0;
-    double slopex;
-    double slopey;
-    double px;
-    double py;
-    double ix;
-    double iy;
-    double dx;
-    double dy;
-    ElapsedTime PIDTimer;
-
 
     /*
 **************************************************************************************************************************************
@@ -216,7 +185,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         intake1Time = new ElapsedTime();
         intake2Time = new ElapsedTime();
         rotateTime = new ElapsedTime();
-        PIDTimer = new ElapsedTime();
 
         //create intakes
         bottomIntake = new twoWheelIntake(leftWheel1, rightWheel1, INTAKE_POWER, OUTAKE_POWER);
@@ -278,6 +246,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             float spinPosition = (float) spin.getPosition();
             ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
+            //telemetry.addData("Relic Tilt", relic_tilt.getPosition());
+            //telemetry.addData("Relic Arm", relic_arm.getPosition());
+            telemetry.update();
 
         }
 
@@ -574,11 +545,15 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     //change the state of the drivetrain
                     driveState = driveStates.MOVING_ON_STONE;
 
+                    //set the motors to the right states
+                    drive.resetEncoders();
+                    rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
                     //set the angle at which to climb the stone to the current angle
                     balanceAngle = imu.getZAngle();
-
-                    //reset encoders
-                    drive.resetEncoders();
 
                 }
 
@@ -588,17 +563,21 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     //set the state to balancing
                     driveState = driveStates.BALANCING;
 
-                    resetBalancingVariables();
+                    //set the motor modes
+                    drive.resetEncoders();
+                    rf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    rb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    lf.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    lb.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 }
                 break;
             //state for moving onto the stone using encoders
             case MOVING_ON_STONE:
 
                 //drive onto the balancing stone using the drivetrain method
-                if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, 990, .75, .3, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
+                if(!drive.moveIMU(drive.getEncoderDistance(), 1000, 0, 0, 990, .5, .1, balanceAngle+180, pidGain, balanceAngle, 20, 250)){
                     //once method is complete change states to balancing
                     driveState = driveStates.BALANCING;
-                    resetBalancingVariables();
                 }
 
                 //go to manual state if joysticks moved or b pressed
@@ -610,37 +589,17 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
             //state for balancing on stone after all 4 wheels are on stone
             case BALANCING:
-                currentValuex = imu.getXAngle();
-                currentValuey = imu.getYAngle();
-                currentTime = PIDTimer.milliseconds();
-                currentDifferencex = currentValuex - xDesired;
-                currentDifferencey = currentValuey - yDesired;
-                px = currentDifferencex * pGainx;
-                py = currentDifferencey * pGainy;
 
-                areaSumx += ((previousDifferencex+currentDifferencex)/2)*(currentTime-previousTime);
-                areaSumy += ((previousDifferencey+currentDifferencey)/2)*(currentTime-previousTime);
+                //determine how much power to put in the X and Y directions base on the IMU angles
+                xPowerBalance = (imu.getXAngle() - DESIRED_X_BALANCE_ANGLE) * BALANCE_GAIN;
+                yPowerBalance = (imu.getYAngle() - DESIRED_Y_BALANCE_ANGLE) * BALANCE_GAIN;
 
-                ix = areaSumx*iGainx;
-                iy = areaSumy*iGainy;
+                //set the powers
+                rf.setPower(yPowerBalance-xPowerBalance);
+                rb.setPower(yPowerBalance+xPowerBalance);
+                lf.setPower(yPowerBalance+xPowerBalance);
+                lb.setPower(yPowerBalance-xPowerBalance);
 
-                slopex = (previousDifferencex-currentDifferencex)/(previousTime-currentTime);
-                slopey = (previousDifferencey-currentDifferencey)/(previousTime-currentTime);
-
-                dx = slopex*dGainx;
-                dy = slopey*dGainy;
-
-                correctionx = px+ix+dx;
-                correctiony = py+iy+dy;
-
-                rf.setPower(correctiony-correctionx);
-                rb.setPower(correctiony+correctionx);
-                lf.setPower(correctiony+correctionx);
-                lb.setPower(correctiony-correctionx);
-
-                previousTime = currentTime;
-                previousDifferencex = currentDifferencex;
-                previousDifferencey = currentDifferencey;
                 //leave this state when b pressed or joysticks moved
                 if((gamepad1.b&&!bPressed)||gamepad1.left_stick_x!=0||gamepad1.left_stick_y!=0||gamepad1.right_stick_x!=0){
                     drive.resetEncoders();
@@ -1014,22 +973,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
             relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
         }
-    }
-
-    public void resetBalancingVariables(){
-        currentTime = 0;
-        previousTime = 0;
-        currentDifferencex = 0;
-        previousDifferencex = 0;
-        currentDifferencey = 0;
-        previousDifferencey = 0;
-        areaSumx = 0;
-        areaSumy = 0;
-        correctionx = 0;
-        correctiony = 0;
-        currentValuex = 0;
-        currentValuey = 0;
-        PIDTimer.reset();
     }
 
 }
