@@ -920,6 +920,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
      */
     public void autoSelectAlignment(){
         OpenGLMatrix lastLocation = null;
+        String zAngle = null;
         relicTrackables.activate();
         boolean selected = false, selecting = true, aligned = false;
         double jewelValue = 255, backValue = 255, frontValue = 255;
@@ -986,7 +987,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Check if robot is aligned using ultrasonic values
             //If robot is aligned, the LEDs will turn on
             if(autoProgram.equals("RedStone1")){
-                if(jewelValue == 36 && backValue == 37){
+                if(jewelValue == 36 && backValue == 37 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -995,7 +996,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("RedStone2")){
-                if(jewelValue == 36 && frontValue == 93){
+                if(jewelValue == 36 && frontValue == 93 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1004,7 +1005,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone1")){
-                if(jewelValue == 36 && frontValue == 38){
+                if(jewelValue == 36 && frontValue == 38 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1013,7 +1014,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone2")){
-                if(jewelValue == 36 && backValue == 93){
+                if(jewelValue == 36 && backValue == 93 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1070,7 +1071,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             if (lastLocation != null) {
                 //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
                 telemetry.addData("Pos", format(lastLocation));
-                String zAngle = format(lastLocation).substring(15).split(" ")[2];
+                zAngle = format(lastLocation).substring(15).split(" ")[2];
                 telemetry.addData("Z Angle", Integer.parseInt(zAngle.substring(0, zAngle.length()-1)) - 20);
             } else {
                 telemetry.addData("Pos", "Unknown");
