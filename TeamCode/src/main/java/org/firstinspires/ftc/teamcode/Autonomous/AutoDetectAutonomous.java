@@ -419,9 +419,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
             drive.resetEncoders();
 
-            drive.stop();
-            while (opModeIsActive());
-
             //Pivot to face cryptobox
             while (drive.pivotIMU(15, 0, .4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 

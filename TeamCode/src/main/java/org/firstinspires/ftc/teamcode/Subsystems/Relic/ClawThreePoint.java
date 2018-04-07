@@ -18,7 +18,7 @@ public class ClawThreePoint implements IRelic {
     //Variables for servo positions and calculations
     private double relicArmAngle = 0;
     private double relicTiltPos = 0;
-    private double tiltOffset = -0.00075;
+    private double tiltOffset = 0.14;
 
     //Create constants to set servo values
     private final double RELIC_CLAW_CLOSED = 1;
@@ -113,12 +113,12 @@ public class ClawThreePoint implements IRelic {
     public void setArmPosition(double armPosition){
         double prevPosition = arm.getPosition();
         arm.setPosition(armPosition);
-        if(arm.getPosition() > 0.74) {
-            relicArmAngle = (arm.getPosition() - 0.68) / ((0.9 - .68) / 45);
+        if(arm.getPosition() > 0.7) {
+            relicArmAngle = (arm.getPosition() - 0.7) / ((.7) / 180);
             relicTiltPos = ((180-relicArmAngle) * (0.005)) + tiltOffset;
             tilt.setPosition(relicTiltPos);
-        }else if(prevPosition > 0.74){
-            relicArmAngle = (prevPosition - 0.68) / ((0.9 - .68) / 45);
+        }else if(prevPosition > 0.7){
+            relicArmAngle = (prevPosition - 0.7) / ((.7) / 180);
             relicTiltPos = ((180-relicArmAngle) * (0.005)) + tiltOffset;
             tilt.setPosition(relicTiltPos);
         }

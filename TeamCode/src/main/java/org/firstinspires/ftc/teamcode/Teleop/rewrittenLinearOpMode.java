@@ -137,7 +137,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
     //constants for relic
     final double RELIC_ARM_ORIGIN = .01;
-    final double RELIC_ARM_GRAB_POS = .78;
+    final double RELIC_ARM_GRAB_POS = .835;
     final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
@@ -275,6 +275,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             rotateStateMachine();
             controlLEDS();
             relicControls();
+
+            telemetry.addData("Relic Tilt Position", relic_tilt.getPosition());
+            telemetry.update();
 
             float spinPosition = (float) spin.getPosition();
             ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
@@ -997,7 +1000,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.setArmPosition(RELIC_ARM_GRAB_POS);
         }else if(gamepad1.a){
             relic.setArmPosition(RELIC_ARM_ORIGIN);
-            relic.pickUpRelic();
             relic.setTiltPosition(1);
         }
         if(gamepad2.b){
