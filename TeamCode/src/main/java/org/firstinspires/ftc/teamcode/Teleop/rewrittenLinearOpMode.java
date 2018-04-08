@@ -139,7 +139,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
     //constants for relic
     final double RELIC_ARM_ORIGIN = .01;
-    final double RELIC_ARM_GRAB_POS = .78;
+    final double RELIC_ARM_GRAB_POS = .835;
     final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
@@ -187,10 +187,10 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
 
     /*
-**************************************************************************************************************************************
-**********************************************     PROGRAM STARTS HERE     *************************************************************
-***************************************************************************************************************************************
- */
+     **************************************************************************************************************************************
+     **********************************************     PROGRAM STARTS HERE     *************************************************************
+     ***************************************************************************************************************************************
+     */
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -239,11 +239,11 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         // WAIT FOR START
         waitForStart();
 
-/*
-**************************************************************************************************************************************
-***********************************************     OPMODE RUNS HERE     *************************************************************
-***************************************************************************************************************************************
- */
+        /*
+         **************************************************************************************************************************************
+         ***********************************************     OPMODE RUNS HERE     *************************************************************
+         ***************************************************************************************************************************************
+         */
         //set servo initialization positions once play has been pressed
         pan.setPosition(JEWEL_PAN_POSITION);
         tilt.setPosition(JEWEL_TILT_POSITION);
@@ -280,6 +280,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             rotateStateMachine();
             controlLEDS();
             relicControls();
+
+            telemetry.addData("Relic Tilt Position", relic_tilt.getPosition());
+            telemetry.update();
 
             float spinPosition = (float) spin.getPosition();
             ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
@@ -667,12 +670,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(gamepad1.right_bumper||(!glyphIntakeRotated&&gamepad1.dpad_down)||(glyphIntakeRotated&&gamepad1.dpad_up)){
                     lowerIntakeState = rewritten.intakeState.OUTAKE;
 
-                //If the robot is intaking, move to the intake state
+                    //If the robot is intaking, move to the intake state
                 }else if (intaking) {
                     lowerIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake1Time.reset();
 
-                //Turn off the motors if not changing states
+                    //Turn off the motors if not changing states
                 }else{
                     bottomIntake.turnOff();
                 }
@@ -758,12 +761,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
 
-                //If the robot is intaking, move to the intake state
+                    //If the robot is intaking, move to the intake state
                 }else if (intaking) {
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
 
-                //Turn off the motors if not changing states
+                    //Turn off the motors if not changing states
                 }else{
                     topIntake.turnOff();
                 }
@@ -781,21 +784,21 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         liftPosition = LIFT_INTAKEN_POSITION;
                     }
 
-                //If the outake buttons are pressed, then move to the outake state and set the robot as not intaking
+                    //If the outake buttons are pressed, then move to the outake state and set the robot as not intaking
                 }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
-                //If the robot is no longer intaking then move to the nothing state
+                    //If the robot is no longer intaking then move to the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //if the robot does not have a glyph, then reset the timer and turn on the motors
+                    //if the robot does not have a glyph, then reset the timer and turn on the motors
                 }else if(glyphColor2.cmDistance() > GLYPH_GRAB_DISTANCE){
                     intake2Time.reset();
                     topIntake.secureGlyph();
 
-                //if the robot has a glyph then don't reset the timer to determine how long it has had it for and keep running the motors
+                    //if the robot has a glyph then don't reset the timer to determine how long it has had it for and keep running the motors
                 }else{
                     topIntake.secureGlyph();
                 }
@@ -809,16 +812,16 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                     upperIntakeState = rewritten.intakeState.INTAKE_MOTOR;
                     intake2Time.reset();
 
-                //if an eject button is pressed, move into the outake state
+                    //if an eject button is pressed, move into the outake state
                 }else if(gamepad1.right_bumper||(glyphIntakeRotated&&gamepad1.dpad_down)||(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.OUTAKE;
                     intaking = false;
 
-                //if the robot is no longer intaking, move into the nothing state
+                    //if the robot is no longer intaking, move into the nothing state
                 }else if(!intaking){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //otherwise turn off the motor and wait for an event to happen so that the wheels and glyph inside the robot do not wear out
+                    //otherwise turn off the motor and wait for an event to happen so that the wheels and glyph inside the robot do not wear out
                 }else{
                     topIntake.turnOff();
                 }
@@ -831,7 +834,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 if(!gamepad1.right_bumper&&!(glyphIntakeRotated&&gamepad1.dpad_down)&&!(!glyphIntakeRotated&&gamepad1.dpad_up)){
                     upperIntakeState = rewritten.intakeState.NOTHING;
 
-                //if any of them are pressed, outake
+                    //if any of them are pressed, outake
                 }else{
                     topIntake.dispenseGlyph();
                 }
@@ -864,7 +867,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         liftPosition = GLYPH_ROTATE_POSITION+LIFT_POSITION_OFFSET;
                         lowerLiftAfterRotating = true;
 
-                    //if the glyph lift is above the safe height for rotating, move into the rotating state without lifting and don't lower lift after done rotating
+                        //if the glyph lift is above the safe height for rotating, move into the rotating state without lifting and don't lower lift after done rotating
                     }else{
                         rotateState = glyphRotateStates.ROTATING;
                         glyphIntakeRotated = !glyphIntakeRotated;
@@ -901,16 +904,16 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                         rotateState = glyphRotateStates.LOWERING;
                         liftPosition = 0;
 
-                    //if the lift does not need to lower after rotating, go to the stopped state
+                        //if the lift does not need to lower after rotating, go to the stopped state
                     }else{
                         rotateState = glyphRotateStates.STOPPED;
                     }
 
-                //if the driver takes control of the glyph lift, stop rotating procedure
+                    //if the driver takes control of the glyph lift, stop rotating procedure
                 }else if(liftState == glyphLiftStates.MANUAL){
                     rotateState = glyphRotateStates.STOPPED;
 
-                //move the servo to the desired position based on the variable set when leaving previous state to come to rotating state
+                    //move the servo to the desired position based on the variable set when leaving previous state to come to rotating state
                 }else if(glyphIntakeRotated){
                     spin.setPosition(SPIN_SPUN_POSITION);
                 }else{
@@ -1002,7 +1005,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.setArmPosition(RELIC_ARM_GRAB_POS);
         }else if(gamepad1.a){
             relic.setArmPosition(RELIC_ARM_ORIGIN);
-            relic.pickUpRelic();
             relic.setTiltPosition(1);
         }
         if(gamepad2.b){

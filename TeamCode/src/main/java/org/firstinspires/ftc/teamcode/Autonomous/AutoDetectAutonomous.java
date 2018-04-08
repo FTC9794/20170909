@@ -14,12 +14,19 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Enums.Alliance;
@@ -41,6 +48,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.firstinspires.ftc.robotcontroller.external.samples.ConceptVuforiaNavigation.TAG;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.BLUE;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.RED;
 import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
@@ -68,6 +76,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     VuforiaLocalizer vuforia;
     VuforiaTrackables relicTrackables;
     VuforiaTrackable relicTemplate;
+    List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
     String vumarkSeen = "";
 
     //create servo variables
@@ -410,9 +419,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
             drive.resetEncoders();
 
-            drive.stop();
-            while (opModeIsActive());
-
             //Pivot to face cryptobox
             while (drive.pivotIMU(15, 0, .4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
@@ -749,7 +755,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             drive.stop();
 
             //Pivot to face glyph pit in preparation for teleop
-            while (drive.pivotIMU(-45, 0, 0.4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+            while (drive.pivotIMU(-45, 0, 0.4, 0.25, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
 
             //move backward to get into safe zone
             drive.resetEncoders();
@@ -791,6 +797,32 @@ public class AutoDetectAutonomous extends LinearOpMode {
         relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
         relicTemplate = relicTrackables.get(0);
         relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+
+        allTrackables.addAll(relicTrackables);
+        float mmPerInch        = 25.4f;
+        float mmBotWidth       = 18 * mmPerInch;            // ... or whatever is right for your robot
+        float mmFTCFieldWidth  = (12*12 - 2) * mmPerInch;   // the FTC field is ~11'10" center-to-center of the glass panels
+
+        OpenGLMatrix redTargetLocationOnField = OpenGLMatrix
+                /* Then we translate the target off to the RED WALL. Our translation here
+                is a negative translation in X.*/
+                .translation(-mmFTCFieldWidth/2, 0, 0)
+                .multiplied(Orientation.getRotationMatrix(
+                        /* First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z */
+                        AxesReference.EXTRINSIC, AxesOrder.XZX,
+                        AngleUnit.DEGREES, 90, 90, 0));
+        relicTemplate.setLocation(redTargetLocationOnField);
+        RobotLog.ii(TAG, "Red Target=%s", format(redTargetLocationOnField));
+
+        OpenGLMatrix phoneLocationOnRobot = OpenGLMatrix
+                .translation(mmBotWidth/2,0,0)
+                .multiplied(Orientation.getRotationMatrix(
+                        AxesReference.EXTRINSIC, AxesOrder.YZY,
+                        AngleUnit.DEGREES, -90, 0, 0));
+        RobotLog.ii(TAG, "phone=%s", format(phoneLocationOnRobot));
+
+        ((VuforiaTrackableDefaultListener)relicTemplate.getListener()).setPhoneInformation(phoneLocationOnRobot, parameters.cameraDirection);
+
 
         telemetry.addData("Init", "Finished Starting Vuforia");
         telemetry.update();
@@ -884,6 +916,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
      * and select the corresponding autonomous program
      */
     public void autoSelectAlignment(){
+        OpenGLMatrix lastLocation = null;
+        String zAngle = null;
         relicTrackables.activate();
         boolean selected = false, selecting = true, aligned = false;
         double jewelValue = 255, backValue = 255, frontValue = 255;
@@ -950,7 +984,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Check if robot is aligned using ultrasonic values
             //If robot is aligned, the LEDs will turn on
             if(autoProgram.equals("RedStone1")){
-                if(jewelValue == 36 && backValue == 37){
+                if(jewelValue == 36 && backValue == 37 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -959,7 +993,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("RedStone2")){
-                if(jewelValue == 36 && frontValue == 93){
+                if(jewelValue == 36 && frontValue == 93 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -968,7 +1002,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone1")){
-                if(jewelValue == 36 && frontValue == 38){
+                if(jewelValue == 36 && frontValue == 38 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -977,7 +1011,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone2")){
-                if(jewelValue == 36 && backValue == 93){
+                if(jewelValue == 36 && backValue == 93 && Integer.parseInt(zAngle) == -180){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1014,6 +1048,32 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     selected = true;
                 }
             }
+
+            for (VuforiaTrackable trackable : allTrackables) {
+                /**
+                 * getUpdatedRobotLocation() will return null if no new information is available since
+                 * the last time that call was made, or if the trackable is not currently visible.
+                 * getRobotLocation() will return null if the trackable is not currently visible.
+                 */
+                telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
+
+                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+                if (robotLocationTransform != null) {
+                    lastLocation = robotLocationTransform;
+                }
+            }
+            /**
+             * Provide feedback as to where the robot was last located (if we know).
+             */
+            if (lastLocation != null) {
+                //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
+                telemetry.addData("Pos", format(lastLocation));
+                zAngle = format(lastLocation).substring(15).split(" ")[2];
+                telemetry.addData("Z Angle", Integer.parseInt(zAngle.substring(0, zAngle.length()-1)) - 20);
+            } else {
+                telemetry.addData("Pos", "Unknown");
+            }
+
             //Update US values and alignment status
             telemetry.update();
         }
@@ -1174,7 +1234,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Lift and flip
             spin.setPosition(SPIN_ROTATED);
             timer.reset();
-            while(timer.milliseconds() < 750 && opModeIsActive());
+            while(timer.milliseconds() < 1000 && opModeIsActive());
             lift.setTargetPosition(5);
             lift.setPower(1);
 
@@ -1414,11 +1474,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 while(timer.milliseconds() < 1000 && opModeIsActive());*/
             }
 
-            //Back up 10 inches
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            drive.resetEncoders();
-
             //Check if robot has two glyphs
             if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
                 //End glyph collection sequence
@@ -1429,7 +1484,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 //Lift and flip
                 lift.setTargetPosition(800);
                 timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());
+                while(timer.milliseconds() < 250 && opModeIsActive());
                 spin.setPosition(SPIN_ROTATED);
                 timer.reset();
                 while (timer.milliseconds() < 750 && opModeIsActive()) ;
@@ -1439,8 +1494,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
             /*timer.reset();
             while(timer.milliseconds() < 1000 && opModeIsActive());*/
 
-                //Drive 20 inches forward to pick up second glyph
-                while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 20* COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 1,
+                //Drive 21 inches forward to pick up second glyph
+                while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 10* COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
                         0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
                     ;
 
@@ -1456,14 +1511,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     timer.reset();
                     while (timer.milliseconds() < 250 && opModeIsActive()) ;
 
-                    if (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) {
+                    if ((topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) && gameTime.seconds() < 23) {
                         additionalDistance = true;
                     }
 
                 }
                 drive.resetEncoders();
 
-                if (additionalDistance) {
+                /*if (additionalDistance) {
                     //Drive 6 inches forward to pick up second glyph
                     while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
                             0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
@@ -1479,7 +1534,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         timer.reset();
                         while (timer.milliseconds() < 250 && opModeIsActive()) ;
                     }
-                }
+                }*/
 
                 drive.resetEncoders();
 
@@ -1496,9 +1551,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         ;
                     drive.resetEncoders();
                 } else {
-                    //Back up 15 inches to original position
+                    //Back up 21 inches to original position
                     drive.resetEncoders();
-                    while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
+                    while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
                         ;
                     drive.resetEncoders();
                 }
@@ -1522,5 +1577,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
             while(timer.milliseconds() < 750 && opModeIsActive());
             lift.setTargetPosition(300);
         }
+    }
+
+    String format(OpenGLMatrix transformationMatrix) {
+        return transformationMatrix.formatAsTransform();
     }
 }
