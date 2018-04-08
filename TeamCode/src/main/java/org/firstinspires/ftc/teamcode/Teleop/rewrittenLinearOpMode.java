@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Teleop;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.hardware.lynx.LynxVoltageSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -151,12 +153,12 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     MecanumDriveTrain drive;
 
     //pid values for balancing
-    final double pGainx = .05;
-    final double iGainx = 0;
-    final double dGainx = 0;
-    final double pGainy = .05;
-    final double iGainy = 0;
-    final double dGainy = 0;
+    double pGainx = .055;
+    double iGainx = .0000;
+    double dGainx = 4;
+    double pGainy = .055;
+    double iGainy = .0000;
+    double dGainy = 4;
     final double xDesired = -2.25;
     final double yDesired = -.75;
     double currentTime = 0;
@@ -181,6 +183,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     double dy;
     ElapsedTime PIDTimer;
 
+    LynxVoltageSensor voltageSensor;
+
 
     /*
 **************************************************************************************************************************************
@@ -189,6 +193,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
  */
     @Override
     public void runOpMode() throws InterruptedException {
+
 
         //initialize robot hardware
         initHardwareMap();
@@ -1019,17 +1024,34 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     public void resetBalancingVariables(){
         currentTime = 0;
         previousTime = 0;
-        currentDifferencex = 0;
-        previousDifferencex = 0;
-        currentDifferencey = 0;
-        previousDifferencey = 0;
         areaSumx = 0;
         areaSumy = 0;
         correctionx = 0;
         correctiony = 0;
-        currentValuex = 0;
-        currentValuey = 0;
+        currentValuex = imu.getXAngle();
+        currentValuey = imu.getYAngle();
+        pGainx = (-.005/2.1)*getBatteryVoltage()+.083;
+        pGainy = pGainx;
+        telemetry.addData("pgain", pGainx);
+        telemetry.addData("battery", getBatteryVoltage());
+        telemetry.update();
         PIDTimer.reset();
+        currentDifferencex = currentValuex-xDesired;
+        previousDifferencex = currentDifferencex;
+        currentDifferencey = currentValuey-yDesired;
+        previousDifferencey = currentDifferencey;
+
+
+    }
+    double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        for (VoltageSensor sensor : hardwareMap.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) {
+                result = Math.min(result, voltage);
+            }
+        }
+        return result;
     }
 
 }
