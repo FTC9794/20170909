@@ -58,6 +58,9 @@ import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
  */
 @Autonomous(name = "Auto Select Autonomous", group = "Autonomous")
 public class AutoDetectAutonomous extends LinearOpMode {
+    String fileName = "autoSpinPosition.txt";
+    File file = AppUtil.getInstance().getSettingsFile(fileName);
+
     //Create threads for intake mechanism
     DualWheelIntakeThread bottomIntake, topIntake;
     Thread bottomIntakeThread, topIntakeThread;
@@ -107,6 +110,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
     final double DEFAULT_MIN_POWER = .25;
     final double DEFAULT_ERROR_DISTANCE = 10;
     final double[] DEFAULT_PID = {.05};
+    final double[] DEFAULT_PID_STRAFE = {.03};
     final double DEFAULT_MIN_POWER_PIVOT = .15;
 
     //define constants for servo positions
@@ -410,13 +414,13 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Drive to target cryptobox column
             if (vumarkSeen.equals("RIGHT")) {
                 while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
+                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
             } else if (vumarkSeen.equals("LEFT")) {
                 while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH + COLUMN_OFFSET - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
+                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
             } else
                 while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - ultrasonicCorrection, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
+                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
             drive.resetEncoders();
 
             //Pivot to face cryptobox
@@ -452,12 +456,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
             if (vumarkSeen.equals("RIGHT")) {
                 while(drive.pivotIMU(0, 15, .5, .4, 2, 250, Direction.FASTEST));
                 while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET * 2, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+                        0.6, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
             } else if (vumarkSeen.equals("CENTER") || vumarkSeen.equals("")) {
                 while(drive.pivotIMU(0, 15, .5, .4, 2, 250, Direction.FASTEST));
 
                 while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.6, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+                        0.6, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
             }
             drive.resetEncoders();
 
@@ -499,7 +503,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //drive into cryptobox
             drive.resetEncoders();
             timer.reset();
-            while (drive.moveIMU(drive.getEncoderDistance(), 7 * COUNTS_PER_INCH, 3 * COUNTS_PER_INCH, 0, 3 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 15, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500)
+            while (drive.moveIMU(drive.getEncoderDistance(), 14 * COUNTS_PER_INCH, 7 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 15, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500)
                     && timer.milliseconds() < 3000 && opModeIsActive()) {
                 telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
                 telemetry.update();
@@ -517,7 +521,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Back away from cryptobox
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -165, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, -165, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
 
             //Reset the drive encoders and set the drive power to zero
             drive.resetEncoders();
@@ -769,8 +773,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
         bottomIntake.stop();
         topIntake.stop();
 
-        String fileName = "autoSpinPosition.txt";
-        File file = AppUtil.getInstance().getSettingsFile(fileName);
+
+
         float spinPosition = (float) spin.getPosition();
         ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
 
@@ -984,7 +988,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Check if robot is aligned using ultrasonic values
             //If robot is aligned, the LEDs will turn on
             if(autoProgram.equals("RedStone1")){
-                if(jewelValue == 36 && backValue == 37 && Integer.parseInt(zAngle) == -180){
+                if(jewelValue == 36 && backValue == 37){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -993,7 +997,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("RedStone2")){
-                if(jewelValue == 36 && frontValue == 93 && Integer.parseInt(zAngle) == -180){
+                if(jewelValue == 36 && frontValue == 93){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1002,7 +1006,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone1")){
-                if(jewelValue == 36 && frontValue == 38 && Integer.parseInt(zAngle) == -180){
+                if(jewelValue == 36 && frontValue == 38){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1011,7 +1015,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
             else if(autoProgram.equals("BlueStone2")){
-                if(jewelValue == 36 && backValue == 93 && Integer.parseInt(zAngle) == -180){
+                if(jewelValue == 36 && backValue == 93){
                     aligned = true;
                     led.turnOn();
                 }else{
@@ -1233,6 +1237,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Lift and flip
             spin.setPosition(SPIN_ROTATED);
+            float spinPosition = (float) spin.getPosition();
+            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
             timer.reset();
             while(timer.milliseconds() < 1000 && opModeIsActive());
             lift.setTargetPosition(5);
@@ -1252,19 +1258,21 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //check if glyph in bottom arms of robot
             if (topGlyphColor.getDistance(DistanceUnit.CM)<=6){
                 led.setLEDPower(1);
-            }else{
+            }else if (gameTime.seconds() < 18){
                 glyphWiggle(orientation, 45);
                 timer.reset();
                 while(timer.milliseconds()<250&&opModeIsActive());
 
                 if(topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))){
-                    additionalDistance = true;
+                    if(gameTime.seconds() < 18) {
+                        additionalDistance = true;
+                    }
                 }
 
             }
             drive.resetEncoders();
 
-            if(additionalDistance){
+            if(additionalDistance && gameTime.seconds() < 18){
                 //Drive 6 inches forward to pick up second glyph
                 while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
                         0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
@@ -1330,7 +1338,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 while(timer.milliseconds() < 1000 && opModeIsActive());*/
 
             }
-            else{ //The robot does not have a glyph in the bottom
+            else if (gameTime.seconds() < 18){ //The robot does not have a glyph in the bottom
                 //Wiggle with an offset of 15 degrees to try and get a glyph
                 glyphWiggle(orientation, 25);
                 drive.resetEncoders();
@@ -1338,10 +1346,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 boolean additionalDistance = false;
 
                 if(bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))){
-                    additionalDistance = true;
+                    if(gameTime.seconds() < 18) {
+                        additionalDistance = true;
+                    }
                 }
 
-                if(additionalDistance){
+                if(additionalDistance && gameTime.seconds()<18){
                     //Drive 6 inches forward to pick up second glyph
                     while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
                             0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
@@ -1351,7 +1361,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
                     if (bottomGlyphColor.getDistance(DistanceUnit.CM)<=6){
                         led.setLEDPower(1);
-                    }else{
+                    }else if(gameTime.seconds() < 18){
                         glyphWiggle(orientation, 30);
                         timer.reset();
                         while(timer.milliseconds()<250&&opModeIsActive());
@@ -1369,7 +1379,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 while(timer.milliseconds() < 1000 && opModeIsActive());*/
 
                 if(additionalDistance){
-                    //Drive back 10 inches to return to original position
+                    //Drive back 16 inches to return to original position
                     while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
                             0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
                         ;
@@ -1399,6 +1409,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
                 //Lift and flip to deposit the glyph in the bottom half of the mechanism
                 spin.setPosition(SPIN_ROTATED);
+                float spinPosition = (float) spin.getPosition();
+                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
                 timer.reset();
                 while(timer.milliseconds() < 750 && opModeIsActive());
                 lift.setTargetPosition(300);
@@ -1477,7 +1489,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Check if robot has two glyphs
             if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
                 //End glyph collection sequence
-            }else {
+            }else if(gameTime.seconds() < 18){
                 /*timer.reset();
                 while(timer.milliseconds() < 1000 && opModeIsActive());*/
 
@@ -1486,6 +1498,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 timer.reset();
                 while(timer.milliseconds() < 250 && opModeIsActive());
                 spin.setPosition(SPIN_ROTATED);
+                float spinPosition = (float) spin.getPosition();
+                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
                 timer.reset();
                 while (timer.milliseconds() < 750 && opModeIsActive()) ;
                 lift.setTargetPosition(5);
@@ -1506,13 +1520,15 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 //check if glyph in bottom arms of robot
                 if (topGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
                     led.setLEDPower(1);
-                } else {
+                } else if(gameTime.seconds() < 18){
                     glyphWiggle(orientation, 45);
                     timer.reset();
                     while (timer.milliseconds() < 250 && opModeIsActive()) ;
 
-                    if ((topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) && gameTime.seconds() < 23) {
-                        additionalDistance = true;
+                    if ((topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) && gameTime.seconds() < 18) {
+                        if(gameTime.seconds() < 18) {
+                            additionalDistance = true;
+                        }
                     }
 
                 }
@@ -1573,6 +1589,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             //Lift and flip to deposit the glyph in the bottom half of the mechanism
             spin.setPosition(SPIN_ROTATED);
+            float spinPosition = (float) spin.getPosition();
+            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
             timer.reset();
             while(timer.milliseconds() < 750 && opModeIsActive());
             lift.setTargetPosition(300);
