@@ -159,8 +159,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     double pGainy = .055;
     double iGainy = .0000;
     double dGainy = 4;
-    final double xDesired = -2.25;
-    final double yDesired = -.75;
+    double xDesired = 0;
+    double yDesired = 0;
     double currentTime = 0;
     double previousTime = 0;
     double currentDifferencex = 0;
@@ -233,6 +233,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         //create drivetrain
         drive = new MecanumDriveTrain(motors, imu, telemetry);
 
+        xDesired = imu.getXAngle();
+        yDesired = imu.getYAngle();
         telemetry.addData("Initialization", "complete");
         telemetry.update();
 
