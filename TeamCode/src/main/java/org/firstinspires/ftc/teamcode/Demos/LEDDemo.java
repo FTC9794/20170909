@@ -20,15 +20,23 @@ public class LEDDemo extends OpMode {
 
     @Override
     public void loop() {
-        if(ledPower > 0 || !increasing){
-            ledPower = ledPower - 0.002;
+        if(!increasing){
+            ledPower -= 0.003;
+        }else{
+            ledPower += 0.003;
+        }
+
+        if(ledPower >= 1){
             increasing = false;
-        }else if (ledPower <= 0 || increasing){
-            ledPower = ledPower + 0.002;
+        }
+        if(ledPower <= 0){
             increasing = true;
         }
+
         LED.setPower(ledPower);
         telemetry.addData("LED Power", ledPower);
+        telemetry.addData("Led < 0?", ledPower <= 0);
+        telemetry.addData("Increasing?", increasing);
         telemetry.update();
     }
 }
