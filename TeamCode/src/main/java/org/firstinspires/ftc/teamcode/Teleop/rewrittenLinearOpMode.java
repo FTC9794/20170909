@@ -139,7 +139,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
     //constants for relic
     final double RELIC_ARM_ORIGIN = .01;
-    final double RELIC_ARM_GRAB_POS = .835;
+    final double RELIC_ARM_GRAB_POS = .865;
     final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
@@ -284,6 +284,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relicControls();
 
             telemetry.addData("Relic Tilt Position", relic_tilt.getPosition());
+            telemetry.addData("Relic Arm Position", relic_arm.getPosition());
             telemetry.update();
 
             float spinPosition = (float) spin.getPosition();
@@ -1023,6 +1024,10 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             relic.adjustArm(-gamepad2.right_stick_y > 0.1 && relic.returnArmPos() <= 1, .005);
             relic.adjustArm(-gamepad2.right_stick_y < -0.1 && relic.returnArmPos() >= 0.04, -.005);
         }
+
+        //Relic Tilt Servo Controls to adjust tilt servo position
+        relic.tiltRelic(-gamepad2.left_stick_y > 0.1 && relic.returnTiltPos() <= 0.9, 0.01);
+        relic.tiltRelic(-gamepad2.left_stick_y < -0.1 && relic.returnTiltPos() >= 0.01, -0.01);
     }
 
     public void resetBalancingVariables(){

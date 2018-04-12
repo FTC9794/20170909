@@ -18,7 +18,7 @@ public class ClawThreePoint implements IRelic {
     //Variables for servo positions and calculations
     private double relicArmAngle = 0;
     private double relicTiltPos = 0;
-    private double tiltOffset = 0.14;
+    private double tiltOffset = -0.02;
 
     //Create constants to set servo values
     private final double RELIC_CLAW_CLOSED = 1;
