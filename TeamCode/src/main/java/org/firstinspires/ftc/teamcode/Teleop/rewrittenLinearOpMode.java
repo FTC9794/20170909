@@ -50,7 +50,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     LynxI2cColorRangeSensor glyphSensor2;
     DcMotor led_motor;
     LED leds;
-    DigitalChannel glyphLimit, relicLimit;
+    DigitalChannel glyphLimit, relicLimit, spinSensor;
 
     //timers to be used during teleop
     ElapsedTime intake1Time;
@@ -139,7 +139,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
     //constants for relic
     final double RELIC_ARM_ORIGIN = .01;
-    final double RELIC_ARM_GRAB_POS = .865;
+    final double RELIC_ARM_GRAB_POS = .85;
     final double RELIC_ARM_EXTENSION_HALF_POWER = .5;
     final double RELIC_ARM_RETRACTION_HALF_POWER = -.5;
     final double RELIC_ARM_EXTENSION_FULL_POWER = 1;
@@ -205,6 +205,11 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         File file = AppUtil.getInstance().getSettingsFile(fileName);
         String spinString = ReadWriteFile.readFile(file);
         double spinInitPosition = Double.parseDouble(spinString);
+        if(spinSensor.getState()){
+            spinInitPosition = SPIN_NORMAL_POSITION;
+        }else{
+            spinInitPosition = SPIN_SPUN_POSITION;
+        }
 
         //create color sensor objects
         glyphColor1 = new RevRangeSensor(glyphSensor1);
@@ -236,6 +241,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         xDesired = imu.getXAngle();
         yDesired = imu.getYAngle();
         telemetry.addData("Initialization", "complete");
+        telemetry.addData("Spin Sensor State", spinSensor.getState());
         telemetry.update();
 
         // WAIT FOR START
@@ -327,6 +333,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         //Hardware Map Limit Switches
         glyphLimit = hardwareMap.digitalChannel.get("glyph_limit");
         relicLimit = hardwareMap.digitalChannel.get("relic_limit");
+        spinSensor = hardwareMap.digitalChannel.get("spin_sensor");
 
 
     }
