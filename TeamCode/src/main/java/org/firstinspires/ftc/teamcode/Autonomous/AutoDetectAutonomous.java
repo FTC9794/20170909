@@ -335,7 +335,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
 
                     //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage = ultrasonicSum/5;
+                    double ultrasonicAverage;
+
+                    if(i != 0){
+                        ultrasonicAverage = ultrasonicSum/i;
+                    }else{
+                        ultrasonicAverage = 114;
+                    }
+
                     double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
 
                     //filter extraneous corrections that would be impossible
@@ -551,7 +558,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
 
                     //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage = ultrasonicSum/5;
+                    double ultrasonicAverage;
+
+                    if(i != 0){
+                        ultrasonicAverage = ultrasonicSum/i;
+                    }else{
+                        ultrasonicAverage = 114;
+                    }
+
                     double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
 
                     //filter extraneous corrections that would be impossible
@@ -658,7 +672,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         lift.setTargetPosition(898);
 
                         //determine the average and correction due to ultrasonic sensor readings
-                        ultrasonicAverageCenter = ultrasonicSumCenter/5;
+                        if(iCenter != 0){
+                            ultrasonicAverageCenter = ultrasonicSum/iCenter;
+                        }else{
+                            ultrasonicAverageCenter = 38;
+                        }
                         ultrasonicCorrection = (ultrasonicAverageCenter-38)/2.54;
 
                         //filter extraneous corrections that would be impossible
@@ -783,7 +801,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             }
 
             //determine the average and correction due to ultrasonic sensor readings
-            double ultrasonicAverage = ultrasonicSum/5;
+            double ultrasonicAverage = ultrasonicSum/i;
             double ultrasonicCorrection = (ultrasonicAverage-36)/2.54;
 
             //filter extraneous corrections that would be impossible
@@ -2085,7 +2103,12 @@ public class AutoDetectAutonomous extends LinearOpMode {
         }
 
         //determine the average and correction due to ultrasonic sensor readings
-        double ultrasonicAverage = ultrasonicSum/5;
+        double ultrasonicAverage;
+        if(i != 0){
+            ultrasonicAverage = ultrasonicSum/i;
+        }else{
+            ultrasonicAverage = 0;
+        }
         return ultrasonicAverage;
     }
 
