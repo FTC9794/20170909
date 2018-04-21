@@ -510,9 +510,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         drive.stop();
                         drive.resetEncoders();
 
-                        //initialize ultrasonic variables
-                        int iCenter = 0;
-                        int ultrasonicSumCenter=0;
                         double ultrasonicAverageCenter;
 
                         //get 5 readings of the ultrasonic sensor and sum them
