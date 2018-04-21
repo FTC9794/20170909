@@ -288,11 +288,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Pivot to face Glyph Pit
             while(drive.pivotIMU(-90, -30, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 1, 500, Direction.FASTEST)&&opModeIsActive());
 
-            /*//strafe to otherside of column if right
-            if(vumarkSeen.equals("RIGHT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), 8*COUNTS_PER_INCH, 0, 0, 0, DEFAULT_MAX_POWER, .75, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-            }*/
-
             //get glyphs from glyph pit
             getGlyphs(22*COUNTS_PER_INCH, 18*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
 
@@ -303,7 +298,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
             if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
                 //Deposit glyphs
                 if(!vumarkSeen.equals("LEFT")){
-                    //depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 100, 898);
                     //Move lift in position to deposit glyphs
                     lift.setTargetPosition(898);
 
@@ -314,34 +308,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
                     drive.stop();
 
-                    //initialize ultrasonic variables
-                    int i = 0;
-                    double ultrasonicSum=0;
-                    double ultrasonicReading;
-
-                    //get 5 readings of the ultrasonic sensor and sum them
-                    timer.reset();
-                    while(opModeIsActive()&&i<5&&timer.milliseconds()<1000){
-                        ultrasonicReading = ultrasonic_jewel.cmUltrasonic();
-                        while((ultrasonicReading==255 || ultrasonicReading < 50)&&opModeIsActive() && timer.milliseconds() < 1000){
-                            ultrasonicReading=ultrasonic_jewel.cmUltrasonic();
-                            telemetry.addData("Autonomous", "Reading Ultrasonic");
-                            telemetry.update();
-                        }
-                        ultrasonicSum+=ultrasonicReading;
-                        i++;
-                        telemetry.addData("Autonomous", "Reading Ultrasonic");
-                        telemetry.update();
-                    }
-
                     //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage;
-
-                    if(i != 0){
-                        ultrasonicAverage = ultrasonicSum/i;
-                    }else{
-                        ultrasonicAverage = 114;
-                    }
+                    double ultrasonicAverage = averageUltrasonic(ultrasonic_jewel);
 
                     double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
 
@@ -362,23 +330,18 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
 
                     if(vumarkSeen.equals("RIGHT")) {
+                        //Move lift to position to read ultrasonic distance
                         lift.setTargetPosition(400);
 
                         //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive())
-                            ;
+                        while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
                         drive.stop();
 
+                        //Determine distance needed to be traveled to deposit glyph
                         double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
-                        ultrasonicCorrectionCenterPublic = (int) ultrasonicDepositCorrection;
 
-                        /*while(opModeIsActive()){
-                        drive.stop();
-                        telemetry.addData("Ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                        telemetry.update();
-                        }*/
-
+                        //Move lift in a position to deposit glyph
                         lift.setTargetPosition(898);
 
                         //filter extraneous corrections that would be impossible
@@ -387,53 +350,22 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         }
                         drive.resetEncoders();
 
+                        //Deposit glyph based on distance from ultrasonic reading
                         depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
 
-                        /*//drive into cryptobox
-                        timer.reset();
-                        drive.resetEncoders();
-                        while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH - 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 100, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 2000) {
-
-                        }
-                        //deposit glyph
-                        bottomIntake.dispenseGlyph();
-                        topIntake.dispenseGlyph();
-                        timer.reset();
-                        while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-                        //lower the lift
-                        lift.setTargetPosition(898 - 200);
-
-                        timer.reset();
-                        //push the glyph in another inch while ejecting
-                        drive.resetEncoders();
-                        while (drive.moveIMU(drive.getEncoderDistance(), 1 * COUNTS_PER_INCH, 0, 0, .5 * COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, 100, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 0) && opModeIsActive() && timer.milliseconds() < 1000) {
-
-                        }
-                        drive.resetEncoders();
-
-                        //Back away from cryptobox
-                        while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH + 1 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 100 + 180, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive())
-                            ;
-                        drive.resetEncoders();*/
                     }else{
+                        //Move lift into position to read cryptobox
                         lift.setTargetPosition(400);
 
                         //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive())
-                            ;
+                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
                         drive.stop();
 
+                        //Average ultrasonic values to determined the distance needed to be traveled
                         double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
-                        ultrasonicCorrectionCenterPublic = (int) ultrasonicDepositCorrection;
 
-                        /*while(opModeIsActive()){
-                        drive.stop();
-                        telemetry.addData("Ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                        telemetry.update();
-                        }*/
-
+                        //Move lift into position to deposit glyphs
                         lift.setTargetPosition(898);
 
                         //filter extraneous corrections that would be impossible
@@ -442,26 +374,22 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         }
                         drive.resetEncoders();
 
+                        //Deposit glyphs based on ultrasonic average reading
                         depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 898);
                     }
                 }else{
+                    //Move lift into position to read cryptobox value
                     lift.setTargetPosition(400);
 
                     //Pivot to face cryptobox at the desired angle
-                    while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive())
-                        ;
+                    while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
                     drive.stop();
 
+                    //Average ultrasonic readings to determine distance needed to travel to score glyph
                     double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
                     ultrasonicDepositCorrection = (ultrasonicDepositCorrection-31)/2.54;
-                    ultrasonicCorrectionCenterPublic = (int) ultrasonicDepositCorrection;
 
-                        /*while(opModeIsActive()){
-                        drive.stop();
-                        telemetry.addData("Ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                        telemetry.update();
-                        }*/
-
+                    //Move lift into position to deposit glyphs
                     lift.setTargetPosition(898);
 
                     //filter extraneous corrections that would be impossible
@@ -470,7 +398,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
                     drive.resetEncoders();
 
-                    depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 80, 898);
+                    //Deposit glyphs based on ultrasonic distance calculations
+                    depositGlyphs(ultrasonicDepositCorrection*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 80, 898);
                 }
 
                 //pivot to face the glyph pit
@@ -486,14 +415,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
             drive.resetEncoders();
 
-            /*//Align to the next column to deposit glyphs
-            if(vumarkSeen.equals("LEFT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 180, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-            }else if(!vumarkSeen.equals("RIGHT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET+5.7*COUNTS_PER_INCH, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, .65, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-            }*/
             drive.stop();
 /*
 **************************************************************************************************************************************
@@ -523,49 +444,16 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Pivot to face glyph pit
             while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 500, Direction.FASTEST)&&opModeIsActive());
 
-            /*if(vumarkSeen.equals("LEFT")){
-                drive.resetEncoders();
-                while(drive.moveIMU(drive.getEncoderDistance(), 8*COUNTS_PER_INCH, 0, 0, 0, .75, .75, 180, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 250));
-            }*/
-
             //Get glyphs from pit
             getGlyphs(20*COUNTS_PER_INCH, 18*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
 
             //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
             if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
                 //Deposit glyphs from first trip to glyph pit
-                if (!vumarkSeen.equals("RIGHT")) {
-                    //depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 898);
-
-                    //initialize ultrasonic variables
-                    int i = 0;
-                    double ultrasonicSum=0;
-                    double ultrasonicReading;
-
-                    //get 5 readings of the ultrasonic sensor and sum them
-                    timer.reset();
-                    while(opModeIsActive()&&i<5&&timer.milliseconds()<1000){
-                        ultrasonicReading = ultrasonic_jewel.cmUltrasonic();
-                        while((ultrasonicReading==255 || ultrasonicReading < 50)&&opModeIsActive() && timer.milliseconds() < 1000){
-                            ultrasonicReading=ultrasonic_jewel.cmUltrasonic();
-                            telemetry.addData("Autonomous", "Reading Ultrasonic");
-                            telemetry.update();
-                        }
-                        ultrasonicSum+=ultrasonicReading;
-                        i++;
-                        telemetry.addData("Autonomous", "Reading Ultrasonic");
-                        telemetry.update();
-                    }
+                if (!vumarkSeen.equals("RIGHT")){
 
                     //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage;
-
-                    if(i != 0){
-                        ultrasonicAverage = ultrasonicSum/i;
-                    }else{
-                        ultrasonicAverage = 114;
-                    }
-
+                    double ultrasonicAverage = averageUltrasonic((ultrasonic_jewel));
                     double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
 
                     //filter extraneous corrections that would be impossible
@@ -579,6 +467,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     telemetry.addData("Autonomous", "Correcting Distance");
                     telemetry.update();
                     drive.resetEncoders();
+                    //Correct alignment to cryptobox based on ultrasonic reading
                     if(!vumarkSeen.equals("RIGHT")) {
                         timer.reset();
                         if (ultrasonicCorrection > 1) {
@@ -589,16 +478,18 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
 
                     if(vumarkSeen.equals("LEFT")) {
+                        //Move lift into position to read ultrasonic sensor
                         lift.setTargetPosition(400);
 
                         //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive())
-                            ;
+                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
                         drive.stop();
 
+                        //Get ultrasonic average and calculate distance needed to travel to deposit glyphs
                         double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
 
+                        //Move the lift into a position to deposit the glyphs
                         lift.setTargetPosition(898);
 
                         //filter extraneous corrections that would be impossible
@@ -606,43 +497,16 @@ public class AutoDetectAutonomous extends LinearOpMode {
                             ultrasonicDepositCorrection = 15;
                         }
 
-                        //drive into cryptobox
-                        timer.reset();
-                        drive.resetEncoders();
-                        while (drive.moveIMU(drive.getEncoderDistance(), ultrasonicDepositCorrection * COUNTS_PER_INCH, ultrasonicDepositCorrection * COUNTS_PER_INCH - 4 * COUNTS_PER_INCH, 0, ultrasonicDepositCorrection * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 80, DEFAULT_PID, 80, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 5000) {
-
-                        }
-                        //deposit glyph
-                        bottomIntake.dispenseGlyph();
-                        topIntake.dispenseGlyph();
-                        timer.reset();
-                        while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-                        //lower the lift
-                        lift.setTargetPosition(898 - 200);
-
-                        timer.reset();
-                        //push the glyph in another inch while ejecting
-                        drive.resetEncoders();
-                        while (drive.moveIMU(drive.getEncoderDistance(), 1 * COUNTS_PER_INCH, 0, 0, .5 * COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, 80, DEFAULT_PID, 80, DEFAULT_ERROR_DISTANCE, 0) && opModeIsActive() && timer.milliseconds() < 1000) {
-
-                        }
+                        //Deposit glyphs based on ultrasonic average reading
+                        depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 898);
                         drive.resetEncoders();
 
-                        //Back away from cryptobox
-                        while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH + 1 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 80 + 180, DEFAULT_PID, 80, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive())
-                            ;
-                        drive.resetEncoders();
                     }else{
                         //Move lift in position to deposit glyphs
                         lift.setTargetPosition(400);
 
                         //Pivot to face cryptobox at the desired angle
                         while(drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
-                        /*while(opModeIsActive()){
-                            telemetry.addData("Top US Value", ultrasonic_front_top.cmUltrasonic());
-                            telemetry.update();
-                        }*/
                         drive.stop();
                         drive.resetEncoders();
 
@@ -656,27 +520,10 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         while(opModeIsActive() && timer.milliseconds() < 250);
                         timer.reset();
 
-                        while(opModeIsActive()&&iCenter<5&&timer.milliseconds()<1000){
-                            ultrasonicReading = ultrasonic_jewel.cmUltrasonic();
-                            while(ultrasonicReading==255&&opModeIsActive() && timer.milliseconds() < 1000){
-                                ultrasonicReading=ultrasonic_jewel.cmUltrasonic();
-                                telemetry.addData("Autonomous", "Reading Ultrasonic");
-                                telemetry.update();
-                            }
-                            ultrasonicSumCenter+=ultrasonicReading;
-                            iCenter++;
-                            telemetry.addData("Autonomous", "Reading Ultrasonic");
-                            telemetry.update();
-                        }
-
+                        //Move lift into position to deposit glyphs
                         lift.setTargetPosition(898);
 
-                        //determine the average and correction due to ultrasonic sensor readings
-                        if(iCenter != 0){
-                            ultrasonicAverageCenter = ultrasonicSum/iCenter;
-                        }else{
-                            ultrasonicAverageCenter = 38;
-                        }
+                        ultrasonicAverageCenter = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicCorrection = (ultrasonicAverageCenter-38)/2.54;
 
                         //filter extraneous corrections that would be impossible
@@ -684,53 +531,23 @@ public class AutoDetectAutonomous extends LinearOpMode {
                             ultrasonicCorrection = 15;
                         }
 
-                        ultrasonicCorrectionCenterPublic = (int) ultrasonicCorrection;
-
-                        //drive into cryptobox
-                        timer.reset();
-                        drive.resetEncoders();
-                        while(drive.moveIMU(drive.getEncoderDistance(), ultrasonicCorrection*COUNTS_PER_INCH, ultrasonicCorrection*COUNTS_PER_INCH-4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 100, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive()&&timer.milliseconds()<5000){
-                            telemetry.addData("Ultrasonic Correction", ultrasonicCorrection);
-
-                        }
-                        //deposit glyph
-                        bottomIntake.dispenseGlyph();
-                        topIntake.dispenseGlyph();
-                        timer.reset();
-                        while(timer.milliseconds()<250&&opModeIsActive());
-
-                        //lower the lift
-                        lift.setTargetPosition(898-200);
-
-                        timer.reset();
-                        //push the glyph in another inch while ejecting
-                        drive.resetEncoders();
-                        while(drive.moveIMU(drive.getEncoderDistance(), 1*COUNTS_PER_INCH, 0, 0, .5*COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, 100, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 0)&&opModeIsActive()&&timer.milliseconds()<1000){
-
-                        }
-                        drive.resetEncoders();
-
-                        //Back away from cryptobox
-                        while(drive.moveIMU(drive.getEncoderDistance(), 8+1*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 0, 2*COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 100+180, DEFAULT_PID, 100, DEFAULT_ERROR_DISTANCE, 200)&&opModeIsActive());
-                        drive.resetEncoders();
+                        //Deposit glyphs based on ultrasonic average reading
+                        depositGlyphs(ultrasonicCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
                     }
 
                 } else {
+                    //Move lift into position to read ultrasonic values
                     lift.setTargetPosition(400);
+
                     //Pivot to face cryptobox at the desired angle
-                    while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive())
-                        ;
+                    while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
                     drive.stop();
 
+                    //Average ultrasonic values
                     double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
                     ultrasonicDepositCorrection = (ultrasonicDepositCorrection-31)/2.54;
-                    ultrasonicCorrectionCenterPublic = (int) ultrasonicDepositCorrection;
-                    /*while(opModeIsActive()){
-                        drive.stop();
-                        telemetry.addData("Ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                        telemetry.update();
-                    }*/
 
+                    //Move lift into position to deposit glyphs
                     lift.setTargetPosition(898);
 
                     //filter extraneous corrections that would be impossible
@@ -739,37 +556,14 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     }
                     drive.resetEncoders();
 
+                    //Deposit glyphs in cryptobox based on ultrasonic readings
                     depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
                 }
 
                 drive.resetEncoders();
-
-                while(opModeIsActive()){
-                    telemetry.addData("Ultrasonic Correction Center", ultrasonicCorrectionCenterPublic);
-                    telemetry.addData("Original Reading", ((ultrasonicCorrectionCenterPublic*2.54) + 38));
-                    telemetry.update();
-                }
-
-                /*//Pivot to face the glyph pit
-                while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive()){
-                    if(gameTime.seconds() > 29){
-                        while(opModeIsActive()){
-                            drive.stop();
-                        }
-                    }
-                }*/
             }
 
             drive.resetEncoders();
-
-            /*//Align to a different cryptobox column
-            if(vumarkSeen.equals("RIGHT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 0, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-            }else if(!vumarkSeen.equals("LEFT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET+10*COUNTS_PER_INCH, COLUMN_OFFSET/2, 0, COLUMN_OFFSET, DEFAULT_MAX_POWER, .4, 180, DEFAULT_PID, -90, 10, 500)&&opModeIsActive());
-
-            }*/
             drive.stop();
         }
 /*
