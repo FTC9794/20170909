@@ -114,8 +114,8 @@ public class AutoDetectAutonomous extends LinearOpMode {
     final double DEFAULT_MIN_POWER_PIVOT = .15;
 
     //define constants for servo positions
-    final double SPIN_START = 0.825;
-    final double SPIN_ROTATED = 0;
+    final double SPIN_START = 0.83;
+    final double SPIN_ROTATED = 0.09;
 
     final double RELIC_CLAW_CLOSED = 1;
     final double RELIC_CLAW_OPENED = 0;
@@ -950,79 +950,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             //Turn off LEDs
             led.turnOff();
 
-            /*//Wait for glyphs to come into the robot
-            timer.reset();
-            while (opModeIsActive() && timer.milliseconds() < 250) {
-
-            }
-
-            //check if glyph in bottom arms of robot
-            if (bottomGlyphColor.getDistance(DistanceUnit.CM)<=6){
-                led.setLEDPower(1);
-            }else{
-                glyphWiggle(-155, 15);
-                timer.reset();
-                while(timer.milliseconds()<250&&opModeIsActive());
-            }
-            drive.resetEncoders();
-
-            //Raise lift to raise the glyphs once they are in the robot
-            lift.setTargetPosition(898);
-
-            //back up from pit
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 40 * COUNTS_PER_INCH, 25*COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 25, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            drive.resetEncoders();
-
-            //Pivot to face cryptobox
-            while (drive.pivotIMU(15, 105, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-            drive.resetEncoders();
-
-            //Deposit glyphs into column
-            if(!vumarkSeen.equals("LEFT")){
-                lift.setTargetPosition(300);
-                lift.setPower(1);
-            }else{
-                lift.setTargetPosition(898);
-                lift.setPower(1);
-            }
-            //drive into cryptobox
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 15, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) {
-                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                telemetry.update();
-            }
-
-            //deposit glyph
-            bottomIntake.dispenseGlyph();
-            topIntake.dispenseGlyph();
-            timer.reset();
-            while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-            //Back away from cryptobox
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 9 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -165, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
-
-            //Reset the drive encoders and set the drive power to zero
-            drive.resetEncoders();
             drive.stop();
-
-            //Turn off LEDs
-            led.turnOff();
-
-            //Strafe towards relic away from cryptobox
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, .8, .65, 105, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
-            drive.stop();
-
-            //Pivot to face glyph pit in preparation for teleop
-            while (drive.pivotIMU(-135, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-            drive.stop();
-            drive.resetEncoders();
-
-            //back into safe zone
-            while (drive.moveIMU(drive.getEncoderDistance(), 5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, .8, .65, 45, DEFAULT_PID, -135, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
-*/            drive.stop();
         }
 /*
 **************************************************************************************************************************************

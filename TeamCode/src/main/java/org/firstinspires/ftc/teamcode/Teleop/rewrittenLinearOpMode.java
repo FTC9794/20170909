@@ -62,6 +62,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     double xPowerBalance, yPowerBalance;
     double balanceAngle;
     int liftPosition;
+    double batteryVoltage=0;
 
     //enum for the glyph lift states
     private enum glyphLiftStates{
@@ -90,6 +91,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     boolean aPressed = false;
     boolean xPressed = false;
     boolean bPressed = false;
+    boolean upPressed = false;
+    boolean downPressed = false;
 
     //information of hardware variables
     boolean glyphIntakeRotated = false;
@@ -129,8 +132,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double GLYPH_VISIBLE_TIME = 250;
 
     //constants for rotation
-    final double SPIN_NORMAL_POSITION = .825;
-    final double SPIN_SPUN_POSITION = 0;
+    final double SPIN_NORMAL_POSITION = .83;
+    final double SPIN_SPUN_POSITION = .09;
     final double ROTATE_TIME = 750;
 
     //constants for jewel
@@ -237,9 +240,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
         //create drivetrain
         drive = new MecanumDriveTrain(motors, imu, telemetry);
-
-        xDesired = imu.getXAngle();
-        yDesired = imu.getYAngle();
         telemetry.addData("Initialization", "complete");
         telemetry.addData("Spin Sensor State", spinSensor.getState());
         telemetry.update();
@@ -252,6 +252,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
          ***********************************************     OPMODE RUNS HERE     *************************************************************
          ***************************************************************************************************************************************
          */
+
+
         //set servo initialization positions once play has been pressed
         pan.setPosition(JEWEL_PAN_POSITION);
         tilt.setPosition(JEWEL_TILT_POSITION);
@@ -259,6 +261,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         relic.setTiltPosition(1);
         relic_arm.setPosition(0);
 
+        xDesired = imu.getXAngle();
+        yDesired = imu.getYAngle();
         if(spinInitPosition == 0){ //If the glyph spun in autonomous, initialize it to the rotated position here
             glyphIntakeRotated = true;
         }else{ //If the glyph did not spin in autonomous, initialize it to the original initialization position
@@ -268,6 +272,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
         //while stop hasn't been pressed and the program is running
         while(opModeIsActive()) {
+
 
             drivetrainStateMachine();
             liftStateMachine();
@@ -635,7 +640,6 @@ public class rewrittenLinearOpMode extends LinearOpMode {
                 currentDifferencey = currentValuey - yDesired;
                 px = currentDifferencex * pGainx;
                 py = currentDifferencey * pGainy;
-
                 areaSumx += ((previousDifferencex+currentDifferencex)/2)*(currentTime-previousTime);
                 areaSumy += ((previousDifferencey+currentDifferencey)/2)*(currentTime-previousTime);
 
@@ -1046,10 +1050,9 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         correctiony = 0;
         currentValuex = imu.getXAngle();
         currentValuey = imu.getYAngle();
+        batteryVoltage = getBatteryVoltage();
         pGainx = (-.005/2.1)*getBatteryVoltage()+.083;
         pGainy = pGainx;
-        telemetry.addData("pgain", pGainx);
-        telemetry.addData("battery", getBatteryVoltage());
         telemetry.update();
         PIDTimer.reset();
         currentDifferencex = currentValuex-xDesired;
