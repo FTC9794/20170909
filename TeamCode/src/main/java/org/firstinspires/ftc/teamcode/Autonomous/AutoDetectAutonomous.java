@@ -512,14 +512,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
                         double ultrasonicAverageCenter;
 
-                        //get 5 readings of the ultrasonic sensor and sum them
-                        timer.reset();
-                        while(opModeIsActive() && timer.milliseconds() < 250);
-                        timer.reset();
-
-                        //Move lift into position to deposit glyphs
-                        lift.setTargetPosition(898);
-
                         ultrasonicAverageCenter = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicCorrection = (ultrasonicAverageCenter-38)/2.54;
 
@@ -527,6 +519,9 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         if(Math.abs(ultrasonicCorrection)>25 || ultrasonicCorrection <= 0) {
                             ultrasonicCorrection = 15;
                         }
+
+                        //Move lift into position to deposit glyphs
+                        lift.setTargetPosition(898);
 
                         //Deposit glyphs based on ultrasonic average reading
                         depositGlyphs(ultrasonicCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
