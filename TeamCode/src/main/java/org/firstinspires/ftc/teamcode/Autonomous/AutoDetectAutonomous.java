@@ -134,8 +134,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
     String autoProgram = "";
     Alliance alliance = UNKNOWN;
 
-    int ultrasonicCorrectionCenterPublic;
-
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -345,7 +343,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         lift.setTargetPosition(898);
 
                         //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicDepositCorrection)>25 || ultrasonicDepositCorrection <= 0) {
+                        if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
                             ultrasonicDepositCorrection = 15;
                         }
                         drive.resetEncoders();
@@ -369,7 +367,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                         lift.setTargetPosition(898);
 
                         //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicDepositCorrection)>25 || ultrasonicDepositCorrection <= 0) {
+                        if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
                             ultrasonicDepositCorrection = 15;
                         }
                         drive.resetEncoders();
@@ -393,7 +391,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
                     lift.setTargetPosition(898);
 
                     //filter extraneous corrections that would be impossible
-                    if(Math.abs(ultrasonicDepositCorrection)>25 || ultrasonicDepositCorrection <= 0) {
+                    if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
                         ultrasonicDepositCorrection = 15;
                     }
                     drive.resetEncoders();
@@ -512,6 +510,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
 
                         double ultrasonicAverageCenter;
 
+                        //Average ultrasonic sensor and determine distance correction
                         ultrasonicAverageCenter = averageUltrasonic(ultrasonic_front_top);
                         ultrasonicCorrection = (ultrasonicAverageCenter-38)/2.54;
 
@@ -931,9 +930,6 @@ public class AutoDetectAutonomous extends LinearOpMode {
                 }
             }
 
-            /*//move backward to get into safe zone
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 4 * COUNTS_PER_INCH, 2 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, .8, .65, 135, DEFAULT_PID, -45, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;*/
             drive.stop();
             led.turnOn();
 
@@ -1795,6 +1791,11 @@ public class AutoDetectAutonomous extends LinearOpMode {
         lift.setPower(1);
     }
 
+    /**
+     * Reads ultrasonic sensor 5 times and averages the values. All undefined values (255) are thrown out and are not used in the average calculation
+     * @param ultrasonic Ultrasonic sensor used to record the 5 sensor readings
+     * @return distance from the target (based on the average of 5 values), in centimeters.
+     */
     public double averageUltrasonic(ModernRoboticsI2cRangeSensor ultrasonic){
         //initialize ultrasonic variables
         int i = 0;
@@ -1805,7 +1806,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
         timer.reset();
         while(opModeIsActive()&&i<5&&timer.milliseconds()<1000){
             ultrasonicReading = ultrasonic.cmUltrasonic();
-            while((ultrasonicReading==255 || ultrasonicReading < 50)&&opModeIsActive() && timer.milliseconds() < 1000){
+            while((ultrasonicReading==255)&&opModeIsActive() && timer.milliseconds() < 1000){
                 ultrasonicReading=ultrasonic.cmUltrasonic();
                 telemetry.addData("Autonomous", "Reading Ultrasonic");
                 telemetry.update();
