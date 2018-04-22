@@ -203,14 +203,10 @@ public class rewrittenLinearOpMode extends LinearOpMode {
         setMotorBehaviors();
         initIMU();
 
-        //Get spin position from autonomous
-        String fileName = "autoSpinPosition.txt";
-        File file = AppUtil.getInstance().getSettingsFile(fileName);
-        String spinString = ReadWriteFile.readFile(file);
-        double spinInitPosition = Double.parseDouble(spinString);
+        double spinInitPosition = SPIN_NORMAL_POSITION;
         if(spinSensor.getState()){
             spinInitPosition = SPIN_NORMAL_POSITION;
-        }else{
+        }else if (!spinSensor.getState()){
             spinInitPosition = SPIN_SPUN_POSITION;
         }
 
@@ -263,7 +259,7 @@ public class rewrittenLinearOpMode extends LinearOpMode {
 
         xDesired = imu.getXAngle();
         yDesired = imu.getYAngle();
-        if(spinInitPosition == 0){ //If the glyph spun in autonomous, initialize it to the rotated position here
+        if(spinInitPosition == SPIN_SPUN_POSITION){ //If the glyph spun in autonomous, initialize it to the rotated position here
             glyphIntakeRotated = true;
         }else{ //If the glyph did not spin in autonomous, initialize it to the original initialization position
             glyphIntakeRotated = false;
@@ -298,8 +294,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
             telemetry.addData("Relic Arm Position", relic_arm.getPosition());
             telemetry.update();
 
-            float spinPosition = (float) spin.getPosition();
-            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
+            //float spinPosition = (float) spin.getPosition();
+            //ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
 
         }
 

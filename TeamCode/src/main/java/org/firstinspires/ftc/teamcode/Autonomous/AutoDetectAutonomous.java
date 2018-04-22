@@ -786,6 +786,7 @@ public class AutoDetectAutonomous extends LinearOpMode {
             } else
                 while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH - (ultrasonicCorrection * COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
                         0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+
             drive.resetEncoders();
 
             //Pivot to face cryptobox
