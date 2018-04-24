@@ -208,6 +208,19 @@ public class MecanumDriveTrain implements IDrivetrain {
         lfLastEncoder = 0;
         lbLastEncoder = 0;
     }
+    /**
+     * Resets the drive encoder values to zero
+     */
+    public void resetEncoders(DcMotor.RunMode endMode){
+        for(DcMotor motor:motors){
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(endMode);
+        }
+        rfLastEncoder = 0;
+        rbLastEncoder = 0;
+        lfLastEncoder = 0;
+        lbLastEncoder = 0;
+    }
 
     /**
      * Moves the robot in any lateral directino (0-360 degrees) while maintaining a specific orientation
@@ -243,6 +256,7 @@ public class MecanumDriveTrain implements IDrivetrain {
             //Calculate the difference between the target position and the position the robot begins to ramp down
             double rampDownDifference = targetPosition - rampDownTargetPosition;
             double rampDownEndDifference = targetPosition - rampDownEnd;
+
             //Calculate robot power
             double power;
             if(rampDownEndDifference>=Math.abs(positionDifference)) {

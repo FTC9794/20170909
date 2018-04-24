@@ -56,7 +56,7 @@ import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
 /**
  * Created by Sarthak on 2/7/2018.
  */
-@Autonomous(name = "Auto Select Autonomous", group = "Autonomous")
+//@Autonomous(name = "Auto Select Autonomous", group = "Autonomous")
 public class AutoDetectAutonomous extends LinearOpMode {
     String fileName = "autoSpinPosition.txt";
     File file = AppUtil.getInstance().getSettingsFile(fileName);

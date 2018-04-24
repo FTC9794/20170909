@@ -126,7 +126,7 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
 
     //define constants for distance movements using encoders
     final double COUNTS_PER_INCH = 45;
-    final double CENTER_STONE_1_DIST = 31*COUNTS_PER_INCH;
+    final double CENTER_STONE_1_DIST = 32*COUNTS_PER_INCH;
     final double COLUMN_OFFSET = 7.5*COUNTS_PER_INCH;
     final double BLUE_ALLIANCE_OFFSET = 1.5*COUNTS_PER_INCH;
 
@@ -264,155 +264,65 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
          ***************************************************************************************************************************************
          */
         if(autoProgram.equals("RedStone1")){
-            //check vumark and move to the target column
-            if(vumarkSeen.equals("LEFT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+COLUMN_OFFSET, 0, 0, CENTER_STONE_1_DIST+COLUMN_OFFSET - 20*COUNTS_PER_INCH, .5, 0.25, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+            //check vumark and drive to the target cryptobox column
+            while(drive.moveIMU(drive.getEncoderDistance(), 28*COUNTS_PER_INCH, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
 
-            }else if(vumarkSeen.equals("RIGHT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, CENTER_STONE_1_DIST-COLUMN_OFFSET-20*COUNTS_PER_INCH, .5, 0.25, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
-
-            }else{
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST, 0, 0, CENTER_STONE_1_DIST-20*COUNTS_PER_INCH, .5, .25, 0, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
-
-            }
             //Deposit preloaded glyph
-            if(vumarkSeen.equals("RIGHT")){
-                depositGlyphs(5 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 500);
-            }else {
-                depositGlyphs(5 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 500);
+            if(vumarkSeen.equals("LEFT")){
+                depositGlyphs(7 * COUNTS_PER_INCH, 7 * COUNTS_PER_INCH, 60, 500);
+            }else if(vumarkSeen.equals("RIGHT")){
+                depositGlyphs(5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 105, 500);
+            }else{
+                depositGlyphs(5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 75, 500);
+            }
+            lift.setTargetPosition(898);
+            lift.setPower(1);
+
+            //Pivot to face glyph pit
+            while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 500, Direction.FASTEST)&&opModeIsActive());
+
+            lift.setTargetPosition(5);
+            lift.setPower(1);
+            topIntake.secureGlyph();
+            bottomIntake.secureGlyph();
+
+            //Get glyphs from pit
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 18*COUNTS_PER_INCH, 10*COUNTS_PER_INCH, 0, 5*COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, -90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+
+            getGlyphsFarStone(-90, -90, 12);
+
+            //Get glyphs from pit
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 16*COUNTS_PER_INCH, 10*COUNTS_PER_INCH, 0, 5*COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
+
+            // We want to spin the glyph depending on what is in the intake.
+            // Condition 1: Regular starting position and top glyph and bottom is not present, spin
+            if(spin.getPosition() > .5 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_ROTATED);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
+
+                // Condition 2: Flipped position and bottom (red) glyph and top is not present, spin.
+            }else if(spin.getPosition() <.5 && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(topGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_START);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
             }
 
-
-            //Pivot to face Glyph Pit
-            while(drive.pivotIMU(-90, -30, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 1, 500, Direction.FASTEST)&&opModeIsActive());
-
-            //get glyphs from glyph pit
-            getGlyphs(22*COUNTS_PER_INCH, 18*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
-
-
-            drive.resetEncoders();
-
-            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6){
-                //Deposit glyphs
-                if(!vumarkSeen.equals("LEFT")){
-                    //Move lift in position to deposit glyphs
-                    lift.setTargetPosition(898);
-
-                    //Pivot to face perimeter for ultrasonic reading
-                    while(drive.pivotIMU(90, 0, DEFAULT_MAX_POWER, 0.3, 2, 500, Direction.FASTEST)&&opModeIsActive()){
-                        telemetry.addData("Autonomous", "Pivoting");
-                        telemetry.update();
-                    }
-                    drive.stop();
-
-                    //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage = averageUltrasonic(ultrasonic_jewel);
-
-                    double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
-
-                    //filter extraneous corrections that would be impossible
-                    if(Math.abs(ultrasonicCorrection)>20){
-                        ultrasonicCorrection = 0;
-                    }
-                    telemetry.addData("Autonomous", "Correcting Distance");
-                    telemetry.update();
-                    drive.resetEncoders();
-                    if(!vumarkSeen.equals("LEFT")) {
-                        timer.reset();
-                        if (ultrasonicCorrection > 1) {
-                            while (drive.moveIMU(drive.getEncoderDistance(), Math.abs(ultrasonicCorrection) * COUNTS_PER_INCH, 0, 0, ultrasonicCorrection * COUNTS_PER_INCH, .5, 0.5, 180, DEFAULT_PID, 90, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() <2000);
-                        } else if (ultrasonicCorrection < -1) {
-                            while (drive.moveIMU(drive.getEncoderDistance(), Math.abs(ultrasonicCorrection) * COUNTS_PER_INCH, 0, 0, ultrasonicCorrection * COUNTS_PER_INCH, .5, 0.5, 0, DEFAULT_PID, 90, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 2000);
-                        }
-                    }
-
-                    if(vumarkSeen.equals("RIGHT")) {
-                        //Move lift to position to read ultrasonic distance
-                        lift.setTargetPosition(400);
-
-                        //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-                        drive.stop();
-
-                        //Determine distance needed to be traveled to deposit glyph
-                        double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
-                        ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
-
-                        //Move lift in a position to deposit glyph
-                        lift.setTargetPosition(898);
-
-                        //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
-                            ultrasonicDepositCorrection = 15;
-                        }
-                        drive.resetEncoders();
-
-                        //Deposit glyph based on distance from ultrasonic reading
-                        depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
-
-                    }else{
-                        //Move lift into position to read cryptobox
-                        lift.setTargetPosition(400);
-
-                        //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-                        drive.stop();
-
-                        //Average ultrasonic values to determined the distance needed to be traveled
-                        double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
-                        ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
-
-                        //Move lift into position to deposit glyphs
-                        lift.setTargetPosition(898);
-
-                        //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
-                            ultrasonicDepositCorrection = 15;
-                        }
-                        drive.resetEncoders();
-
-                        //Deposit glyphs based on ultrasonic average reading
-                        depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 898);
-                    }
-                }else{
-                    //Move lift into position to read cryptobox value
-                    lift.setTargetPosition(400);
-
-                    //Pivot to face cryptobox at the desired angle
-                    while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-                    drive.stop();
-
-                    //Average ultrasonic readings to determine distance needed to travel to score glyph
-                    double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
-                    ultrasonicDepositCorrection = (ultrasonicDepositCorrection-31)/2.54;
-
-                    //Move lift into position to deposit glyphs
-                    lift.setTargetPosition(898);
-
-                    //filter extraneous corrections that would be impossible
-                    if(Math.abs(ultrasonicDepositCorrection)>30 || ultrasonicDepositCorrection <= 0) {
-                        ultrasonicDepositCorrection = 15;
-                    }
-                    drive.resetEncoders();
-
-                    //Deposit glyphs based on ultrasonic distance calculations
-                    depositGlyphs(ultrasonicDepositCorrection*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 80, 898);
-                }
-
-                //pivot to face the glyph pit
-                while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive()){
-                    if(gameTime.seconds() > 29){
-                        while(opModeIsActive()){
-                            drive.stop();
-                        }
-                    }
-                }
-
+            //Deposit additional glyphs
+            if(vumarkSeen.equals("LEFT")){
+                depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 105, 500);
+            }else if(vumarkSeen.equals("RIGHT")){
+                depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 60, 500);
+            }else{
+                depositGlyphs(8 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 105, 500);
             }
-
-            drive.resetEncoders();
-
+            if(gameTime.seconds()<28){
+                while(drive.pivotIMU(-90, 0, .5, .25, 2, 500, Direction.FASTEST)&&opModeIsActive());
+            }
             drive.stop();
             /*
              **************************************************************************************************************************************
@@ -421,140 +331,64 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
              */
         }else if(autoProgram.equals("BlueStone1")){
             //check vumark and drive to the target cryptobox column
-            if(vumarkSeen.equals("LEFT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH+COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
-
-            }else if(vumarkSeen.equals("RIGHT")){
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+COLUMN_OFFSET+BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH-COLUMN_OFFSET, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
-
-            }else{
-                while(drive.moveIMU(drive.getEncoderDistance(), CENTER_STONE_1_DIST+BLUE_ALLIANCE_OFFSET, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
-
-            }
+            while(drive.moveIMU(drive.getEncoderDistance(), 33*COUNTS_PER_INCH, 0, 0, 18*COUNTS_PER_INCH, .5, DEFAULT_MIN_POWER, 180, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250)&&opModeIsActive());
 
             //Deposit preloaded glyph
             if(vumarkSeen.equals("LEFT")){
-                depositGlyphs(5 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 500);
-            }else {
-                depositGlyphs(5 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 500);
+                depositGlyphs(6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 75, 500);
+            }else if(vumarkSeen.equals("RIGHT")){
+                depositGlyphs(9 * COUNTS_PER_INCH, 9 * COUNTS_PER_INCH, 120, 500);
+            }else{
+                depositGlyphs(6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 105, 500);
             }
+            lift.setTargetPosition(898);
+            lift.setPower(1);
 
             //Pivot to face glyph pit
             while(drive.pivotIMU(-90, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 500, Direction.FASTEST)&&opModeIsActive());
 
+            lift.setTargetPosition(5);
+            lift.setPower(1);
+            topIntake.secureGlyph();
+            bottomIntake.secureGlyph();
+
             //Get glyphs from pit
-            getGlyphs(20*COUNTS_PER_INCH, 18*COUNTS_PER_INCH, 90, .75, DEFAULT_MIN_POWER);
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 16*COUNTS_PER_INCH, 10*COUNTS_PER_INCH, 0, 5*COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, -90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
 
-            //Check if there is a glyph in the robot to determine whether to deposit a glyph or not
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6||topGlyphColor.getDistance(DistanceUnit.CM)<=6) {
-                //Deposit glyphs from first trip to glyph pit
-                if (!vumarkSeen.equals("RIGHT")){
+            getGlyphsFarStone(-90, -90, 12);
 
-                    //determine the average and correction due to ultrasonic sensor readings
-                    double ultrasonicAverage = averageUltrasonic((ultrasonic_jewel));
-                    double ultrasonicCorrection = (ultrasonicAverage-114)/2.54;
+            //Get glyphs from pit
+            drive.resetEncoders();
+            while(drive.moveIMU(drive.getEncoderDistance(), 14*COUNTS_PER_INCH, 10*COUNTS_PER_INCH, 0, 5*COUNTS_PER_INCH, DEFAULT_MAX_POWER, .4, 90, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500)&&opModeIsActive());
 
-                    //filter extraneous corrections that would be impossible
-                    if(Math.abs(ultrasonicCorrection)>20){
-                        ultrasonicCorrection = 0;
-                    }
+            // We want to spin the glyph depending on what is in the intake.
+            // Condition 1: Regular starting position and top glyph and bottom is not present, spin
+            if(spin.getPosition() > .5 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_ROTATED);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
 
-                    //Move lift in position to deposit glyphs
-                    lift.setTargetPosition(898);
-
-                    telemetry.addData("Autonomous", "Correcting Distance");
-                    telemetry.update();
-                    drive.resetEncoders();
-                    //Correct alignment to cryptobox based on ultrasonic reading
-                    if(!vumarkSeen.equals("RIGHT")) {
-                        timer.reset();
-                        if (ultrasonicCorrection > 1) {
-                            while (drive.moveIMU(drive.getEncoderDistance(), Math.abs(ultrasonicCorrection) * COUNTS_PER_INCH, 0, 0, ultrasonicCorrection * COUNTS_PER_INCH, .5, 0.5, 0, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() <2000);
-                        } else if (ultrasonicCorrection < -1) {
-                            while (drive.moveIMU(drive.getEncoderDistance(), Math.abs(ultrasonicCorrection) * COUNTS_PER_INCH, 0, 0, ultrasonicCorrection * COUNTS_PER_INCH, .5, 0.5, 180, DEFAULT_PID, -90, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 2000);
-                        }
-                    }
-
-                    if(vumarkSeen.equals("LEFT")) {
-                        //Move lift into position to read ultrasonic sensor
-                        lift.setTargetPosition(400);
-
-                        //Pivot to face cryptobox at the desired angle
-                        while (drive.pivotIMU(80, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-                        drive.stop();
-
-                        //Get ultrasonic average and calculate distance needed to travel to deposit glyphs
-                        double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
-                        ultrasonicDepositCorrection = (ultrasonicDepositCorrection-38)/2.54;
-
-                        //Move the lift into a position to deposit the glyphs
-                        lift.setTargetPosition(898);
-
-                        //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicDepositCorrection)>25 || ultrasonicDepositCorrection <= 0) {
-                            ultrasonicDepositCorrection = 15;
-                        }
-
-                        //Deposit glyphs based on ultrasonic average reading
-                        depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 80, 898);
-                        drive.resetEncoders();
-
-                    }else{
-                        //Move lift in position to deposit glyphs
-                        lift.setTargetPosition(400);
-
-                        //Pivot to face cryptobox at the desired angle
-                        while(drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST)&&opModeIsActive());
-                        drive.stop();
-                        drive.resetEncoders();
-
-                        double ultrasonicAverageCenter;
-
-                        //Average ultrasonic sensor and determine distance correction
-                        ultrasonicAverageCenter = averageUltrasonic(ultrasonic_front_top);
-                        ultrasonicCorrection = (ultrasonicAverageCenter-38)/2.54;
-
-                        //filter extraneous corrections that would be impossible
-                        if(Math.abs(ultrasonicCorrection)>25 || ultrasonicCorrection <= 0) {
-                            ultrasonicCorrection = 15;
-                        }
-
-                        //Move lift into position to deposit glyphs
-                        lift.setTargetPosition(898);
-
-                        //Deposit glyphs based on ultrasonic average reading
-                        depositGlyphs(ultrasonicCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
-                    }
-
-                } else {
-                    //Move lift into position to read ultrasonic values
-                    lift.setTargetPosition(400);
-
-                    //Pivot to face cryptobox at the desired angle
-                    while (drive.pivotIMU(100, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-                    drive.stop();
-
-                    //Average ultrasonic values
-                    double ultrasonicDepositCorrection = averageUltrasonic(ultrasonic_front_top);
-                    ultrasonicDepositCorrection = (ultrasonicDepositCorrection-31)/2.54;
-
-                    //Move lift into position to deposit glyphs
-                    lift.setTargetPosition(898);
-
-                    //filter extraneous corrections that would be impossible
-                    if(Math.abs(ultrasonicDepositCorrection)>25 || ultrasonicDepositCorrection <= 0) {
-                        ultrasonicDepositCorrection = 15;
-                    }
-                    drive.resetEncoders();
-
-                    //Deposit glyphs in cryptobox based on ultrasonic readings
-                    depositGlyphs(ultrasonicDepositCorrection * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 100, 898);
-                }
-
-                drive.resetEncoders();
+                // Condition 2: Flipped position and bottom (red) glyph and top is not present, spin.
+            }else if(spin.getPosition() <.5 && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(topGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_START);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
             }
 
-            drive.resetEncoders();
+            //Deposit additional glyphs
+            if(vumarkSeen.equals("LEFT")){
+                depositGlyphs(11 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 115, 500);
+            }else if(vumarkSeen.equals("RIGHT")){
+                depositGlyphs(11 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 75, 500);
+            }else{
+                depositGlyphs(11 * COUNTS_PER_INCH, 8 * COUNTS_PER_INCH, 75, 500);
+            }
+            if(gameTime.seconds()<28){
+                while(drive.pivotIMU(-90, 0, .5, .25, 2, 500, Direction.FASTEST)&&opModeIsActive());
+            }
             drive.stop();
         }
         /*
@@ -593,64 +427,29 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
             if(Math.abs(ultrasonicCorrection)>3){
                 ultrasonicCorrection = 0;
             }
-
             //Drive to target cryptobox column
-            if (vumarkSeen.equals("RIGHT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - COLUMN_OFFSET - (ultrasonicCorrection*COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
-            } else if (vumarkSeen.equals("LEFT")) {
-                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH + COLUMN_OFFSET - (ultrasonicCorrection*COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
-            } else {
-                while (drive.moveIMU(drive.getEncoderDistance(), 17 * COUNTS_PER_INCH - (ultrasonicCorrection * COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH - (ultrasonicCorrection * COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
+                    0.75, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive()) ;
+            drive.resetEncoders();
+
+            if(vumarkSeen.equals("RIGHT")){
+                //pivot and deposit glyphs
+                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 30, 300);
+            }else if(vumarkSeen.equals("LEFT")){
+                //pivot and deposit glyphs
+                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, -15, 300);
+            }else{
+                //pivot and deposit glyphs
+                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 15, 300);
             }
-            drive.resetEncoders();
-
-            //Pivot to face cryptobox
-            while (drive.pivotIMU(15, 0, .4, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-
-            //Move lift into target position to deposit glyphs
-            lift.setTargetPosition(300);
-            lift.setPower(1);
-
-            //drive into cryptobox to deposit the glyphs
-            drive.resetEncoders();
-            timer.reset();
-            while (drive.moveIMU(drive.getEncoderDistance(), 7 * COUNTS_PER_INCH, 0, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 15, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 2000) {
-                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                telemetry.update();
-            }
-            //deposit glyph
-            bottomIntake.dispenseGlyph();
-            timer.reset();
-            while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-            //Back away from cryptobox
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -165, DEFAULT_PID, 15, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()) ;
-            drive.resetEncoders();
 
             //Raise the lift to avoid hitting the glyphs
             lift.setTargetPosition(898);
             lift.setPower(1);
             drive.resetEncoders();
 
-            //Strafe towards middle of the field
-            if (vumarkSeen.equals("RIGHT")) {
-                while(drive.pivotIMU(0, 15, .5, .4, 2, 250, Direction.FASTEST));
-                while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET * 2, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.6, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
-            } else if (vumarkSeen.equals("CENTER") || vumarkSeen.equals("")) {
-                while(drive.pivotIMU(0, 15, .5, .4, 2, 250, Direction.FASTEST));
-
-                while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.6, -90, DEFAULT_PID_STRAFE, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
-            }
-            drive.resetEncoders();
-
             //pivot to face glyph pit
-            while (drive.pivotIMU(-155, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive());
+            while (drive.pivotIMU(-145, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive());
 
             //Lower lift to position to intake glyphs
             lift.setTargetPosition(5);
@@ -661,80 +460,44 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
             bottomIntake.secureGlyph();
             topIntake.secureGlyph();
 
-            //move into glyph pit
-            while (drive.moveIMU(drive.getEncoderDistance(), 23 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 15 * COUNTS_PER_INCH, 1,
-                    0.35, -155, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+            //Move into Glyph Pit 30 inches
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 33 * COUNTS_PER_INCH, 12 * COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 0.7, 0.35, -145, DEFAULT_PID, -145, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive()) ;
 
-            if(!vumarkSeen.equals("LEFT")){
-                getGlyphsFarStone(-155, -155, 17);
-            }else{
-                getGlyphsFarStone(-155, -155, 18);
-            }
-
+            //retrieve glyphs from the pit
+            getGlyphsFarStone(-145, -145, 18);
 
             //back up from pit
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 23 * COUNTS_PER_INCH, 12*COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 25, DEFAULT_PID, -155, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 33 * COUNTS_PER_INCH, 20*COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, .35, 35, DEFAULT_PID, -145, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
 
-            if(spin.getPosition() == SPIN_START && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 &&
-                    (bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM)))){
+            // We want to spin the glyph depending on what is in the intake.
+            // Condition 1: Regular starting position and top glyph and bottom is not present, spin
+            if(spin.getPosition() > .5 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
                 spin.setPosition(SPIN_ROTATED);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-            }else if(spin.getPosition() == SPIN_ROTATED && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 &&
-                    (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
+
+                // Condition 2: Flipped position and bottom (red) glyph and top is not present, spin.
+            }else if(spin.getPosition() <.5 && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(topGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
                 spin.setPosition(SPIN_START);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
             }
+            if(vumarkSeen.equals("LEFT")){
+                //Pivot to face cryptobox and go in at 190 degrees (less steep than previously) Go into the right box
+                depositGlyphs(9*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 30, 550);
 
-            //Pivot to face cryptobox
-            while (drive.pivotIMU(25, 105, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 500, Direction.FASTEST) && opModeIsActive()) ;
-            drive.resetEncoders();
-
-            //Deposit glyphs into column
-            if(!vumarkSeen.equals("LEFT")){
-                lift.setTargetPosition(300);
-                lift.setPower(1);
+            }else if(vumarkSeen.equals("RIGHT")){
+                //Pivot to face cryptobox
+                depositGlyphs(6*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, -15, 300);
+                //while (drive.pivotIMU(195, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             }else{
-                lift.setTargetPosition(898);
-                lift.setPower(1);
+                // Case where the Center or unknown. Pivot to face cryptobox an deposit into the right box
+                depositGlyphs(6*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, -15, 300);
             }
-            //drive into cryptobox
-            drive.resetEncoders();
-            timer.reset();
-            while (drive.moveIMU(drive.getEncoderDistance(), 9.5 * COUNTS_PER_INCH, 7 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 0.35, DEFAULT_MIN_POWER, 25, DEFAULT_PID, 25, DEFAULT_ERROR_DISTANCE, 500)
-                    && timer.milliseconds() < 3000 && opModeIsActive()) {
-                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                telemetry.update();
-            }
-
-            drive.stop();
-
-            //deposit glyph
-            bottomIntake.dispenseGlyph();
-            topIntake.dispenseGlyph();
-            timer.reset();
-            while (timer.milliseconds() < 500 && opModeIsActive()) ;
-
-            //Back away from cryptobox
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MIN_POWER, DEFAULT_MIN_POWER, -155, DEFAULT_PID, 25, DEFAULT_ERROR_DISTANCE, 200) && opModeIsActive()){
-                if(gameTime.seconds() > 29){
-                    while(opModeIsActive()){
-                        drive.stop();
-                    }
-                }
-            }
-
-            //Reset the drive encoders and set the drive power to zero
-            drive.resetEncoders();
-            drive.stop();
-
-            //Turn off LEDs
-            led.turnOff();
-
             drive.stop();
         }
         /*
@@ -775,73 +538,31 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
                 ultrasonicCorrection = 0;
             }
             drive.resetEncoders();
+
+            //Drive to the center position.
             while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH - (ultrasonicCorrection * COUNTS_PER_INCH), 0, 0, 14 * COUNTS_PER_INCH, .75,
-                    0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+                    0.75, -90, DEFAULT_PID, 0, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
 
             drive.resetEncoders();
 
             if(vumarkSeen.equals("LEFT")){
-                //Pivot to face cryptobox
+                //pivot and deposit glyphs
                 depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 150, 300);
-                //while (drive.pivotIMU(150, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-
             }else if(vumarkSeen.equals("RIGHT")){
-
-                //Pivot to face cryptobox
+                //pivot and deposit glyphs
                 depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 195, 300);
-                //while (drive.pivotIMU(195, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             }else{
-                //Pivot to face cryptobox
+                //pivot and deposit glyphs
                 depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 165, 300);
-                //while (drive.pivotIMU(165, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-
             }
 
-
-            /*
-            //Deposit glyphs into cryptobox column
-            lift.setTargetPosition(300);
-            lift.setPower(1);
-
-            //drive into cryptobox
-            drive.resetEncoders();
-            timer.reset();
-            while (drive.moveIMU(drive.getEncoderDistance(), 5 * COUNTS_PER_INCH, 0, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 165, DEFAULT_PID, 165, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive() && timer.milliseconds() < 3000) {
-                telemetry.addData("ultrasonic", ultrasonic_front_top.cmUltrasonic());
-                telemetry.update();
-            }
-            //deposit glyph
-            bottomIntake.dispenseGlyph();
-            timer.reset();
-            while (timer.milliseconds() < 250 && opModeIsActive()) ;
-            //Back away from cryptobox
-            timer.reset();
-            drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 8 * COUNTS_PER_INCH, 4 * COUNTS_PER_INCH, 0, 2 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, -15, DEFAULT_PID, 165, DEFAULT_ERROR_DISTANCE, 200)&&timer.milliseconds()<1000 && opModeIsActive()) ;
-            drive.resetEncoders();
-*/
             //Raise the lift to prevent the glyph arms from hitting the glyph
             lift.setTargetPosition(898);
             lift.setPower(1);
-
-            /*//Strafe towards middle of the field
-            if (vumarkSeen.equals("LEFT")) {
-                while (drive.pivotIMU(180, 0, DEFAULT_MAX_POWER, .35, 2, 250, Direction.FASTEST) && opModeIsActive())
-                    ;
-                while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            } else if (vumarkSeen.equals("CENTER") || vumarkSeen.equals("")) {
-                while (drive.pivotIMU(180, 0, DEFAULT_MAX_POWER, .35, 2, 250, Direction.FASTEST) && opModeIsActive())
-                    ;
-                while (drive.moveIMU(drive.getEncoderDistance(), COLUMN_OFFSET, 0, 0, 14 * COUNTS_PER_INCH, .75,
-                        0.75, -90, DEFAULT_PID, 180, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
-                    ;
-            }
-*/
             drive.resetEncoders();
 
             //pivot to face glyph pit
-            while (drive.pivotIMU(-35, 180, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 750, Direction.FASTEST) && opModeIsActive());
+            while (drive.pivotIMU(-35, -90, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 2, 750, Direction.FASTEST) && opModeIsActive());
             lift.setTargetPosition(5);
             lift.setPower(1);
             drive.resetEncoders();
@@ -850,58 +571,61 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
             bottomIntake.secureGlyph();
             topIntake.secureGlyph();
 
-            //Move into Glyph Pit
+            //Move into Glyph Pit 30 inches
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 30 * COUNTS_PER_INCH, 12 * COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MAX_POWER, -35, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 33 * COUNTS_PER_INCH, 12 * COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 0.7, 0.35, -35, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive()) ;
 
+            //retrieve glyphs from the pit
             getGlyphsFarStone(-35, -35, 18);
-
-            drive.resetEncoders();
-
-            if(spin.getPosition() == SPIN_START && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 &&
-                    (bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM)))){
-                spin.setPosition(SPIN_ROTATED);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-            }else if(spin.getPosition() == SPIN_ROTATED && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 &&
-                    (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
-                spin.setPosition(SPIN_START);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-            }
 
             //back up from pit
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 30 * COUNTS_PER_INCH, 0, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, 145, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
+            while (drive.moveIMU(drive.getEncoderDistance(), 33 * COUNTS_PER_INCH, 20*COUNTS_PER_INCH, 0, 9 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, .35, 145, DEFAULT_PID, -35, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive()) ;
+
+            // We want to spin the glyph depending on what is in the intake.
+            // Condition 1: Regular starting position and top glyph and bottom is not present, spin
+            if(spin.getPosition() > .5 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(bottomGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_ROTATED);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
+
+             // Condition 2: Flipped position and bottom (red) glyph and top is not present, spin.
+            }else if(spin.getPosition() <.5 && bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && !(topGlyphColor.getDistance(DistanceUnit.CM)<=6)){
+                //Move to Spin Position
+                spin.setPosition(SPIN_START);
+                timer.reset();
+                while(timer.milliseconds()<500&&opModeIsActive());
+            }
+            /*
+            while(opModeIsActive()){
+                telemetry.addData("spin position", spin.getPosition());
+                telemetry.addData("bottom glyph color", bottomGlyphColor.getDistance(DistanceUnit.CM));
+                telemetry.addData("top glyph color", topGlyphColor.getDistance(DistanceUnit.CM));
+                telemetry.update();
+            }
+*/
 
             if(vumarkSeen.equals("LEFT")){
-                //Pivot to face cryptobox
-                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 195, 300);
-                //while (drive.pivotIMU(150, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
+                //Pivot to face cryptobox and go in at 190 degrees (less steep than previously) Go into the right box
+                depositGlyphs(5*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 190, 300);
 
             }else if(vumarkSeen.equals("RIGHT")){
-
                 //Pivot to face cryptobox
-                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 145, 300);
+                depositGlyphs(9*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 145, 550);
                 //while (drive.pivotIMU(195, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             }else{
-                //Pivot to face cryptobox
-                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 195, 300);
-                //while (drive.pivotIMU(165, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
-
+                // Case where the Center or unknown. Pivot to face cryptobox an deposit into the right box
+                depositGlyphs(5*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 190, 300);
             }
-
         }
 
         //Stop intake threads
         bottomIntake.stop();
         topIntake.stop();
 
-
-
         float spinPosition = (float) spin.getPosition();
         ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-
     }
 
     public void initVuforia(){
@@ -1349,332 +1073,111 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
     }
 
     public void getGlyphsFarStone(double moveAngle, double orientation, double timeBeforeDeposit){
-        bottomIntake.secureGlyph();
-        topIntake.secureGlyph();
 
-        timer.reset();
-        while(timer.milliseconds() < 500 && opModeIsActive());
 
         drive.resetEncoders();
-
         int glyphCase = 0;
+
         //CASE 0: THE ROBOT HAS 2 GLYPH
         if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
             //Do nothing
             led.turnOn();
             glyphCase = 0;
         }
+
         //CASE 1: THE ROBOT HAS 1 GLYPH IN THE BOTTOM AND NO GLYPH IN THE TOP
         else if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
             glyphCase = 1;
             led.turnOn();
 
-            //Raise lift to prevent glyph from dragging
+            //Raise lift to spin position
             lift.setTargetPosition(800);
             lift.setPower(1);
 
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-            //Back up 10 inches
+            //Back up 12 inches
             drive.resetEncoders();
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 12 * COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
 
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-            //Lift and flip
+            //flip
             spin.setPosition(SPIN_ROTATED);
-            float spinPosition = (float) spin.getPosition();
-            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
             timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());
-            lift.setTargetPosition(5);
+            while(timer.milliseconds() < 500 && opModeIsActive()); // waiting for spin to complete
+            lift.setTargetPosition(5); // set target position to bottom
             lift.setPower(1);
-
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+            timer.reset();
+            while(timer.milliseconds() < 250 && opModeIsActive()); // waiting for lift to be lowered
 
             //Drive 25 inches forward to pick up second glyph
-            while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 20 * COUNTS_PER_INCH, 1,
-                    0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
+            drive.resetEncoders(DcMotor.RunMode.RUN_USING_ENCODER);
+            while (drive.moveIMU(drive.getEncoderDistance(), 25 * COUNTS_PER_INCH, 20 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, .75,
+                    0.3, moveAngle, DEFAULT_PID, orientation, 20, 750) && opModeIsActive());
 
-            timer.reset();
-            while(timer.milliseconds() < 250 && opModeIsActive());
 
-            boolean additionalDistance = false;
-            //check if glyph in bottom arms of robot
+            //check if glyph in bottom arms of robot (previously spun so the top is actually on bottom)
             if (topGlyphColor.getDistance(DistanceUnit.CM)<=6){
                 led.setLEDPower(1);
             }else if (gameTime.seconds() < timeBeforeDeposit){
-                glyphWiggle(orientation, 20);
+                glyphWiggle(orientation, 15);
                 timer.reset();
-                while(timer.milliseconds()<250&&opModeIsActive());
-
-                if(topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))){
-                    if(gameTime.seconds() < timeBeforeDeposit) {
-                        additionalDistance = true;
-                    }
-                }
-
-            }
-            drive.resetEncoders();
-
-            if(additionalDistance && gameTime.seconds() < timeBeforeDeposit){
-                //Drive 6 inches forward to pick up second glyph
-                while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
-                        0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                if (topGlyphColor.getDistance(DistanceUnit.CM)<=6){
-                    led.setLEDPower(1);
-                }else{
-                    glyphWiggle(orientation, 20);
-                    timer.reset();
-                    while(timer.milliseconds()<250&&opModeIsActive());
-                }
             }
 
-            drive.resetEncoders();
-
+            //raise lift off ground
             lift.setTargetPosition(250);
             lift.setPower(1);
 
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-            if(additionalDistance){
-                //Back up 16 inches to original position
-                drive.resetEncoders();
-                while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-                drive.resetEncoders();
-            }else {
-                //Back up 15 inches to original position
-                drive.resetEncoders();
-                while (drive.moveIMU(drive.getEncoderDistance(), 15 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
-                drive.resetEncoders();
-            }
+            //Back up 13 inches to original position
+            drive.resetEncoders();
+            while (drive.moveIMU(drive.getEncoderDistance(), 13 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive()) ;
         }
         //CASE 2: THE ROBOT HAS 1 GLYPH IN THE TOP, BUT NOTHING IN THE BOTTOM
         else if((bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM)))&& topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
             glyphCase = 2;
 
+            drive.resetEncoders(DcMotor.RunMode.RUN_USING_ENCODER);
             //Drive 10 inches forward to pick up second glyph
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                    0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-            drive.resetEncoders();
-
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM)>6){
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, .5,
+                    0.3, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
+            if(bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))&&gameTime.seconds()<timeBeforeDeposit){
                 glyphWiggle(moveAngle, 15);
             }
-            timer.reset();
-            while(timer.milliseconds() < 250 && opModeIsActive());
 
             //Raise lift to prevent glyph from dragging
-            lift.setTargetPosition(800);
+            lift.setTargetPosition(250);
             lift.setPower(1);
 
-            //Drive back 10 inches to return to original position
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, 1,
-                    0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
             drive.resetEncoders();
+            //Drive back 10 inches to return to original position
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, .5,
+                    0.3, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive());
 
-
-            //Check if there is a glyph in the bottom
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
-
-            }else{ //If there is only a glyph in the top
-                spin.setPosition(SPIN_ROTATED);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-                timer.reset();
-
-            }
         }
         //CASE 3: THE ROBOT DOES NOT HAVE ANY GLYPHS
-        else if((bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))) && (topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))){
-            glyphCase = 3;
+        else{
+            glyphCase = 2;
+
+            drive.resetEncoders(DcMotor.RunMode.RUN_USING_ENCODER);
             //Drive 10 inches forward to pick up second glyph
-            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                    0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-            drive.resetEncoders();
-
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-            //Check if the robot has a glyph in the bottom
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
-                //Raise lift to prevent glyph from dragging
-                lift.setTargetPosition(800);
-                lift.setPower(1);
-
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                //Drive back 10 inches to return to original position
-                while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                        0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-                drive.resetEncoders();
-
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, .5,
+                    0.3, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 1000) && opModeIsActive());
+            if((bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))||topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM)))&&gameTime.seconds()<timeBeforeDeposit){
+                glyphWiggle(moveAngle, 15);
             }
-            else{ //The robot does not have a glyph in the bottom
-                //Wiggle with an offset of 15 degrees to try and get a glyph
-                //glyphWiggle(orientation, 20);
-                drive.resetEncoders();
-
-                timer.reset();
-                while(timer.milliseconds() < 250 && opModeIsActive());
-
-                boolean additionalDistance = false;
-                if(bottomGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(bottomGlyphColor.getDistance(DistanceUnit.CM))){
-                    additionalDistance = true;
-                    //Drive 6 more inches to get a glyph
-                    while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                            0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-                    drive.resetEncoders();
-                }
-
-                //Raise lift to prevent glyph from dragging
-                lift.setTargetPosition(800);
-                lift.setPower(1);
-
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                if(additionalDistance){
-                    //Drive back 16 inches to return to original position
-                    while (drive.moveIMU(drive.getEncoderDistance(), 16 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-                    drive.resetEncoders();
-                }else{
-                    //Drive back 10 inches to return to original position
-                    while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                            0.35, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive());
-                    drive.resetEncoders();
-                }
-
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-            }
-
-            //Check if robot has two glyphs
-            if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6 && topGlyphColor.getDistance(DistanceUnit.CM) <= 6){
-                //End glyph collection sequence
-            }else if(gameTime.seconds() < timeBeforeDeposit){
-                /*timer.reset();
-                while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                //Lift and flip
-                lift.setTargetPosition(800);
-                timer.reset();
-                while(timer.milliseconds() < 250 && opModeIsActive());
-                spin.setPosition(SPIN_ROTATED);
-                float spinPosition = (float) spin.getPosition();
-                ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-                timer.reset();
-                while (timer.milliseconds() < 750 && opModeIsActive()) ;
-                lift.setTargetPosition(5);
-                lift.setPower(1);
-
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                //Drive 21 inches forward to pick up second glyph
-                while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 10* COUNTS_PER_INCH, 0, 10 * COUNTS_PER_INCH, 1,
-                        0.35, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
-                    ;
-
-                timer.reset();
-                while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-                boolean additionalDistance = false;
-                //check if glyph in bottom arms of robot
-                if (topGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
-                    led.setLEDPower(1);
-                } else if(gameTime.seconds() < timeBeforeDeposit){
-                    glyphWiggle(orientation, 20);
-                    timer.reset();
-                    while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-                    if ((topGlyphColor.getDistance(DistanceUnit.CM) > 6 || Double.isNaN(topGlyphColor.getDistance(DistanceUnit.CM))) && gameTime.seconds() < timeBeforeDeposit) {
-                        if(gameTime.seconds() < timeBeforeDeposit) {
-                            additionalDistance = true;
-                        }
-                    }
-
-                }
-                drive.resetEncoders();
-
-                /*if (additionalDistance) {
-                    //Drive 6 inches forward to pick up second glyph
-                    while (drive.moveIMU(drive.getEncoderDistance(), 6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 0, 6 * COUNTS_PER_INCH, 1,
-                            0.75, moveAngle, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 250) && opModeIsActive())
-                        ;
-
-                    timer.reset();
-                    while (timer.milliseconds() < 250 && opModeIsActive()) ;
-
-                    if (topGlyphColor.getDistance(DistanceUnit.CM) <= 6) {
-                        led.setLEDPower(1);
-                    } else {
-                        glyphWiggle(orientation, 30);
-                        timer.reset();
-                        while (timer.milliseconds() < 250 && opModeIsActive()) ;
-                    }
-                }*/
-
-                drive.resetEncoders();
-
-                lift.setTargetPosition(250);
-                lift.setPower(1);
-
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
-
-                if (additionalDistance) {
-                    //Back up 16 inches to original position
-                    drive.resetEncoders();
-                    while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
-                        ;
-                    drive.resetEncoders();
-                } else {
-                    //Back up 21 inches to original position
-                    drive.resetEncoders();
-                    while (drive.moveIMU(drive.getEncoderDistance(), 21 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER, moveAngle + 180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive())
-                        ;
-                    drive.resetEncoders();
-                }
-            }
-        }
-
-        //Check if there is a glyph in the bottom
-        if(bottomGlyphColor.getDistance(DistanceUnit.CM) <= 6){ //If there is a glyph in the bottom
 
             //Raise lift to prevent glyph from dragging
-            lift.setTargetPosition(300);
+            lift.setTargetPosition(250);
+            lift.setPower(1);
 
-            /*timer.reset();
-            while(timer.milliseconds() < 1000 && opModeIsActive());*/
+            drive.resetEncoders();
+            //Drive back 10 inches to return to original position
+            while (drive.moveIMU(drive.getEncoderDistance(), 10 * COUNTS_PER_INCH, 10 * COUNTS_PER_INCH, 0, 5 * COUNTS_PER_INCH, .5,
+                    0.3, moveAngle+180, DEFAULT_PID, orientation, DEFAULT_ERROR_DISTANCE, 500) && opModeIsActive());
 
-        }else{ //If there is only a glyph in the top
 
-            //Lift and flip to deposit the glyph in the bottom half of the mechanism
-            spin.setPosition(SPIN_ROTATED);
-            float spinPosition = (float) spin.getPosition();
-            ReadWriteFile.writeFile(file, String.valueOf(spinPosition));
-            timer.reset();
-            while(timer.milliseconds() < 750 && opModeIsActive());
-            lift.setTargetPosition(300);
         }
-
-        lift.setTargetPosition(898);
+        //raise lift to spin position
+        lift.setTargetPosition(800);
         lift.setPower(1);
+
     }
 
     /**
