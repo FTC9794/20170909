@@ -269,11 +269,11 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
 
             //Deposit preloaded glyph
             if(vumarkSeen.equals("LEFT")){
-                depositGlyphs(7 * COUNTS_PER_INCH, 7 * COUNTS_PER_INCH, 60, 500, true);
+                depositGlyphs(7 * COUNTS_PER_INCH, 7 * COUNTS_PER_INCH, 55, 500, true);
             }else if(vumarkSeen.equals("RIGHT")){
-                depositGlyphs(5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 105, 500, true);
+                depositGlyphs(5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 100, 500, true);
             }else{
-                depositGlyphs(5 * COUNTS_PER_INCH, 5 * COUNTS_PER_INCH, 75, 500, true);
+                depositGlyphs(6 * COUNTS_PER_INCH, 6 * COUNTS_PER_INCH, 75, 500, true);
             }
             lift.setTargetPosition(898);
             lift.setPower(1);
@@ -434,13 +434,13 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
 
             if(vumarkSeen.equals("RIGHT")){
                 //pivot and deposit glyphs
-                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 30, 300, true);
+                depositGlyphs(8*COUNTS_PER_INCH, 8*COUNTS_PER_INCH, 30, 300, true);
             }else if(vumarkSeen.equals("LEFT")){
                 //pivot and deposit glyphs
-                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, -15, 300, true);
+                depositGlyphs(7*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, -15, 300, true);
             }else{
                 //pivot and deposit glyphs
-                depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 15, 300, true);
+                depositGlyphs(7*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 15, 300, true);
             }
 
             //Raise the lift to avoid hitting the glyphs
@@ -547,7 +547,7 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
 
             if(vumarkSeen.equals("LEFT")){
                 //pivot and deposit glyphs
-                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 150, 300, true);
+                depositGlyphs(7*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 145, 300, true);
             }else if(vumarkSeen.equals("RIGHT")){
                 //pivot and deposit glyphs
                 depositGlyphs(4*COUNTS_PER_INCH, 4*COUNTS_PER_INCH, 195, 300, true);
@@ -608,15 +608,15 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
 
             if(vumarkSeen.equals("LEFT")){
                 //Pivot to face cryptobox and go in at 190 degrees (less steep than previously) Go into the right box
-                depositGlyphs(5*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 190, 300, false);
+                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 185, 300, false);
 
             }else if(vumarkSeen.equals("RIGHT")){
                 //Pivot to face cryptobox
-                depositGlyphs(9*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 145, 550, false);
+                depositGlyphs(10*COUNTS_PER_INCH, 7*COUNTS_PER_INCH, 140, 550, false);
                 //while (drive.pivotIMU(195, 0, DEFAULT_MAX_POWER, DEFAULT_MIN_POWER_PIVOT, 2, 250, Direction.FASTEST) && opModeIsActive()) ;
             }else{
                 // Case where the Center or unknown. Pivot to face cryptobox an deposit into the right box
-                depositGlyphs(5*COUNTS_PER_INCH, 5*COUNTS_PER_INCH, 190, 300, false);
+                depositGlyphs(6*COUNTS_PER_INCH, 6*COUNTS_PER_INCH, 185, 300, false);
             }
         }
 
