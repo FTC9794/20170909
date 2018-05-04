@@ -18,3 +18,6 @@ dependencies {
     compile files('src/main/java/org/firstinspires/ftc/commons-jexl3-3.1.jar')
     compile files('src/main/java/org/firstinspires/ftc/jsr223.jar')
 }
+android {
+    buildToolsVersion '27.0.3'
+}
