@@ -114,7 +114,7 @@ public class FarStoneFlipAutonomous extends LinearOpMode {
     final double DEFAULT_MIN_POWER_PIVOT = .15;
 
     //define constants for servo positions
-    final double SPIN_START = 0.83;
+    final double SPIN_START = .91;
     final double SPIN_ROTATED = 0.09;
 
     final double RELIC_CLAW_CLOSED = 1;
