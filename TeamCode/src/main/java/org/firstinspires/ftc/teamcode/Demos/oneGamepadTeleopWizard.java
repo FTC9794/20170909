@@ -131,7 +131,7 @@ public class oneGamepadTeleopWizard extends LinearOpMode {
     final double GLYPH_VISIBLE_TIME = 250;
 
     //constants for rotation
-    final double SPIN_NORMAL_POSITION = .83;
+    final double SPIN_NORMAL_POSITION = .91;
     final double SPIN_SPUN_POSITION = .09;
     final double ROTATE_TIME = 750;
 
