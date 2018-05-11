@@ -628,33 +628,49 @@ public class oneGamepadTeleopWizard extends LinearOpMode {
 
             //state for balancing on stone after all 4 wheels are on stone
             case BALANCING:
+
+                //get IMU Values
                 currentValuex = imu.getXAngle();
                 currentValuey = imu.getYAngle();
+
+                //get what time it is
                 currentTime = PIDTimer.milliseconds();
+
+                //determine how off the robot is from the desired position
                 currentDifferencex = currentValuex - xDesired;
                 currentDifferencey = currentValuey - yDesired;
+
+                //calculate P Corrections
                 px = currentDifferencex * pGainx;
                 py = currentDifferencey * pGainy;
+
+                //determine the area under the curve
                 areaSumx += ((previousDifferencex+currentDifferencex)/2)*(currentTime-previousTime);
                 areaSumy += ((previousDifferencey+currentDifferencey)/2)*(currentTime-previousTime);
 
+                //calculate I corrections
                 ix = areaSumx*iGainx;
                 iy = areaSumy*iGainy;
 
+                //determine slope of corrections
                 slopex = (previousDifferencex-currentDifferencex)/(previousTime-currentTime);
                 slopey = (previousDifferencey-currentDifferencey)/(previousTime-currentTime);
 
+                //calculate D Corrections
                 dx = slopex*dGainx;
                 dy = slopey*dGainy;
 
+                //sum all corrections
                 correctionx = px+ix+dx;
                 correctiony = py+iy+dy;
 
+                //set motor powers
                 rf.setPower(correctiony-correctionx);
                 rb.setPower(correctiony+correctionx);
                 lf.setPower(correctiony+correctionx);
                 lb.setPower(correctiony-correctionx);
 
+                //initialize variables for next pass
                 previousTime = currentTime;
                 previousDifferencex = currentDifferencex;
                 previousDifferencey = currentDifferencey;
