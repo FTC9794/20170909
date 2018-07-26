@@ -132,8 +132,8 @@ public class rewrittenLinearOpMode extends LinearOpMode {
     final double GLYPH_VISIBLE_TIME = 250;
 
     //constants for rotation
-    final double SPIN_NORMAL_POSITION = .91;
-    final double SPIN_SPUN_POSITION = .09;
+    final double SPIN_NORMAL_POSITION = 1;
+    final double SPIN_SPUN_POSITION = 0;
     final double ROTATE_TIME = 750;
 
     //constants for jewel
