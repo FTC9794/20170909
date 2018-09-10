@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Created by Sarthak on 4/1/2018.
  */
 @TeleOp(name = "Relic Servo Incrementer", group = "Relic")
+@Disabled
 public class RelicServoIncrementer extends LinearOpMode {
     //Servo Variables
     Servo relic_claw, relic_arm, relic_tilt;

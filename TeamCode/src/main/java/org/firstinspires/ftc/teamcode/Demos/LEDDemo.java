@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Demos;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  */
 
 @TeleOp(name = "LED Demo")
+@Disabled
 public class LEDDemo extends OpMode {
     DcMotor LED;
     double ledPower = 1;

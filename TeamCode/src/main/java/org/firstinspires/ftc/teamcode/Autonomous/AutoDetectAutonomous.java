@@ -6,6 +6,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -56,7 +57,8 @@ import static org.firstinspires.ftc.teamcode.Enums.Alliance.UNKNOWN;
 /**
  * Created by Sarthak on 2/7/2018.
  */
-//@Autonomous(name = "Auto Select Autonomous", group = "Autonomous")
+@Autonomous(name = "Auto Select Autonomous", group = "Autonomous")
+@Disabled
 public class AutoDetectAutonomous extends LinearOpMode {
     String fileName = "autoSpinPosition.txt";
     File file = AppUtil.getInstance().getSettingsFile(fileName);

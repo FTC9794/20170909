@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ColorSensor.LynxColorRangeSenso
  * Created by Sarthak on 1/20/2018.
  */
 @TeleOp(name = "Color Sensor Value Test", group = "Test")
+@Disabled
 public class ColorSensorTest extends LinearOpMode {
     IColorSensor color;
     LynxI2cColorRangeSensor floor_color, jewel;

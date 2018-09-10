@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.SampleTestCode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,6 +29,7 @@ import java.util.List;
  */
 
 @Autonomous(name="PID Balance")
+@Disabled
 public class PIDAutoBalancing extends LinearOpMode {
 
     //hardware to be used on robot

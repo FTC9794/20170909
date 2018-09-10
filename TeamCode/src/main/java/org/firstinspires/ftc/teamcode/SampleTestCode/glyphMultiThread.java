@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.SampleTestCode;
 
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.UltrasonicSensor.RevRangeSensor
  */
 
 @TeleOp(name="glyph thread")
+@Disabled
 public class glyphMultiThread extends LinearOpMode {
     CRServo rightWheel1, rightWheel2, leftWheel1, leftWheel2;
     LynxI2cColorRangeSensor glyphSensor1, glyphSensor2;

@@ -51,6 +51,7 @@ import java.util.List;
 
 
 @Autonomous(name="Concept: Vuforia Navigation", group ="Concept")
+@Disabled
 public class ConceptVuforiaNavigation extends LinearOpMode {
     public static final String TAG = "Vuforia Navigation Sample";
     OpenGLMatrix lastLocation = null;
